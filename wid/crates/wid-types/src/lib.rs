@@ -1,0 +1,185 @@
+//! XML domain types for WIDesigner instruments and tunings.
+//!
+//! These types map directly to the WIDesigner XML schema. All dimensional
+//! values are stored in the units specified by `length_type` (typically inches).
+//! Conversion to metres happens during compilation in [`wid_compile`].
+//!
+//! # Namespace handling
+//!
+//! WIDesigner XML uses a namespace prefix on the root element (e.g.,
+//! `<ns2:instrument xmlns:ns2="...">`), but child elements are unqualified.
+//! Use [`strip_xml_namespaces`] to remove the prefix before deserializing.
+
+pub mod instrument;
+pub mod tuning;
+
+pub use instrument::*;
+pub use tuning::*;
+
+/// Strip WIDesigner namespace prefixes from XML for serde deserialization.
+///
+/// Removes `ns2:` (or similar) prefixes from element tags and the
+/// `xmlns:ns2="..."` declaration from the root element.
+pub fn strip_xml_namespaces(xml: &str) -> String {
+    let mut s = xml.replace("<ns2:", "<").replace("</ns2:", "</");
+    // Remove xmlns:ns2="..." attribute
+    let needle = " xmlns:ns2=\"";
+    if let Some(start) = s.find(needle) {
+        let rest = &s[start + needle.len()..];
+        if let Some(end_rel) = rest.find('"') {
+            let end = start + needle.len() + end_rel + 1;
+            s = format!("{}{}", &s[..start], &s[end..]);
+        }
+    }
+    s
+}
+
+/// Deserialize an instrument from WIDesigner XML.
+pub fn parse_instrument_xml(xml: &str) -> Result<InstrumentRaw, quick_xml::DeError> {
+    let clean = strip_xml_namespaces(xml);
+    quick_xml::de::from_str(&clean)
+}
+
+/// Deserialize a tuning from WIDesigner XML.
+pub fn parse_tuning_xml(xml: &str) -> Result<Tuning, quick_xml::DeError> {
+    let clean = strip_xml_namespaces(xml);
+    quick_xml::de::from_str(&clean)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use approx::assert_abs_diff_eq;
+
+    const NAF_6HOLE_XML: &str = include_str!(
+        "../../../../oracle/v2.6.0/NafStudy/instruments/0.75-bore_6-hole_NAF_starter.xml"
+    );
+    const NAF_0HOLE_XML: &str =
+        include_str!("../../../../golden/scenarios/support/NAF-FF-02_instrument_0hole.xml");
+    const TUNING_XML: &str = include_str!(
+        "../../../../oracle/v2.6.0/NafStudy/tunings/F#4_ET_6-hole_NAF_chromatic_tuning.xml"
+    );
+
+    // ── Instrument parsing ──────────────────────────────────────
+
+    #[test]
+    fn parse_6hole_naf_instrument() {
+        let inst = parse_instrument_xml(NAF_6HOLE_XML).expect("parse failed");
+        assert_eq!(inst.name, "3/4\" bore, 6-hole NAF start");
+        assert_eq!(inst.length_type, LengthType::Inches);
+        assert_eq!(inst.bore_points.len(), 2);
+        assert_eq!(inst.holes.len(), 6);
+
+        // Mouthpiece
+        assert_abs_diff_eq!(inst.mouthpiece.position, 0.18000068040110218, epsilon = 1e-15);
+        let fipple = inst.mouthpiece.fipple.as_ref().expect("fipple missing");
+        assert_abs_diff_eq!(fipple.fipple_factor.unwrap(), 0.75, epsilon = 1e-15);
+        assert_abs_diff_eq!(
+            fipple.windway_height.unwrap(),
+            0.03200012096019596,
+            epsilon = 1e-15
+        );
+
+        // Bore points
+        assert_abs_diff_eq!(inst.bore_points[0].bore_position, 0.0, epsilon = 1e-15);
+        assert_abs_diff_eq!(
+            inst.bore_points[0].bore_diameter,
+            0.750001215000656,
+            epsilon = 1e-12
+        );
+        assert_abs_diff_eq!(
+            inst.bore_points[1].bore_position,
+            12.790953423936331,
+            epsilon = 1e-12
+        );
+
+        // First hole (Hole 6 - closest to mouthpiece)
+        assert_eq!(inst.holes[0].name.as_deref(), Some("Hole 6"));
+        assert_abs_diff_eq!(
+            inst.holes[0].bore_position,
+            3.508458242868765,
+            epsilon = 1e-12
+        );
+
+        // Termination
+        assert_abs_diff_eq!(
+            inst.termination.flange_diameter,
+            1.1250018225009841,
+            epsilon = 1e-12
+        );
+    }
+
+    #[test]
+    fn parse_0hole_naf_instrument() {
+        let inst = parse_instrument_xml(NAF_0HOLE_XML).expect("parse failed");
+        assert_eq!(inst.holes.len(), 0);
+        assert_eq!(inst.bore_points.len(), 2);
+    }
+
+    #[test]
+    fn fipple_optional_fields_are_none_when_absent() {
+        let inst = parse_instrument_xml(NAF_6HOLE_XML).expect("parse failed");
+        let fipple = inst.mouthpiece.fipple.as_ref().unwrap();
+        assert!(fipple.window_height.is_none());
+        assert!(fipple.windway_length.is_none());
+    }
+
+    // ── Tuning parsing ──────────────────────────────────────────
+
+    #[test]
+    fn parse_6hole_naf_tuning() {
+        let tuning = parse_tuning_xml(TUNING_XML).expect("parse failed");
+        assert_eq!(tuning.name, "F#4 ET 6-hole NAF chromatic tuning");
+        assert_eq!(tuning.number_of_holes, 6);
+        assert_eq!(tuning.fingerings.len(), 15);
+    }
+
+    #[test]
+    fn tuning_first_fingering_all_closed() {
+        let tuning = parse_tuning_xml(TUNING_XML).unwrap();
+        let f0 = &tuning.fingerings[0];
+        assert_eq!(f0.note.name, "F#4");
+        assert_abs_diff_eq!(f0.note.frequency.unwrap(), 369.9944227116344, epsilon = 1e-10);
+        assert_eq!(f0.open_holes, vec![false, false, false, false, false, false]);
+        assert_eq!(f0.optimization_weight, Some(1));
+    }
+
+    #[test]
+    fn tuning_g5_open_all_holes_open() {
+        let tuning = parse_tuning_xml(TUNING_XML).unwrap();
+        // G5 (open) is fingering index 11
+        let g5_open = &tuning.fingerings[11];
+        assert_eq!(g5_open.note.name, "G5 (open)");
+        assert_eq!(g5_open.open_holes, vec![true, true, true, true, true, true]);
+    }
+
+    #[test]
+    fn tuning_a4_one_hole_open() {
+        let tuning = parse_tuning_xml(TUNING_XML).unwrap();
+        let a4 = &tuning.fingerings[1];
+        assert_eq!(a4.note.name, "A4");
+        assert_eq!(
+            a4.open_holes,
+            vec![false, false, false, false, false, true]
+        );
+    }
+
+    // ── Namespace stripping ─────────────────────────────────────
+
+    #[test]
+    fn strip_ns_removes_prefix_and_declaration() {
+        let input = r#"<ns2:instrument xmlns:ns2="http://www.wwidesigner.com/Instrument"><name>test</name></ns2:instrument>"#;
+        let output = strip_xml_namespaces(input);
+        assert_eq!(
+            output,
+            r#"<instrument><name>test</name></instrument>"#
+        );
+    }
+
+    // ── LengthType conversion ───────────────────────────────────
+
+    #[test]
+    fn inches_to_metres() {
+        assert_abs_diff_eq!(LengthType::Inches.to_metres(), 0.0254, epsilon = 1e-10);
+    }
+}

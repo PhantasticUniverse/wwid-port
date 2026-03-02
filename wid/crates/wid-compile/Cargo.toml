@@ -1,0 +1,12 @@
+[package]
+name = "wid-compile"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+wid-types = { path = "../wid-types" }
+
+[dev-dependencies]
+approx = { workspace = true }
+quick-xml = { workspace = true }
+serde = { workspace = true }
