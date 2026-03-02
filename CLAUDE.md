@@ -17,6 +17,7 @@ This repo ports **WIDesigner v2.6.0** (a Java Swing desktop app for designing wo
 ```bash
 cd golden-harness
 ./gradlew run --args="<scenario-id>"   # Run a specific golden fixture scenario
+./gradlew run -PmainClass=com.widgolden.NafBulkEvalDriver  # Run bulk NAF eval (all 36 combos)
 ./gradlew build                        # Build the harness
 ```
 Requires Java 17+ (configured via Gradle toolchain).

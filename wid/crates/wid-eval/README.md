@@ -34,7 +34,8 @@ Bracket search + Brent-Dekker solver for Im(Z) = 0 crossings. Bracket preference
 
 ## Tests
 
-8 tests validating against golden fixtures:
-- Z-samples: all 11 frequencies within `abs_err ≤ 1.0 + 1e-6 × max(|expected|, |actual|)`
-- Evaluation: all 15 fingerings within 0.5 cents of oracle
-- Error vector consistency
+8 unit tests + 4 integration tests:
+
+**Unit tests**: Z-samples (11 frequencies within tolerance), evaluation (15 fingerings within 0.5 cents of oracle), error vector consistency, cents utility.
+
+**Integration tests** (`tests/bulk_naf_eval.rs`): All 36 NAF instrument×tuning combinations (6 bore sizes × 6 keys = 540 fingerings) verified against golden oracle data. Max cents deviation: 0.000003. Max predicted frequency relative error: 1.78e-9. Handles null predictions for mismatched bore/tuning combos.

@@ -154,7 +154,7 @@ Bracket search preference logic (`find_bracket`) needed to match Java's `Playing
 - Constraints tested across 8 objective function types: FippleFactor (0-hole, 6-hole), HoleFromTop (4 spacing variants), HoleGroupFromTop, NafHoleSize, SingleTaperHoleGroupFromTopHemiHead, SingleTaperHoleGroupFromTop, SingleTaperNoHoleGroupingFromTopHemiHead, SingleTaperNoHoleGroupingFromTop (5 spacing variants)
 
 ### Test count
-- **150 tests** total (146 unit + 4 integration, up from 139)
+- **146 tests** total (up from 139)
   - bobyqa: 32 + 1 doc test
   - wid-optimize: 20
   - wid-eval: 8 unit + 4 integration

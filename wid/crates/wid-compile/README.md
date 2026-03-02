@@ -14,6 +14,10 @@ Converts `InstrumentRaw` (from XML) into `InstrumentCompiled` — a component ch
 | `CompiledMouthpiece` | Position, bore diameter, headspace sections, type |
 | `MouthpieceType` | `Fipple { ... }` or `EmbouchureHole { ... }` |
 | `CompiledTermination` | Flange diameter, bore diameter, position |
+| `get_hole_geometry_from_top()` | Extract geometry vector (metres) for HoleFromTop optimizer |
+| `set_hole_geometry_from_top()` | Apply geometry vector to `InstrumentRaw` |
+| `get_fipple_factor()` | Read fipple factor from instrument |
+| `set_fipple_factor()` | Write fipple factor on instrument |
 
 ## Dependencies
 
@@ -26,7 +30,21 @@ Converts `InstrumentRaw` (from XML) into `InstrumentCompiled` — a component ch
 - All bore sections have positive length (≥ `MINIMUM_CONE_LENGTH`)
 - Headspace ends exactly at mouthpiece position
 - All dimensions are in metres after compilation
+- After geometry mutation, must re-compile before evaluation
+
+## Geometry mutation
+
+The `get_/set_hole_geometry_from_top()` functions work with the HoleFromTop parameterization:
+
+| Index | Meaning | Unit |
+|-------|---------|------|
+| `0` | Bore end position | metres |
+| `1` | Top hole position as fraction of bore | dimensionless |
+| `2..N` | Inter-hole spacings (top→bottom) | metres |
+| `N+1..2N` | Hole diameters (top→bottom) | metres |
+
+Total dimensions: `2N + 1` (13 for a 6-hole NAF).
 
 ## Tests
 
-17 tests validating component count (13 for 6-hole NAF), ordering, headspace extraction, bore diameter interpolation, and geometry validation. Component counts match golden `internals_0.json`.
+22 tests validating component count (13 for 6-hole NAF), ordering, headspace extraction, bore diameter interpolation, geometry get/set round-trip, and fipple factor mutation. Component counts match golden `internals_0.json`.

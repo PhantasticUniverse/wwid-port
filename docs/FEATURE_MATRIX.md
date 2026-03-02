@@ -21,7 +21,7 @@ Legend:
 | Open/save Tuning XML      |        ✅ | XML-RT-02 ¹       | M4        | Includes measured + min/max variants |
 | Open/save Constraints XML |        ✅ | CONSTRAINTS-01/02 | M3        | Constraints ordering ABI             |
 | Drag & drop open          |        ✅ | UX-01             | M4        | Web drop zone parity                 |
-| Calculate tuning (table)  |        ✅ | EVAL-*            | M2        | Whistle/Flute include min/max        |
+| Calculate tuning (table)  |        ✅ | EVAL-*, NAF-BULK-EVAL | M2    | Whistle/Flute include min/max; NAF bulk: all 36 combos |
 | Graph tuning              |        ✅ | GRAPH-01          | M5        | Curve samples                        |
 | Note spectrum graph       |        ✅ | SPEC-01           | M5        | Curve samples + markers              |
 | Supplementary info table  |        ✅ | SUP-01            | M5        | Numeric outputs                      |
