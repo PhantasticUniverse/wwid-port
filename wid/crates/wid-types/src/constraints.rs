@@ -5,10 +5,10 @@
 //! categories in order of first appearance, then constraints within each category.
 //! This ordering is ABI — the optimizer's parameter vector indices must match.
 
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 /// A set of optimization constraints loaded from WIDesigner XML.
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(rename = "constraints")]
 pub struct Constraints {
     #[serde(rename = "constraintsName")]
@@ -24,21 +24,21 @@ pub struct Constraints {
 }
 
 /// A single optimization constraint with bounds.
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct Constraint {
     #[serde(rename = "displayName")]
     pub display_name: String,
     pub category: String,
     #[serde(rename = "type")]
     pub constraint_type: ConstraintType,
-    #[serde(rename = "lowerBound", default)]
+    #[serde(rename = "lowerBound", default, skip_serializing_if = "Option::is_none")]
     pub lower_bound: Option<f64>,
-    #[serde(rename = "upperBound", default)]
+    #[serde(rename = "upperBound", default, skip_serializing_if = "Option::is_none")]
     pub upper_bound: Option<f64>,
 }
 
 /// Type of constraint, determining how bounds are interpreted.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize, Serialize)]
 pub enum ConstraintType {
     /// Bound values have physical dimensions (length in metres).
     DIMENSIONAL,

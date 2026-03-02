@@ -84,6 +84,15 @@
 // this across `match` arms. The default values are never read.
 #![allow(unused_assignments)]
 
+/// Progress information passed to the callback in [`bobyqa_minimize_with_callback`].
+#[derive(Debug, Clone)]
+pub struct BobyqaProgress {
+    /// Number of objective function evaluations completed so far.
+    pub evaluations: usize,
+    /// Best (lowest) objective function value found so far.
+    pub best_value: f64,
+}
+
 /// Result returned by [`bobyqa_minimize`] on successful convergence.
 #[derive(Debug, Clone)]
 pub struct BobyqaResult {
@@ -166,6 +175,74 @@ pub fn bobyqa_minimize(
     );
 
     let value = state.bobyqa(f, lower_bounds, upper_bounds);
+    Some(BobyqaResult {
+        point: state.current_best.clone(),
+        value,
+        evaluations: state.evals,
+    })
+}
+
+/// Like [`bobyqa_minimize`], but with a progress callback for monitoring and cancellation.
+///
+/// The `on_progress` callback is called after every objective function evaluation.
+/// It receives a [`BobyqaProgress`] struct and should return `true` to continue
+/// or `false` to cancel the optimization (returns the best result found so far).
+pub fn bobyqa_minimize_with_callback(
+    f: &mut dyn FnMut(&[f64]) -> f64,
+    initial_point: &[f64],
+    lower_bounds: &[f64],
+    upper_bounds: &[f64],
+    n_interp: usize,
+    initial_trust: f64,
+    stopping_trust: f64,
+    max_eval: usize,
+    on_progress: &mut dyn FnMut(BobyqaProgress) -> bool,
+) -> Option<BobyqaResult> {
+    let n = initial_point.len();
+    if n < 2 {
+        return None;
+    }
+
+    // Track the best value seen so far for progress reporting.
+    // Use Cell for interior mutability so the closure can share these
+    // with the post-optimization code without borrow conflicts.
+    use std::cell::Cell;
+    let best_value = Cell::new(f64::MAX);
+    let cancelled = Cell::new(false);
+    let eval_count = Cell::new(0_usize);
+
+    // Wrap the objective to call progress callback after each evaluation
+    let mut wrapped_f = |x: &[f64]| -> f64 {
+        if cancelled.get() {
+            return best_value.get();
+        }
+        let val = f(x);
+        eval_count.set(eval_count.get() + 1);
+        if val < best_value.get() {
+            best_value.set(val);
+        }
+        let should_continue = on_progress(BobyqaProgress {
+            evaluations: eval_count.get(),
+            best_value: best_value.get(),
+        });
+        if !should_continue {
+            cancelled.set(true);
+        }
+        val
+    };
+
+    let mut state = BobyqaState::new(
+        n,
+        n_interp,
+        initial_point,
+        lower_bounds,
+        upper_bounds,
+        initial_trust,
+        stopping_trust,
+        max_eval,
+    );
+
+    let value = state.bobyqa(&mut wrapped_f, lower_bounds, upper_bounds);
     Some(BobyqaResult {
         point: state.current_best.clone(),
         value,

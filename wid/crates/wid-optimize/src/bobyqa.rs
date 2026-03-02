@@ -3,4 +3,4 @@
 //! BOBYQA lives in its own crate (`crates/bobyqa/`) for potential
 //! open-source release as a standalone Rust library.
 
-pub use bobyqa::*;
+pub use bobyqa::{BobyqaProgress, BobyqaResult, bobyqa_minimize, bobyqa_minimize_with_callback};

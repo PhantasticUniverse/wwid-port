@@ -9,6 +9,7 @@ members = [
     "crates/wid-eval",
     "crates/bobyqa",
     "crates/wid-optimize",
+    "crates/wid-session",
 ]
 
 [workspace.dependencies]

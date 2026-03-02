@@ -1,0 +1,18 @@
+[package]
+name = "wid-session"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+wid-types = { path = "../wid-types" }
+wid-compile = { path = "../wid-compile" }
+wid-eval = { path = "../wid-eval" }
+wid-optimize = { path = "../wid-optimize" }
+wid-physics = { path = "../wid-physics" }
+bobyqa = { path = "../bobyqa" }
+serde = { workspace = true }
+serde_json = { workspace = true }
+quick-xml = { workspace = true }
+
+[dev-dependencies]
+approx = { workspace = true }

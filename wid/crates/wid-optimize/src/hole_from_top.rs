@@ -26,7 +26,7 @@
 //! - Stopping trust region radius: 1e-8
 //! - Max evaluations: `20000 + (n_dims - 1) * 5000`
 
-use bobyqa::bobyqa_minimize;
+use bobyqa::{BobyqaProgress, bobyqa_minimize, bobyqa_minimize_with_callback};
 use wid_compile::{compile, get_hole_geometry_from_top, set_hole_geometry_from_top};
 use wid_eval::calculate_error_vector;
 use wid_physics::PhysicalParameters;
@@ -121,6 +121,82 @@ pub fn optimize_holes(
                 final_geometry: initial_geometry,
             }
         }
+    }
+}
+
+/// Like [`optimize_holes`], but with a progress callback for monitoring and cancellation.
+///
+/// The `on_progress` callback receives a [`BobyqaProgress`] and should return
+/// `true` to continue or `false` to cancel. On cancellation, the best result
+/// found so far is applied to the instrument.
+pub fn optimize_holes_with_progress(
+    instrument: &mut InstrumentRaw,
+    tuning: &Tuning,
+    constraints: &Constraints,
+    params: &PhysicalParameters,
+    on_progress: &mut dyn FnMut(BobyqaProgress) -> bool,
+) -> OptimizationResult {
+    let weights = fingering_weights(&tuning.fingerings);
+    let lower_bounds = constraints.lower_bounds();
+    let upper_bounds = constraints.upper_bounds();
+    let n_dims = lower_bounds.len();
+
+    let raw_geometry = get_hole_geometry_from_top(instrument);
+    let initial_geometry: Vec<f64> = raw_geometry
+        .iter()
+        .enumerate()
+        .map(|(i, &v)| {
+            if i < lower_bounds.len() {
+                v.clamp(lower_bounds[i], upper_bounds[i])
+            } else {
+                v
+            }
+        })
+        .collect();
+
+    let initial_norm = evaluate_norm(instrument, &tuning.fingerings, &weights, params);
+
+    let initial_trust = 10.0;
+    let stopping_trust = 1e-8;
+    let max_eval = 20000 + (n_dims.saturating_sub(1)) * 5000;
+    let n_interp = 2 * n_dims + 1;
+
+    let mut work_inst = instrument.clone();
+    let fingerings = tuning.fingerings.clone();
+
+    let result = bobyqa_minimize_with_callback(
+        &mut |point: &[f64]| {
+            set_hole_geometry_from_top(&mut work_inst, point);
+            evaluate_norm(&work_inst, &fingerings, &weights, params)
+        },
+        &initial_geometry,
+        &lower_bounds,
+        &upper_bounds,
+        n_interp,
+        initial_trust,
+        stopping_trust,
+        max_eval,
+        on_progress,
+    );
+
+    match result {
+        Some(opt_result) => {
+            set_hole_geometry_from_top(instrument, &opt_result.point);
+            OptimizationResult {
+                initial_norm,
+                final_norm: opt_result.value,
+                evaluations: opt_result.evaluations,
+                initial_geometry,
+                final_geometry: opt_result.point,
+            }
+        }
+        None => OptimizationResult {
+            initial_norm,
+            final_norm: initial_norm,
+            evaluations: 0,
+            initial_geometry: initial_geometry.clone(),
+            final_geometry: initial_geometry,
+        },
     }
 }
 

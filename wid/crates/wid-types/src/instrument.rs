@@ -1,15 +1,15 @@
 //! Instrument XML model.
 
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 /// Top-level instrument, as deserialized from WIDesigner XML.
 ///
 /// All dimensional values are in the units specified by `length_type`.
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(rename = "instrument")]
 pub struct InstrumentRaw {
     pub name: String,
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
     #[serde(rename = "lengthType")]
     pub length_type: LengthType,
@@ -22,7 +22,7 @@ pub struct InstrumentRaw {
 }
 
 /// Unit system for dimensional values.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize, Serialize)]
 pub enum LengthType {
     #[serde(rename = "in")]
     Inches,
@@ -50,42 +50,42 @@ impl LengthType {
 }
 
 /// Mouthpiece definition. Contains exactly one of the mouthpiece type variants.
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct MouthpieceRaw {
     pub position: f64,
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub beta: Option<f64>,
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub fipple: Option<FippleRaw>,
-    #[serde(rename = "embouchureHole", default)]
+    #[serde(rename = "embouchureHole", default, skip_serializing_if = "Option::is_none")]
     pub embouchure_hole: Option<EmbouchureHoleRaw>,
-    #[serde(rename = "singleReed", default)]
+    #[serde(rename = "singleReed", default, skip_serializing_if = "Option::is_none")]
     pub single_reed: Option<SingleReedRaw>,
-    #[serde(rename = "doubleReed", default)]
+    #[serde(rename = "doubleReed", default, skip_serializing_if = "Option::is_none")]
     pub double_reed: Option<DoubleReedRaw>,
-    #[serde(rename = "lipReed", default)]
+    #[serde(rename = "lipReed", default, skip_serializing_if = "Option::is_none")]
     pub lip_reed: Option<LipReedRaw>,
 }
 
 /// Fipple (edge-blown) mouthpiece, used by NAF and recorders.
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct FippleRaw {
     #[serde(rename = "windowLength")]
     pub window_length: f64,
     #[serde(rename = "windowWidth")]
     pub window_width: f64,
-    #[serde(rename = "fippleFactor", default)]
+    #[serde(rename = "fippleFactor", default, skip_serializing_if = "Option::is_none")]
     pub fipple_factor: Option<f64>,
-    #[serde(rename = "windowHeight", default)]
+    #[serde(rename = "windowHeight", default, skip_serializing_if = "Option::is_none")]
     pub window_height: Option<f64>,
-    #[serde(rename = "windwayLength", default)]
+    #[serde(rename = "windwayLength", default, skip_serializing_if = "Option::is_none")]
     pub windway_length: Option<f64>,
-    #[serde(rename = "windwayHeight", default)]
+    #[serde(rename = "windwayHeight", default, skip_serializing_if = "Option::is_none")]
     pub windway_height: Option<f64>,
 }
 
 /// Embouchure hole mouthpiece, used by transverse flutes.
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct EmbouchureHoleRaw {
     pub length: f64,
     pub width: f64,
@@ -97,13 +97,13 @@ pub struct EmbouchureHoleRaw {
 }
 
 /// Single reed mouthpiece.
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct SingleReedRaw {
     pub alpha: f64,
 }
 
 /// Double reed mouthpiece.
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct DoubleReedRaw {
     pub alpha: f64,
     #[serde(rename = "crowFreq")]
@@ -111,15 +111,15 @@ pub struct DoubleReedRaw {
 }
 
 /// Lip reed (brass) mouthpiece.
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct LipReedRaw {
     pub alpha: f64,
 }
 
 /// A point on the bore profile.
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct BorePointRaw {
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,
     #[serde(rename = "borePosition")]
     pub bore_position: f64,
@@ -128,22 +128,22 @@ pub struct BorePointRaw {
 }
 
 /// A tonehole in the bore wall.
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct HoleRaw {
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,
     #[serde(rename = "borePosition")]
     pub bore_position: f64,
     pub diameter: f64,
     pub height: f64,
-    #[serde(rename = "innerCurvatureRadius", default)]
+    #[serde(rename = "innerCurvatureRadius", default, skip_serializing_if = "Option::is_none")]
     pub inner_curvature_radius: Option<f64>,
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub key: Option<KeyRaw>,
 }
 
 /// Key mechanism covering a tonehole.
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct KeyRaw {
     pub diameter: f64,
     #[serde(rename = "holeDiameter")]
@@ -157,7 +157,7 @@ pub struct KeyRaw {
 }
 
 /// End termination of the bore.
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct TerminationRaw {
     #[serde(rename = "flangeDiameter")]
     pub flange_diameter: f64,

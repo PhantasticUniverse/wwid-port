@@ -210,6 +210,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "wid-session"
+version = "0.1.0"
+dependencies = [
+ "approx",
+ "bobyqa",
+ "quick-xml",
+ "serde",
+ "serde_json",
+ "wid-compile",
+ "wid-eval",
+ "wid-optimize",
+ "wid-physics",
+ "wid-types",
+]
+
+[[package]]
 name = "wid-types"
 version = "0.1.0"
 dependencies = [
