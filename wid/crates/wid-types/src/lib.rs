@@ -290,4 +290,118 @@ mod tests {
             assert_eq!(c.constraint_list[i].category, "Hole size");
         }
     }
+
+    // ── All NAF instrument parsing ───────────────────────────────
+
+    #[test]
+    fn parse_all_naf_instruments() {
+        let instruments: &[(&str, &str)] = &[
+            ("0.5-bore", include_str!("../../../../oracle/v2.6.0/NafStudy/instruments/0.5-bore_6-hole_NAF_starter.xml")),
+            ("0.625-bore", include_str!("../../../../oracle/v2.6.0/NafStudy/instruments/0.625-bore_6-hole_NAF_starter.xml")),
+            ("0.75-bore", include_str!("../../../../oracle/v2.6.0/NafStudy/instruments/0.75-bore_6-hole_NAF_starter.xml")),
+            ("0.875-bore", include_str!("../../../../oracle/v2.6.0/NafStudy/instruments/0.875-bore_6-hole_NAF_starter.xml")),
+            ("1.00-bore", include_str!("../../../../oracle/v2.6.0/NafStudy/instruments/1.00-bore_6-hole_NAF_starter.xml")),
+            ("1.25-bore", include_str!("../../../../oracle/v2.6.0/NafStudy/instruments/1.25-bore_6-hole_NAF_starter.xml")),
+        ];
+
+        for (label, xml) in instruments {
+            let inst = parse_instrument_xml(xml)
+                .unwrap_or_else(|e| panic!("Parse {label} failed: {e}"));
+            assert_eq!(inst.holes.len(), 6, "{label}: expected 6 holes");
+            assert_eq!(inst.bore_points.len(), 2, "{label}: expected 2 bore points");
+            assert!(inst.mouthpiece.fipple.is_some(), "{label}: expected fipple mouthpiece");
+            assert_eq!(inst.length_type, LengthType::Inches, "{label}: expected inches");
+        }
+    }
+
+    // ── All NAF tuning parsing ───────────────────────────────────
+
+    #[test]
+    fn parse_all_naf_tunings() {
+        let tunings: &[(&str, &str)] = &[
+            ("A4", include_str!("../../../../oracle/v2.6.0/NafStudy/tunings/A4_ET_6-hole_NAF_chromatic_tuning.xml")),
+            ("B3", include_str!("../../../../oracle/v2.6.0/NafStudy/tunings/B3_ET_6-hole_NAF_chromatic_tuning.xml")),
+            ("C5", include_str!("../../../../oracle/v2.6.0/NafStudy/tunings/C5_ET_6-hole_NAF_chromatic_tuning.xml")),
+            ("D#4", include_str!("../../../../oracle/v2.6.0/NafStudy/tunings/D#4_ET_6-hole_NAF_chromatic_tuning.xml")),
+            ("D#5", include_str!("../../../../oracle/v2.6.0/NafStudy/tunings/D#5_ET_6-hole_NAF_chromatic_tuning.xml")),
+            ("F#4", include_str!("../../../../oracle/v2.6.0/NafStudy/tunings/F#4_ET_6-hole_NAF_chromatic_tuning.xml")),
+        ];
+
+        for (label, xml) in tunings {
+            let tuning = parse_tuning_xml(xml)
+                .unwrap_or_else(|e| panic!("Parse {label} tuning failed: {e}"));
+            assert_eq!(tuning.fingerings.len(), 15, "{label}: expected 15 fingerings");
+            assert_eq!(tuning.number_of_holes, 6, "{label}: expected 6 holes");
+
+            for (i, f) in tuning.fingerings.iter().enumerate() {
+                assert!(
+                    f.note.frequency.is_some(),
+                    "{label} fingering {i} ({}) missing frequency",
+                    f.note.name,
+                );
+                assert_eq!(f.open_holes.len(), 6, "{label} fingering {i}: expected 6 hole states");
+            }
+        }
+    }
+
+    // ── All NAF constraint XMLs parse ────────────────────────────
+
+    #[test]
+    fn parse_all_naf_constraints() {
+        // All 16 NAF constraint XMLs across all objective functions
+        let constraints: &[(&str, &str, usize)] = &[
+            // FippleFactorObjectiveFunction
+            ("fipple_0hole", include_str!("../../../../oracle/v2.6.0/constraints/NafStudyModel/FippleFactorObjectiveFunction/0/0_holes.xml"), 1),
+            ("fipple_6hole", include_str!("../../../../oracle/v2.6.0/constraints/NafStudyModel/FippleFactorObjectiveFunction/6/6_holes.xml"), 1),
+            // HoleFromTopObjectiveFunction (4 spacing variants)
+            ("hft_1.125", include_str!("../../../../oracle/v2.6.0/constraints/NafStudyModel/HoleFromTopObjectiveFunction/6/1.125_max_hole_spacing.xml"), 13),
+            ("hft_1.25", include_str!("../../../../oracle/v2.6.0/constraints/NafStudyModel/HoleFromTopObjectiveFunction/6/1.25_max_hole_spacing.xml"), 13),
+            ("hft_1.4", include_str!("../../../../oracle/v2.6.0/constraints/NafStudyModel/HoleFromTopObjectiveFunction/6/1.4_max_hole_spacing.xml"), 13),
+            ("hft_1.5", include_str!("../../../../oracle/v2.6.0/constraints/NafStudyModel/HoleFromTopObjectiveFunction/6/1.5_max_hole_spacing.xml"), 13),
+            // HoleGroupFromTopObjectiveFunction
+            ("hgft_2grp", include_str!("../../../../oracle/v2.6.0/constraints/NafStudyModel/HoleGroupFromTopObjectiveFunction/6/2-group_1.25_max_spacing.xml"), 11),
+            // NafHoleSizeObjectiveFunction
+            ("nhs_0.5", include_str!("../../../../oracle/v2.6.0/constraints/NafStudyModel/NafHoleSizeObjectiveFunction/6/0.5-max-hole-size.xml"), 6),
+            // SingleTaperHoleGroupFromTopHemiHeadObjectiveFunction
+            ("sthgfthh", include_str!("../../../../oracle/v2.6.0/constraints/NafStudyModel/SingleTaperHoleGroupFromTopHemiHeadObjectiveFunction/6/2-group_1.25-max-spacing.xml"), 14),
+            // SingleTaperHoleGroupFromTopObjectiveFunction
+            ("sthgft", include_str!("../../../../oracle/v2.6.0/constraints/NafStudyModel/SingleTaperHoleGroupFromTopObjectiveFunction/6/2-group_1.25-max-spacing.xml"), 14),
+            // SingleTaperNoHoleGroupingFromTopHemiHeadObjectiveFunction
+            ("stnhgfthh", include_str!("../../../../oracle/v2.6.0/constraints/NafStudyModel/SingleTaperNoHoleGroupingFromTopHemiHeadObjectiveFunction/6/1.25_max_hole_spacing.xml"), 16),
+            // SingleTaperNoHoleGroupingFromTopObjectiveFunction (5 spacing variants)
+            ("stnhgft_1.0", include_str!("../../../../oracle/v2.6.0/constraints/NafStudyModel/SingleTaperNoHoleGroupingFromTopObjectiveFunction/6/1.0_max_hole_spacing.xml"), 16),
+            ("stnhgft_1.125", include_str!("../../../../oracle/v2.6.0/constraints/NafStudyModel/SingleTaperNoHoleGroupingFromTopObjectiveFunction/6/1.125_max_hole_spacing.xml"), 16),
+            ("stnhgft_1.25", include_str!("../../../../oracle/v2.6.0/constraints/NafStudyModel/SingleTaperNoHoleGroupingFromTopObjectiveFunction/6/1.25_max_hole_spacing.xml"), 16),
+            ("stnhgft_1.4", include_str!("../../../../oracle/v2.6.0/constraints/NafStudyModel/SingleTaperNoHoleGroupingFromTopObjectiveFunction/6/1.4_max_hole_spacing.xml"), 16),
+            ("stnhgft_1.5", include_str!("../../../../oracle/v2.6.0/constraints/NafStudyModel/SingleTaperNoHoleGroupingFromTopObjectiveFunction/6/1.5_max_hole_spacing.xml"), 16),
+        ];
+
+        for (label, xml, expected_count) in constraints {
+            let c = parse_constraints_xml(xml)
+                .unwrap_or_else(|e| panic!("Parse constraints {label} failed: {e}"));
+            assert_eq!(
+                c.constraint_list.len(),
+                *expected_count,
+                "{label}: expected {expected_count} constraints, got {}",
+                c.constraint_list.len()
+            );
+            assert_eq!(c.number_of_holes, if label.contains("0hole") { 0 } else { 6 },
+                "{label}: unexpected number_of_holes");
+
+            // Verify bounds arrays match constraint count
+            let lb = c.lower_bounds();
+            let ub = c.upper_bounds();
+            assert_eq!(lb.len(), *expected_count, "{label}: lower_bounds length mismatch");
+            assert_eq!(ub.len(), *expected_count, "{label}: upper_bounds length mismatch");
+
+            // Verify all lower bounds < upper bounds
+            for i in 0..*expected_count {
+                assert!(
+                    lb[i] <= ub[i],
+                    "{label}: lower_bound[{i}] ({}) > upper_bound[{i}] ({})",
+                    lb[i], ub[i]
+                );
+            }
+        }
+    }
 }

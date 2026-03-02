@@ -22,7 +22,7 @@ dependencies {
 }
 
 application {
-  mainClass = "com.widgolden.GoldenHarnessMain"
+  mainClass = project.findProperty('mainClass') ?: "com.widgolden.GoldenHarnessMain"
   applicationDefaultJvmArgs = [
     '--add-opens', 'java.base/java.lang=ALL-UNNAMED',
     '--add-opens', 'java.base/java.lang.reflect=ALL-UNNAMED',

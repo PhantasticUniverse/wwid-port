@@ -1,0 +1,2917 @@
+[ {
+  "instrument" : "0.5-bore_6-hole_NAF_starter.xml",
+  "tuning" : "A4_ET_6-hole_NAF_chromatic_tuning.xml",
+  "name" : "0.5-bore_6-hole_NAF_starter__A4_ET_6-hole_NAF_chromatic_tuning",
+  "numFingerings" : 15,
+  "fingerings" : [ {
+    "note" : "A4",
+    "targetFreq" : 440.0,
+    "predictedFreq" : 622.257997863591,
+    "cents" : 600.0112133905375
+  }, {
+    "note" : "C5",
+    "targetFreq" : 523.25,
+    "predictedFreq" : 739.9890867827736,
+    "cents" : 600.0043053930422
+  }, {
+    "note" : "C#5",
+    "targetFreq" : 554.37,
+    "predictedFreq" : 791.5399832457211,
+    "cents" : 616.5756479380248
+  }, {
+    "note" : "D5",
+    "targetFreq" : 587.33,
+    "predictedFreq" : 830.6098235607964,
+    "cents" : 599.999524723384
+  }, {
+    "note" : "D#5",
+    "targetFreq" : 622.25,
+    "predictedFreq" : 898.9112196892811,
+    "cents" : 636.8211730154411
+  }, {
+    "note" : "E5",
+    "targetFreq" : 659.26,
+    "predictedFreq" : 932.3280018172417,
+    "cents" : 599.9880577764976
+  }, {
+    "note" : "F5",
+    "targetFreq" : 698.46,
+    "predictedFreq" : 987.7671291822687,
+    "cents" : 599.9921557612746
+  }, {
+    "note" : "F#5",
+    "targetFreq" : 739.99,
+    "predictedFreq" : 1036.4183017898115,
+    "cents" : 583.2344605403326
+  }, {
+    "note" : "G5",
+    "targetFreq" : 782.63,
+    "predictedFreq" : 1108.7310894612804,
+    "cents" : 603.0086158633765
+  }, {
+    "note" : "G#5",
+    "targetFreq" : 830.61,
+    "predictedFreq" : 1167.6741535501042,
+    "cents" : 589.6735099511187
+  }, {
+    "note" : "A5",
+    "targetFreq" : 880.0,
+    "predictedFreq" : 1244.50853856231,
+    "cents" : 600.0008397702229
+  }, {
+    "note" : "A#5, open",
+    "targetFreq" : 932.33,
+    "predictedFreq" : 1295.348220174627,
+    "cents" : 569.3128625434881
+  }, {
+    "note" : "A#5, closed",
+    "targetFreq" : 932.33,
+    "predictedFreq" : 819.7720126535451,
+    "cents" : -222.7415440059189
+  }, {
+    "note" : "B5",
+    "targetFreq" : 987.77,
+    "predictedFreq" : 885.1545795254034,
+    "cents" : -189.89487540074356
+  }, {
+    "note" : "C6",
+    "targetFreq" : 1046.5,
+    "predictedFreq" : 1063.2177009729583,
+    "cents" : 27.437660438422924
+  } ]
+}, {
+  "instrument" : "0.5-bore_6-hole_NAF_starter.xml",
+  "tuning" : "B3_ET_6-hole_NAF_chromatic_tuning.xml",
+  "name" : "0.5-bore_6-hole_NAF_starter__B3_ET_6-hole_NAF_chromatic_tuning",
+  "numFingerings" : 15,
+  "fingerings" : [ {
+    "note" : "B3",
+    "targetFreq" : 246.94165062806206,
+    "predictedFreq" : null,
+    "cents" : 1200.0
+  }, {
+    "note" : "D4",
+    "targetFreq" : 293.6647679174076,
+    "predictedFreq" : null,
+    "cents" : 1200.0
+  }, {
+    "note" : "D#4",
+    "targetFreq" : 311.1269837220809,
+    "predictedFreq" : null,
+    "cents" : 1200.0
+  }, {
+    "note" : "E4",
+    "targetFreq" : 329.6275569128699,
+    "predictedFreq" : null,
+    "cents" : 1200.0
+  }, {
+    "note" : "F4",
+    "targetFreq" : 349.22823143300394,
+    "predictedFreq" : null,
+    "cents" : 1200.0
+  }, {
+    "note" : "F#4",
+    "targetFreq" : 369.9944227116344,
+    "predictedFreq" : null,
+    "cents" : 1200.0
+  }, {
+    "note" : "G4",
+    "targetFreq" : 391.99543598174927,
+    "predictedFreq" : null,
+    "cents" : 1200.0
+  }, {
+    "note" : "G#4",
+    "targetFreq" : 415.3046975799451,
+    "predictedFreq" : null,
+    "cents" : 1200.0
+  }, {
+    "note" : "A4",
+    "targetFreq" : 440.0,
+    "predictedFreq" : null,
+    "cents" : 1200.0
+  }, {
+    "note" : "A#4",
+    "targetFreq" : 466.16376151808987,
+    "predictedFreq" : null,
+    "cents" : 1200.0
+  }, {
+    "note" : "B4",
+    "targetFreq" : 493.8833012561241,
+    "predictedFreq" : null,
+    "cents" : 1200.0
+  }, {
+    "note" : "C5 open",
+    "targetFreq" : 523.2511306011974,
+    "predictedFreq" : null,
+    "cents" : 1200.0
+  }, {
+    "note" : "C5 closed",
+    "targetFreq" : 523.2511306011974,
+    "predictedFreq" : 819.7720124368392,
+    "cents" : 777.2630549913451
+  }, {
+    "note" : "C#5",
+    "targetFreq" : 554.3652619537443,
+    "predictedFreq" : 885.1545794305774,
+    "cents" : 810.1110790961482
+  }, {
+    "note" : "D5",
+    "targetFreq" : 587.3295358348151,
+    "predictedFreq" : 1063.2177009680581,
+    "cents" : 1027.4339197077034
+  } ]
+}, {
+  "instrument" : "0.5-bore_6-hole_NAF_starter.xml",
+  "tuning" : "C5_ET_6-hole_NAF_chromatic_tuning.xml",
+  "name" : "0.5-bore_6-hole_NAF_starter__C5_ET_6-hole_NAF_chromatic_tuning",
+  "numFingerings" : 15,
+  "fingerings" : [ {
+    "note" : "C5",
+    "targetFreq" : 523.2511306011972,
+    "predictedFreq" : 622.2579978654163,
+    "cents" : 300.0112133956162
+  }, {
+    "note" : "D#5",
+    "targetFreq" : 622.2539674441617,
+    "predictedFreq" : 739.9890867705091,
+    "cents" : 300.0005646416086
+  }, {
+    "note" : "E5",
+    "targetFreq" : 659.2551138257398,
+    "predictedFreq" : 791.5399832370347,
+    "cents" : 316.59044435833044
+  }, {
+    "note" : "F5",
+    "targetFreq" : 698.4564628660078,
+    "predictedFreq" : 830.6098235340726,
+    "cents" : 300.0008928574409
+  }, {
+    "note" : "F#5",
+    "targetFreq" : 739.9888454232688,
+    "predictedFreq" : 898.9112196372394,
+    "cents" : 336.8101346628642
+  }, {
+    "note" : "G5",
+    "targetFreq" : 783.9908719634985,
+    "predictedFreq" : 932.3280017640856,
+    "cents" : 300.0008889470894
+  }, {
+    "note" : "G#5",
+    "targetFreq" : 830.6093951598901,
+    "predictedFreq" : 987.7671287300226,
+    "cents" : 300.0009222886091
+  }, {
+    "note" : "A5",
+    "targetFreq" : 880.0,
+    "predictedFreq" : 1036.418301724616,
+    "cents" : 283.23716160861954
+  }, {
+    "note" : "A#5",
+    "targetFreq" : 932.3275230361799,
+    "predictedFreq" : 1108.731089487088,
+    "cents" : 300.0008831274952
+  }, {
+    "note" : "B5",
+    "targetFreq" : 987.7666025122483,
+    "predictedFreq" : 1167.6741537046257,
+    "cents" : 289.674770844276
+  }, {
+    "note" : "C6",
+    "targetFreq" : 1046.5022612023945,
+    "predictedFreq" : 1244.508538564214,
+    "cents" : 300.0008397728718
+  }, {
+    "note" : "C#6, open",
+    "targetFreq" : 1108.7305239074883,
+    "predictedFreq" : 1295.3482202774942,
+    "cents" : 269.3174621358847
+  }, {
+    "note" : "C#6, closed",
+    "targetFreq" : 1108.7305239074883,
+    "predictedFreq" : 1275.4290085872913,
+    "cents" : 242.48860488424762
+  }, {
+    "note" : "D6",
+    "targetFreq" : 1174.6590716696303,
+    "predictedFreq" : 1351.8606268594674,
+    "cents" : 243.24519100427318
+  }, {
+    "note" : "D#6",
+    "targetFreq" : 1244.5079348883235,
+    "predictedFreq" : 1452.4371804442337,
+    "cents" : 267.4804055032929
+  } ]
+}, {
+  "instrument" : "0.5-bore_6-hole_NAF_starter.xml",
+  "tuning" : "D#4_ET_6-hole_NAF_chromatic_tuning.xml",
+  "name" : "0.5-bore_6-hole_NAF_starter__D#4_ET_6-hole_NAF_chromatic_tuning",
+  "numFingerings" : 15,
+  "fingerings" : [ {
+    "note" : "D#4",
+    "targetFreq" : 311.12698372208087,
+    "predictedFreq" : null,
+    "cents" : 1200.0
+  }, {
+    "note" : "F#4",
+    "targetFreq" : 369.99442271163434,
+    "predictedFreq" : null,
+    "cents" : 1200.0
+  }, {
+    "note" : "G4",
+    "targetFreq" : 391.99543598174927,
+    "predictedFreq" : null,
+    "cents" : 1200.0
+  }, {
+    "note" : "G#4",
+    "targetFreq" : 415.30469757994507,
+    "predictedFreq" : null,
+    "cents" : 1200.0
+  }, {
+    "note" : "A4",
+    "targetFreq" : 439.99999999999994,
+    "predictedFreq" : null,
+    "cents" : 1200.0
+  }, {
+    "note" : "A#4",
+    "targetFreq" : 466.16376151808987,
+    "predictedFreq" : null,
+    "cents" : 1200.0
+  }, {
+    "note" : "B4",
+    "targetFreq" : 493.883301256124,
+    "predictedFreq" : null,
+    "cents" : 1200.0
+  }, {
+    "note" : "C5",
+    "targetFreq" : 523.2511306011971,
+    "predictedFreq" : 1036.418301811539,
+    "cents" : 1183.2371617538167
+  }, {
+    "note" : "C#5",
+    "targetFreq" : 554.365261953744,
+    "predictedFreq" : null,
+    "cents" : 1200.0
+  }, {
+    "note" : "D5",
+    "targetFreq" : 587.329535834815,
+    "predictedFreq" : 1167.6741536799118,
+    "cents" : 1189.6747708076348
+  }, {
+    "note" : "D#5",
+    "targetFreq" : 622.2539674441617,
+    "predictedFreq" : null,
+    "cents" : 1200.0
+  }, {
+    "note" : "E5 open",
+    "targetFreq" : 659.2551138257398,
+    "predictedFreq" : 1295.3482201689728,
+    "cents" : 1169.3174619908457
+  }, {
+    "note" : "E5 closed",
+    "targetFreq" : 659.2551138257398,
+    "predictedFreq" : 819.772012653537,
+    "cents" : 377.26305544897826
+  }, {
+    "note" : "F5",
+    "targetFreq" : 698.4564628660077,
+    "predictedFreq" : 885.1545795254438,
+    "cents" : 410.1110792816933
+  }, {
+    "note" : "F#5",
+    "targetFreq" : 739.9888454232687,
+    "predictedFreq" : 1063.217700973051,
+    "cents" : 627.4339197158337
+  } ]
+}, {
+  "instrument" : "0.5-bore_6-hole_NAF_starter.xml",
+  "tuning" : "D#5_ET_6-hole_NAF_chromatic_tuning.xml",
+  "name" : "0.5-bore_6-hole_NAF_starter__D#5_ET_6-hole_NAF_chromatic_tuning",
+  "numFingerings" : 15,
+  "fingerings" : [ {
+    "note" : "D#5",
+    "targetFreq" : 622.2539674441617,
+    "predictedFreq" : 622.257997898942,
+    "cents" : 0.011213488890846227
+  }, {
+    "note" : "F#5",
+    "targetFreq" : 739.9888454232687,
+    "predictedFreq" : 739.9890867085529,
+    "cents" : 5.644966596571807E-4
+  }, {
+    "note" : "G5",
+    "targetFreq" : 783.9908719634985,
+    "predictedFreq" : 791.5399830232635,
+    "cents" : 16.59044389077607
+  }, {
+    "note" : "G#5",
+    "targetFreq" : 830.6093951598901,
+    "predictedFreq" : 830.6098233950835,
+    "cents" : 8.925677471034812E-4
+  }, {
+    "note" : "A5",
+    "targetFreq" : 879.9999999999999,
+    "predictedFreq" : 898.9112193898281,
+    "cents" : 36.81013418636954
+  }, {
+    "note" : "A#5",
+    "targetFreq" : 932.3275230361797,
+    "predictedFreq" : 932.3280015872264,
+    "cents" : 8.886186807769867E-4
+  }, {
+    "note" : "B5",
+    "targetFreq" : 987.766602512248,
+    "predictedFreq" : 987.7671295631854,
+    "cents" : 9.237488723083397E-4
+  }, {
+    "note" : "C6",
+    "targetFreq" : 1046.5022612023943,
+    "predictedFreq" : 1036.41830178695,
+    "cents" : -16.762838287257118
+  }, {
+    "note" : "C#6",
+    "targetFreq" : 1108.730523907488,
+    "predictedFreq" : 1108.7310894948998,
+    "cents" : 8.83139693705801E-4
+  }, {
+    "note" : "D6",
+    "targetFreq" : 1174.65907166963,
+    "predictedFreq" : 1167.6741537301193,
+    "cents" : -10.325229117926071
+  }, {
+    "note" : "D#6",
+    "targetFreq" : 1244.5079348883235,
+    "predictedFreq" : 1244.5085385642144,
+    "cents" : 8.397728726935262E-4
+  }, {
+    "note" : "E6 open",
+    "targetFreq" : 1318.5102276514797,
+    "predictedFreq" : 1295.3482202676962,
+    "cents" : -30.682537877210507
+  }, {
+    "note" : "E6 closed",
+    "targetFreq" : 1318.5102276514797,
+    "predictedFreq" : 1275.4290089233184,
+    "cents" : -57.51139465963826
+  }, {
+    "note" : "F6",
+    "targetFreq" : 1396.9129257320153,
+    "predictedFreq" : 1351.8606271426509,
+    "cents" : -56.75480863307311
+  }, {
+    "note" : "F#6",
+    "targetFreq" : 1479.9776908465374,
+    "predictedFreq" : 1452.437180444864,
+    "cents" : -32.51959449595587
+  } ]
+}, {
+  "instrument" : "0.5-bore_6-hole_NAF_starter.xml",
+  "tuning" : "F#4_ET_6-hole_NAF_chromatic_tuning.xml",
+  "name" : "0.5-bore_6-hole_NAF_starter__F#4_ET_6-hole_NAF_chromatic_tuning",
+  "numFingerings" : 15,
+  "fingerings" : [ {
+    "note" : "F#4",
+    "targetFreq" : 369.9944227116344,
+    "predictedFreq" : 622.2579978640143,
+    "cents" : 900.0112133917154
+  }, {
+    "note" : "A4",
+    "targetFreq" : 440.0,
+    "predictedFreq" : 739.989086780116,
+    "cents" : 900.0005646640843
+  }, {
+    "note" : "A#4",
+    "targetFreq" : 466.1637615180899,
+    "predictedFreq" : 791.539983248152,
+    "cents" : 916.590444382646
+  }, {
+    "note" : "B4",
+    "targetFreq" : 493.8833012561241,
+    "predictedFreq" : 830.609823554689,
+    "cents" : 900.0008929004115
+  }, {
+    "note" : "C5",
+    "targetFreq" : 523.2511306011974,
+    "predictedFreq" : 898.9112196441732,
+    "cents" : 936.8101346762179
+  }, {
+    "note" : "C#5",
+    "targetFreq" : 554.3652619537442,
+    "predictedFreq" : 932.3280018046879,
+    "cents" : 900.0008890224838
+  }, {
+    "note" : "D5",
+    "targetFreq" : 587.329535834815,
+    "predictedFreq" : 987.7671290688118,
+    "cents" : 900.0009228823961
+  }, {
+    "note" : "D#5",
+    "targetFreq" : 622.2539674441618,
+    "predictedFreq" : 1036.4183018118977,
+    "cents" : 883.2371617544148
+  }, {
+    "note" : "E5",
+    "targetFreq" : 659.25511382574,
+    "predictedFreq" : 1108.7310891822394,
+    "cents" : 900.0008826514878
+  }, {
+    "note" : "F5",
+    "targetFreq" : 698.4564628660078,
+    "predictedFreq" : 1167.6741537288838,
+    "cents" : 889.6747708802417
+  }, {
+    "note" : "F#5",
+    "targetFreq" : 739.9888454232688,
+    "predictedFreq" : 1244.5085385642146,
+    "cents" : 900.0008397728728
+  }, {
+    "note" : "G5 (open)",
+    "targetFreq" : 783.9908719634986,
+    "predictedFreq" : 1295.348219882852,
+    "cents" : 869.3174616084448
+  }, {
+    "note" : "G5 (closed)",
+    "targetFreq" : 783.9908719634986,
+    "predictedFreq" : 819.7720126535244,
+    "cents" : 77.2630554489514
+  }, {
+    "note" : "G#5",
+    "targetFreq" : 830.6093951598903,
+    "predictedFreq" : 885.1545795254643,
+    "cents" : 110.1110792817336
+  }, {
+    "note" : "A5",
+    "targetFreq" : 880.0,
+    "predictedFreq" : 1063.2177009730299,
+    "cents" : 327.43391971579877
+  } ]
+}, {
+  "instrument" : "0.625-bore_6-hole_NAF_starter.xml",
+  "tuning" : "A4_ET_6-hole_NAF_chromatic_tuning.xml",
+  "name" : "0.625-bore_6-hole_NAF_starter__A4_ET_6-hole_NAF_chromatic_tuning",
+  "numFingerings" : 15,
+  "fingerings" : [ {
+    "note" : "A4",
+    "targetFreq" : 440.0,
+    "predictedFreq" : 523.2543552275977,
+    "cents" : 300.01066899905555
+  }, {
+    "note" : "C5",
+    "targetFreq" : 523.25,
+    "predictedFreq" : 622.2541533666288,
+    "cents" : 300.0042579958702
+  }, {
+    "note" : "C#5",
+    "targetFreq" : 554.37,
+    "predictedFreq" : 661.138818667946,
+    "cents" : 304.9248448198388
+  }, {
+    "note" : "D5",
+    "targetFreq" : 587.33,
+    "predictedFreq" : 698.45664609707,
+    "cents" : 299.9990859771511
+  }, {
+    "note" : "D#5",
+    "targetFreq" : 622.25,
+    "predictedFreq" : 753.1685099771636,
+    "cents" : 330.57402820349904
+  }, {
+    "note" : "E5",
+    "targetFreq" : 659.26,
+    "predictedFreq" : 783.9912460083149,
+    "cents" : 299.98799470839026
+  }, {
+    "note" : "F5",
+    "targetFreq" : 698.46,
+    "predictedFreq" : 830.6097629621829,
+    "cents" : 299.99199928791035
+  }, {
+    "note" : "F#5",
+    "targetFreq" : 739.99,
+    "predictedFreq" : 872.64192306566,
+    "cents" : 285.46081193545393
+  }, {
+    "note" : "G5",
+    "targetFreq" : 782.63,
+    "predictedFreq" : 932.327852517022,
+    "cents" : 303.00834458730463
+  }, {
+    "note" : "G#5",
+    "targetFreq" : 830.61,
+    "predictedFreq" : 982.8930504996754,
+    "cents" : 291.43584378773295
+  }, {
+    "note" : "A5",
+    "targetFreq" : 880.0,
+    "predictedFreq" : 1046.502694628791,
+    "cents" : 300.0007170193586
+  }, {
+    "note" : "A#5, open",
+    "targetFreq" : 932.33,
+    "predictedFreq" : 1089.9698046376025,
+    "cents" : 270.4506883130181
+  }, {
+    "note" : "A#5, closed",
+    "targetFreq" : 932.33,
+    "predictedFreq" : 1077.2898263748339,
+    "cents" : 250.19260729851015
+  }, {
+    "note" : "B5",
+    "targetFreq" : 987.77,
+    "predictedFreq" : 1140.1027093689095,
+    "cents" : 248.3000900794682
+  }, {
+    "note" : "C6",
+    "targetFreq" : 1046.5,
+    "predictedFreq" : 1217.5712882939295,
+    "cents" : 262.120718859818
+  } ]
+}, {
+  "instrument" : "0.625-bore_6-hole_NAF_starter.xml",
+  "tuning" : "B3_ET_6-hole_NAF_chromatic_tuning.xml",
+  "name" : "0.625-bore_6-hole_NAF_starter__B3_ET_6-hole_NAF_chromatic_tuning",
+  "numFingerings" : 15,
+  "fingerings" : [ {
+    "note" : "B3",
+    "targetFreq" : 246.94165062806206,
+    "predictedFreq" : null,
+    "cents" : 1200.0
+  }, {
+    "note" : "D4",
+    "targetFreq" : 293.6647679174076,
+    "predictedFreq" : null,
+    "cents" : 1200.0
+  }, {
+    "note" : "D#4",
+    "targetFreq" : 311.1269837220809,
+    "predictedFreq" : null,
+    "cents" : 1200.0
+  }, {
+    "note" : "E4",
+    "targetFreq" : 329.6275569128699,
+    "predictedFreq" : null,
+    "cents" : 1200.0
+  }, {
+    "note" : "F4",
+    "targetFreq" : 349.22823143300394,
+    "predictedFreq" : null,
+    "cents" : 1200.0
+  }, {
+    "note" : "F#4",
+    "targetFreq" : 369.9944227116344,
+    "predictedFreq" : null,
+    "cents" : 1200.0
+  }, {
+    "note" : "G4",
+    "targetFreq" : 391.99543598174927,
+    "predictedFreq" : null,
+    "cents" : 1200.0
+  }, {
+    "note" : "G#4",
+    "targetFreq" : 415.3046975799451,
+    "predictedFreq" : null,
+    "cents" : 1200.0
+  }, {
+    "note" : "A4",
+    "targetFreq" : 440.0,
+    "predictedFreq" : null,
+    "cents" : 1200.0
+  }, {
+    "note" : "A#4",
+    "targetFreq" : 466.16376151808987,
+    "predictedFreq" : null,
+    "cents" : 1200.0
+  }, {
+    "note" : "B4",
+    "targetFreq" : 493.8833012561241,
+    "predictedFreq" : null,
+    "cents" : 1200.0
+  }, {
+    "note" : "C5 open",
+    "targetFreq" : 523.2511306011974,
+    "predictedFreq" : null,
+    "cents" : 1200.0
+  }, {
+    "note" : "C5 closed",
+    "targetFreq" : 523.2511306011974,
+    "predictedFreq" : 692.697744143391,
+    "cents" : 485.6669421294492
+  }, {
+    "note" : "C#5",
+    "targetFreq" : 554.3652619537443,
+    "predictedFreq" : 750.6707668755352,
+    "cents" : 524.812133531601
+  }, {
+    "note" : "D5",
+    "targetFreq" : 587.3295358348151,
+    "predictedFreq" : 896.4727649633855,
+    "cents" : 732.1074767462851
+  } ]
+}, {
+  "instrument" : "0.625-bore_6-hole_NAF_starter.xml",
+  "tuning" : "C5_ET_6-hole_NAF_chromatic_tuning.xml",
+  "name" : "0.625-bore_6-hole_NAF_starter__C5_ET_6-hole_NAF_chromatic_tuning",
+  "numFingerings" : 15,
+  "fingerings" : [ {
+    "note" : "C5",
+    "targetFreq" : 523.2511306011972,
+    "predictedFreq" : 523.2543552878415,
+    "cents" : 0.010669198377465447
+  }, {
+    "note" : "D#5",
+    "targetFreq" : 622.2539674441617,
+    "predictedFreq" : 622.2541533186569,
+    "cents" : 5.171396626425098E-4
+  }, {
+    "note" : "E5",
+    "targetFreq" : 659.2551138257398,
+    "predictedFreq" : 661.1388186427247,
+    "cents" : 4.939641193099713
+  }, {
+    "note" : "F5",
+    "targetFreq" : 698.4564628660078,
+    "predictedFreq" : 698.4566460486726,
+    "cents" : 4.540469475480419E-4
+  }, {
+    "note" : "F#5",
+    "targetFreq" : 739.9888454232688,
+    "predictedFreq" : 753.1685099758643,
+    "cents" : 30.562989948163718
+  }, {
+    "note" : "G5",
+    "targetFreq" : 783.9908719634985,
+    "predictedFreq" : 783.9912458756736,
+    "cents" : 8.256847847852888E-4
+  }, {
+    "note" : "G#5",
+    "targetFreq" : 830.6093951598901,
+    "predictedFreq" : 830.6097629244663,
+    "cents" : 7.665292723244124E-4
+  }, {
+    "note" : "A5",
+    "targetFreq" : 880.0,
+    "predictedFreq" : 872.641922955559,
+    "cents" : -14.536487105785378
+  }, {
+    "note" : "A#5",
+    "targetFreq" : 932.3275230361799,
+    "predictedFreq" : 932.3278530331391,
+    "cents" : 6.127695008511432E-4
+  }, {
+    "note" : "B5",
+    "targetFreq" : 987.7666025122483,
+    "predictedFreq" : 982.8930507999714,
+    "cents" : -8.562895019277699
+  }, {
+    "note" : "C6",
+    "targetFreq" : 1046.5022612023945,
+    "predictedFreq" : 1046.5026946287915,
+    "cents" : 7.170193592354853E-4
+  }, {
+    "note" : "C#6, open",
+    "targetFreq" : 1108.7305239074883,
+    "predictedFreq" : 1089.9698046079748,
+    "cents" : -29.544712279126085
+  }, {
+    "note" : "C#6, closed",
+    "targetFreq" : 1108.7305239074883,
+    "predictedFreq" : 1077.2898263540594,
+    "cents" : -49.802793279960525
+  }, {
+    "note" : "D6",
+    "targetFreq" : 1174.6590716696303,
+    "predictedFreq" : 1140.102709430126,
+    "cents" : -51.69395514521742
+  }, {
+    "note" : "D#6",
+    "targetFreq" : 1244.5079348883235,
+    "predictedFreq" : 1217.5712882939351,
+    "cents" : -37.88302186291436
+  } ]
+}, {
+  "instrument" : "0.625-bore_6-hole_NAF_starter.xml",
+  "tuning" : "D#4_ET_6-hole_NAF_chromatic_tuning.xml",
+  "name" : "0.625-bore_6-hole_NAF_starter__D#4_ET_6-hole_NAF_chromatic_tuning",
+  "numFingerings" : 15,
+  "fingerings" : [ {
+    "note" : "D#4",
+    "targetFreq" : 311.12698372208087,
+    "predictedFreq" : 523.254355226349,
+    "cents" : 900.0106689949247
+  }, {
+    "note" : "F#4",
+    "targetFreq" : 369.99442271163434,
+    "predictedFreq" : 622.2541533759128,
+    "cents" : 900.00051729896
+  }, {
+    "note" : "G4",
+    "targetFreq" : 391.99543598174927,
+    "predictedFreq" : 661.1388186665711,
+    "cents" : 904.939641255543
+  }, {
+    "note" : "G#4",
+    "targetFreq" : 415.30469757994507,
+    "predictedFreq" : 698.4566461152841,
+    "cents" : 900.0004542120552
+  }, {
+    "note" : "A4",
+    "targetFreq" : 439.99999999999994,
+    "predictedFreq" : 753.1685099250523,
+    "cents" : 930.5629898313676
+  }, {
+    "note" : "A#4",
+    "targetFreq" : 466.16376151808987,
+    "predictedFreq" : 783.9912460403806,
+    "cents" : 900.000826048496
+  }, {
+    "note" : "B4",
+    "targetFreq" : 493.883301256124,
+    "predictedFreq" : 830.6097632682652,
+    "cents" : 900.00076724585
+  }, {
+    "note" : "C5",
+    "targetFreq" : 523.2511306011971,
+    "predictedFreq" : 872.6419230718274,
+    "cents" : 885.4635131248796
+  }, {
+    "note" : "C#5",
+    "targetFreq" : 554.365261953744,
+    "predictedFreq" : 932.3278523548094,
+    "cents" : 900.000611509915
+  }, {
+    "note" : "D5",
+    "targetFreq" : 587.329535834815,
+    "predictedFreq" : 982.8930508141975,
+    "cents" : 891.4371050057798
+  }, {
+    "note" : "D#5",
+    "targetFreq" : 622.2539674441617,
+    "predictedFreq" : 1046.5026946287915,
+    "cents" : 900.0007170193594
+  }, {
+    "note" : "E5 open",
+    "targetFreq" : 659.2551138257398,
+    "predictedFreq" : 1089.9698045990572,
+    "cents" : 870.4552877067097
+  }, {
+    "note" : "E5 closed",
+    "targetFreq" : 659.2551138257398,
+    "predictedFreq" : 692.6977444618809,
+    "cents" : 85.66694292543987
+  }, {
+    "note" : "F5",
+    "targetFreq" : 698.4564628660077,
+    "predictedFreq" : 750.6707664997367,
+    "cents" : 124.8121326649165
+  }, {
+    "note" : "F#5",
+    "targetFreq" : 739.9888454232687,
+    "predictedFreq" : 896.4727645816682,
+    "cents" : 332.1074760091274
+  } ]
+}, {
+  "instrument" : "0.625-bore_6-hole_NAF_starter.xml",
+  "tuning" : "D#5_ET_6-hole_NAF_chromatic_tuning.xml",
+  "name" : "0.625-bore_6-hole_NAF_starter__D#5_ET_6-hole_NAF_chromatic_tuning",
+  "numFingerings" : 15,
+  "fingerings" : [ {
+    "note" : "D#5",
+    "targetFreq" : 622.2539674441617,
+    "predictedFreq" : 523.2543552430787,
+    "cents" : -299.9893309497238
+  }, {
+    "note" : "F#5",
+    "targetFreq" : 739.9888454232687,
+    "predictedFreq" : 622.2541533667766,
+    "cents" : -299.9994827264589
+  }, {
+    "note" : "G5",
+    "targetFreq" : 783.9908719634985,
+    "predictedFreq" : 661.1388186271828,
+    "cents" : -295.0603588475977
+  }, {
+    "note" : "G#5",
+    "targetFreq" : 830.6093951598901,
+    "predictedFreq" : 698.4566461027764,
+    "cents" : -299.9995458189474
+  }, {
+    "note" : "A5",
+    "targetFreq" : 879.9999999999999,
+    "predictedFreq" : 753.1685099764911,
+    "cents" : -269.43701005039503
+  }, {
+    "note" : "A#5",
+    "targetFreq" : 932.3275230361797,
+    "predictedFreq" : 783.9912460244815,
+    "cents" : -299.9991739866129
+  }, {
+    "note" : "B5",
+    "targetFreq" : 987.766602512248,
+    "predictedFreq" : 830.6097632741411,
+    "cents" : -299.99923274190286
+  }, {
+    "note" : "C6",
+    "targetFreq" : 1046.5022612023943,
+    "predictedFreq" : 872.6419230390776,
+    "cents" : -314.5364869400924
+  }, {
+    "note" : "C#6",
+    "targetFreq" : 1108.730523907488,
+    "predictedFreq" : 932.3278524428698,
+    "cents" : -299.99938832656625
+  }, {
+    "note" : "D6",
+    "targetFreq" : 1174.65907166963,
+    "predictedFreq" : 982.8930505668785,
+    "cents" : -308.56289542983933
+  }, {
+    "note" : "D#6",
+    "targetFreq" : 1244.5079348883235,
+    "predictedFreq" : 1380.9013378672005,
+    "cents" : 180.04178072264946
+  }, {
+    "note" : "E6 open",
+    "targetFreq" : 1318.5102276514797,
+    "predictedFreq" : 1400.7338396581554,
+    "cents" : 104.7289032212696
+  }, {
+    "note" : "E6 closed",
+    "targetFreq" : 1318.5102276514797,
+    "predictedFreq" : 1077.2898261094338,
+    "cents" : -349.8027936730806
+  }, {
+    "note" : "F6",
+    "targetFreq" : 1396.9129257320153,
+    "predictedFreq" : 1654.7408474556732,
+    "cents" : 293.23583472286487
+  }, {
+    "note" : "F#6",
+    "targetFreq" : 1479.9776908465374,
+    "predictedFreq" : 1684.8960822294246,
+    "cents" : 224.5010226317785
+  } ]
+}, {
+  "instrument" : "0.625-bore_6-hole_NAF_starter.xml",
+  "tuning" : "F#4_ET_6-hole_NAF_chromatic_tuning.xml",
+  "name" : "0.625-bore_6-hole_NAF_starter__F#4_ET_6-hole_NAF_chromatic_tuning",
+  "numFingerings" : 15,
+  "fingerings" : [ {
+    "note" : "F#4",
+    "targetFreq" : 369.9944227116344,
+    "predictedFreq" : 523.2543552259771,
+    "cents" : 600.0106689936936
+  }, {
+    "note" : "A4",
+    "targetFreq" : 440.0,
+    "predictedFreq" : 622.2541533785352,
+    "cents" : 600.0005173062557
+  }, {
+    "note" : "A#4",
+    "targetFreq" : 466.1637615180899,
+    "predictedFreq" : 661.138818618783,
+    "cents" : 604.9396411304069
+  }, {
+    "note" : "B4",
+    "targetFreq" : 493.8833012561241,
+    "predictedFreq" : 698.4566461207055,
+    "cents" : 600.0004542254924
+  }, {
+    "note" : "C5",
+    "targetFreq" : 523.2511306011974,
+    "predictedFreq" : 753.1685099741109,
+    "cents" : 630.562989944133
+  }, {
+    "note" : "C#5",
+    "targetFreq" : 554.3652619537442,
+    "predictedFreq" : 783.9912460501918,
+    "cents" : 600.0008260701615
+  }, {
+    "note" : "D5",
+    "targetFreq" : 587.329535834815,
+    "predictedFreq" : 830.6097633705826,
+    "cents" : 600.0007674591095
+  }, {
+    "note" : "D#5",
+    "targetFreq" : 622.2539674441618,
+    "predictedFreq" : 872.6419230733565,
+    "cents" : 585.463513127913
+  }, {
+    "note" : "E5",
+    "targetFreq" : 659.25511382574,
+    "predictedFreq" : 932.3278526234322,
+    "cents" : 600.0006120087182
+  }, {
+    "note" : "F5",
+    "targetFreq" : 698.4564628660078,
+    "predictedFreq" : 982.8930507958988,
+    "cents" : 591.437104973549
+  }, {
+    "note" : "F#5",
+    "targetFreq" : 739.9888454232688,
+    "predictedFreq" : 1046.502694627012,
+    "cents" : 600.0007170164155
+  }, {
+    "note" : "G5 (open)",
+    "targetFreq" : 783.9908719634986,
+    "predictedFreq" : 1089.9698046655635,
+    "cents" : 570.4552878123435
+  }, {
+    "note" : "G5 (closed)",
+    "targetFreq" : 783.9908719634986,
+    "predictedFreq" : 692.6977443453271,
+    "cents" : -214.33305736585896
+  }, {
+    "note" : "G#5",
+    "targetFreq" : 830.6093951598903,
+    "predictedFreq" : 750.6707668734068,
+    "cents" : -175.1878664733072
+  }, {
+    "note" : "A5",
+    "targetFreq" : 880.0,
+    "predictedFreq" : 896.4727647270082,
+    "cents" : 32.10747628980212
+  } ]
+}, {
+  "instrument" : "0.75-bore_6-hole_NAF_starter.xml",
+  "tuning" : "A4_ET_6-hole_NAF_chromatic_tuning.xml",
+  "name" : "0.75-bore_6-hole_NAF_starter__A4_ET_6-hole_NAF_chromatic_tuning",
+  "numFingerings" : 15,
+  "fingerings" : [ {
+    "note" : "A4",
+    "targetFreq" : 440.0,
+    "predictedFreq" : 440.00441208263015,
+    "cents" : 0.01735979404596674
+  }, {
+    "note" : "C5",
+    "targetFreq" : 523.25,
+    "predictedFreq" : 523.2501693612863,
+    "cents" : 5.603516063715905E-4
+  }, {
+    "note" : "C#5",
+    "targetFreq" : 554.37,
+    "predictedFreq" : 557.0987571272873,
+    "cents" : 8.500691920721913
+  }, {
+    "note" : "D5",
+    "targetFreq" : 587.33,
+    "predictedFreq" : 587.3301827720334,
+    "cents" : 5.387450293866571E-4
+  }, {
+    "note" : "D#5",
+    "targetFreq" : 622.25,
+    "predictedFreq" : 633.861642034174,
+    "cents" : 32.008369354798965
+  }, {
+    "note" : "E5",
+    "targetFreq" : 659.26,
+    "predictedFreq" : 659.260381126284,
+    "cents" : 0.001000847327586983
+  }, {
+    "note" : "F5",
+    "targetFreq" : 698.46,
+    "predictedFreq" : 698.4602930260274,
+    "cents" : 7.263072038471122E-4
+  }, {
+    "note" : "F#5",
+    "targetFreq" : 739.99,
+    "predictedFreq" : 743.4907045464572,
+    "cents" : 8.170716528517874
+  }, {
+    "note" : "G5",
+    "targetFreq" : 782.63,
+    "predictedFreq" : 782.6302434154385,
+    "cents" : 5.38452435676502E-4
+  }, {
+    "note" : "G#5",
+    "targetFreq" : 830.61,
+    "predictedFreq" : 835.2593008840657,
+    "cents" : 9.663481870038584
+  }, {
+    "note" : "A5",
+    "targetFreq" : 880.0,
+    "predictedFreq" : 880.0003649139976,
+    "cents" : 7.178993256519191E-4
+  }, {
+    "note" : "A#5, open",
+    "targetFreq" : 932.33,
+    "predictedFreq" : 923.3215265126979,
+    "cents" : -16.80908115229629
+  }, {
+    "note" : "A#5, closed",
+    "targetFreq" : 932.33,
+    "predictedFreq" : 915.1257489360619,
+    "cents" : -32.244827811340514
+  }, {
+    "note" : "B5",
+    "targetFreq" : 987.77,
+    "predictedFreq" : 967.0811770771583,
+    "cents" : -36.645789147313046
+  }, {
+    "note" : "C6",
+    "targetFreq" : 1046.5,
+    "predictedFreq" : 1035.1909935824226,
+    "cents" : -18.81040907939974
+  } ]
+}, {
+  "instrument" : "0.75-bore_6-hole_NAF_starter.xml",
+  "tuning" : "B3_ET_6-hole_NAF_chromatic_tuning.xml",
+  "name" : "0.75-bore_6-hole_NAF_starter__B3_ET_6-hole_NAF_chromatic_tuning",
+  "numFingerings" : 15,
+  "fingerings" : [ {
+    "note" : "B3",
+    "targetFreq" : 246.94165062806206,
+    "predictedFreq" : 440.0044119785618,
+    "cents" : 1000.0173593845803
+  }, {
+    "note" : "D4",
+    "targetFreq" : 293.6647679174076,
+    "predictedFreq" : 523.250169403472,
+    "cents" : 999.9968197684418
+  }, {
+    "note" : "D#4",
+    "targetFreq" : 311.1269837220809,
+    "predictedFreq" : 557.0987571525699,
+    "cents" : 1008.5154884385944
+  }, {
+    "note" : "E4",
+    "targetFreq" : 329.6275569128699,
+    "predictedFreq" : 587.3301828228065,
+    "cents" : 1000.0019070844471
+  }, {
+    "note" : "F4",
+    "targetFreq" : 349.22823143300394,
+    "predictedFreq" : 633.8616420320008,
+    "cents" : 1031.9973310965142
+  }, {
+    "note" : "F#4",
+    "targetFreq" : 369.9944227116344,
+    "predictedFreq" : 659.2603812484442,
+    "cents" : 1000.0138324374202
+  }, {
+    "note" : "G4",
+    "targetFreq" : 391.99543598174927,
+    "predictedFreq" : 698.4602925255642,
+    "cents" : 1000.0094923867082
+  }, {
+    "note" : "G#4",
+    "targetFreq" : 415.3046975799451,
+    "predictedFreq" : 743.4907045864317,
+    "cents" : 1008.1734177987892
+  }, {
+    "note" : "A4",
+    "targetFreq" : 440.0,
+    "predictedFreq" : 782.6302437975146,
+    "cents" : 996.9928065214366
+  }, {
+    "note" : "A#4",
+    "targetFreq" : 466.16376151808987,
+    "predictedFreq" : 835.2593009146708,
+    "cents" : 1009.664742597532
+  }, {
+    "note" : "B4",
+    "targetFreq" : 493.8833012561241,
+    "predictedFreq" : 880.0003648905831,
+    "cents" : 1000.0007178532622
+  }, {
+    "note" : "C5 open",
+    "targetFreq" : 523.2511306011974,
+    "predictedFreq" : 923.3215266735605,
+    "cents" : 983.1955186042362
+  }, {
+    "note" : "C5 closed",
+    "targetFreq" : 523.2511306011974,
+    "predictedFreq" : 567.0693936391269,
+    "cents" : 139.2261219194985
+  }, {
+    "note" : "C#5",
+    "targetFreq" : 554.3652619537443,
+    "predictedFreq" : 619.0242916453471,
+    "cents" : 190.9910009509084
+  }, {
+    "note" : "D5",
+    "targetFreq" : 587.3295358348151,
+    "predictedFreq" : 742.6893177889169,
+    "cents" : 406.30636505429
+  } ]
+}, {
+  "instrument" : "0.75-bore_6-hole_NAF_starter.xml",
+  "tuning" : "C5_ET_6-hole_NAF_chromatic_tuning.xml",
+  "name" : "0.75-bore_6-hole_NAF_starter__C5_ET_6-hole_NAF_chromatic_tuning",
+  "numFingerings" : 15,
+  "fingerings" : [ {
+    "note" : "C5",
+    "targetFreq" : 523.2511306011972,
+    "predictedFreq" : 440.00441199301156,
+    "cents" : -299.9826405585657
+  }, {
+    "note" : "D#5",
+    "targetFreq" : 622.2539674441617,
+    "predictedFreq" : 523.2501693973454,
+    "cents" : -300.0031802518283
+  }, {
+    "note" : "E5",
+    "targetFreq" : 659.2551138257398,
+    "predictedFreq" : 557.0987571492268,
+    "cents" : -291.48451157179437
+  }, {
+    "note" : "F5",
+    "targetFreq" : 698.4564628660078,
+    "predictedFreq" : 587.3301828144238,
+    "cents" : -299.99809294026215
+  }, {
+    "note" : "F#5",
+    "targetFreq" : 739.9888454232688,
+    "predictedFreq" : 633.8616420319098,
+    "cents" : -268.00266890373376
+  }, {
+    "note" : "G5",
+    "targetFreq" : 783.9908719634985,
+    "predictedFreq" : 659.2603812365786,
+    "cents" : -299.9861675937391
+  }, {
+    "note" : "G#5",
+    "targetFreq" : 830.6093951598901,
+    "predictedFreq" : 698.4602924025388,
+    "cents" : -299.99050791822793
+  }, {
+    "note" : "A5",
+    "targetFreq" : 880.0,
+    "predictedFreq" : 743.4907045923024,
+    "cents" : -291.8265821875405
+  }, {
+    "note" : "A#5",
+    "targetFreq" : 932.3275230361799,
+    "predictedFreq" : 782.6302437991662,
+    "cents" : -303.00719347490985
+  }, {
+    "note" : "B5",
+    "targetFreq" : 987.7666025122483,
+    "predictedFreq" : 835.2593008384592,
+    "cents" : -290.3352575604313
+  }, {
+    "note" : "C6",
+    "targetFreq" : 1046.5022612023945,
+    "predictedFreq" : 1175.8526844455068,
+    "cents" : 201.75827519368596
+  }, {
+    "note" : "C#6, open",
+    "targetFreq" : 1108.7305239074883,
+    "predictedFreq" : 1184.9679503091743,
+    "cents" : 115.12713245967923
+  }, {
+    "note" : "C#6, closed",
+    "targetFreq" : 1108.7305239074883,
+    "predictedFreq" : 915.1257489789537,
+    "cents" : -332.2402282752836
+  }, {
+    "note" : "D6",
+    "targetFreq" : 1174.6590716696303,
+    "predictedFreq" : 1389.6582966300941,
+    "cents" : 290.9857037285213
+  }, {
+    "note" : "D#6",
+    "targetFreq" : 1244.5079348883235,
+    "predictedFreq" : 1420.4861710212183,
+    "cents" : 228.97122905110095
+  } ]
+}, {
+  "instrument" : "0.75-bore_6-hole_NAF_starter.xml",
+  "tuning" : "D#4_ET_6-hole_NAF_chromatic_tuning.xml",
+  "name" : "0.75-bore_6-hole_NAF_starter__D#4_ET_6-hole_NAF_chromatic_tuning",
+  "numFingerings" : 15,
+  "fingerings" : [ {
+    "note" : "D#4",
+    "targetFreq" : 311.12698372208087,
+    "predictedFreq" : 440.0044119780333,
+    "cents" : 600.0173593825015
+  }, {
+    "note" : "F#4",
+    "targetFreq" : 369.99442271163434,
+    "predictedFreq" : 523.2501694037103,
+    "cents" : 599.9968197692308
+  }, {
+    "note" : "G4",
+    "targetFreq" : 391.99543598174927,
+    "predictedFreq" : 557.0987571615518,
+    "cents" : 608.5154884665069
+  }, {
+    "note" : "G#4",
+    "targetFreq" : 415.30469757994507,
+    "predictedFreq" : 587.3301828231247,
+    "cents" : 600.0019070853853
+  }, {
+    "note" : "A4",
+    "targetFreq" : 439.99999999999994,
+    "predictedFreq" : 633.8616420328431,
+    "cents" : 631.9973310988155
+  }, {
+    "note" : "A#4",
+    "targetFreq" : 466.16376151808987,
+    "predictedFreq" : 659.260381248885,
+    "cents" : 600.0138324385779
+  }, {
+    "note" : "B4",
+    "targetFreq" : 493.883301256124,
+    "predictedFreq" : 698.4602925297999,
+    "cents" : 600.0094923972069
+  }, {
+    "note" : "C5",
+    "targetFreq" : 523.2511306011971,
+    "predictedFreq" : 743.4907046043626,
+    "cents" : 608.1734178405421
+  }, {
+    "note" : "C#5",
+    "targetFreq" : 554.365261953744,
+    "predictedFreq" : 782.6302434180025,
+    "cents" : 596.9928056819292
+  }, {
+    "note" : "D5",
+    "targetFreq" : 587.329535834815,
+    "predictedFreq" : 835.2593009037812,
+    "cents" : 609.6647425749615
+  }, {
+    "note" : "D#5",
+    "targetFreq" : 622.2539674441617,
+    "predictedFreq" : 880.0003649123776,
+    "cents" : 600.0007178961388
+  }, {
+    "note" : "E5 open",
+    "targetFreq" : 659.2551138257398,
+    "predictedFreq" : 923.3215269636158,
+    "cents" : 583.1955191480921
+  }, {
+    "note" : "E5 closed",
+    "targetFreq" : 659.2551138257398,
+    "predictedFreq" : 567.0693941130481,
+    "cents" : -260.7738766336437
+  }, {
+    "note" : "F5",
+    "targetFreq" : 698.4564628660077,
+    "predictedFreq" : 619.0242911612453,
+    "cents" : -209.00900040298563
+  }, {
+    "note" : "F#5",
+    "targetFreq" : 739.9888454232687,
+    "predictedFreq" : 742.689317834287,
+    "cents" : 6.306365160049489
+  } ]
+}, {
+  "instrument" : "0.75-bore_6-hole_NAF_starter.xml",
+  "tuning" : "D#5_ET_6-hole_NAF_chromatic_tuning.xml",
+  "name" : "0.75-bore_6-hole_NAF_starter__D#5_ET_6-hole_NAF_chromatic_tuning",
+  "numFingerings" : 15,
+  "fingerings" : [ {
+    "note" : "D#5",
+    "targetFreq" : 622.2539674441617,
+    "predictedFreq" : 440.00441197931383,
+    "cents" : -599.9826406124604
+  }, {
+    "note" : "F#5",
+    "targetFreq" : 739.9888454232687,
+    "predictedFreq" : 1009.8579790440912,
+    "cents" : 538.2923826772399
+  }, {
+    "note" : "G5",
+    "targetFreq" : 783.9908719634985,
+    "predictedFreq" : 981.9468316254454,
+    "cents" : 389.7696642960059
+  }, {
+    "note" : "G#5",
+    "targetFreq" : 830.6093951598901,
+    "predictedFreq" : 1105.1420414066176,
+    "cents" : 494.38765480170963
+  }, {
+    "note" : "A5",
+    "targetFreq" : 879.9999999999999,
+    "predictedFreq" : 1081.0590812232863,
+    "cents" : 356.2439297313642
+  }, {
+    "note" : "A#5",
+    "targetFreq" : 932.3275230361797,
+    "predictedFreq" : 1173.73608235083,
+    "cents" : 398.63914672522304
+  }, {
+    "note" : "B5",
+    "targetFreq" : 987.766602512248,
+    "predictedFreq" : 1118.4541205140606,
+    "cents" : 215.11677850645785
+  }, {
+    "note" : "C6",
+    "targetFreq" : 1046.5022612023943,
+    "predictedFreq" : 1185.070027850056,
+    "cents" : 215.27626096830028
+  }, {
+    "note" : "C#6",
+    "targetFreq" : 1108.730523907488,
+    "predictedFreq" : 1175.6560653587246,
+    "cents" : 101.46876433513174
+  }, {
+    "note" : "D6",
+    "targetFreq" : 1174.65907166963,
+    "predictedFreq" : 1185.7359949435752,
+    "cents" : 16.248879501489956
+  }, {
+    "note" : "D#6",
+    "targetFreq" : 1244.5079348883235,
+    "predictedFreq" : 1175.8526844455605,
+    "cents" : -98.24172480623503
+  }, {
+    "note" : "E6 open",
+    "targetFreq" : 1318.5102276514797,
+    "predictedFreq" : 1184.9679501414973,
+    "cents" : -184.87286778529622
+  }, {
+    "note" : "E6 closed",
+    "targetFreq" : 1318.5102276514797,
+    "predictedFreq" : 1385.987804407269,
+    "cents" : 86.4069609163962
+  }, {
+    "note" : "F6",
+    "targetFreq" : 1396.9129257320153,
+    "predictedFreq" : 1389.6582966300969,
+    "cents" : -9.014296271474846
+  }, {
+    "note" : "F#6",
+    "targetFreq" : 1479.9776908465374,
+    "predictedFreq" : 1420.486171022834,
+    "cents" : -71.02877094693002
+  } ]
+}, {
+  "instrument" : "0.75-bore_6-hole_NAF_starter.xml",
+  "tuning" : "F#4_ET_6-hole_NAF_chromatic_tuning.xml",
+  "name" : "0.75-bore_6-hole_NAF_starter__F#4_ET_6-hole_NAF_chromatic_tuning",
+  "numFingerings" : 15,
+  "fingerings" : [ {
+    "note" : "F#4",
+    "targetFreq" : 369.9944227116344,
+    "predictedFreq" : 440.00441197941336,
+    "cents" : 300.01735938793087
+  }, {
+    "note" : "A4",
+    "targetFreq" : 440.0,
+    "predictedFreq" : 523.2501693991364,
+    "cents" : 299.99681975409743
+  }, {
+    "note" : "A#4",
+    "targetFreq" : 466.1637615180899,
+    "predictedFreq" : 557.0987570448706,
+    "cents" : 308.5154881039094
+  }, {
+    "note" : "B4",
+    "targetFreq" : 493.8833012561241,
+    "predictedFreq" : 587.330182815717,
+    "cents" : 300.00190706354977
+  }, {
+    "note" : "C5",
+    "targetFreq" : 523.2511306011974,
+    "predictedFreq" : 633.8616420322354,
+    "cents" : 331.99733109715515
+  }, {
+    "note" : "C#5",
+    "targetFreq" : 554.3652619537442,
+    "predictedFreq" : 659.2603812361448,
+    "cents" : 300.01383240512183
+  }, {
+    "note" : "D5",
+    "targetFreq" : 587.329535834815,
+    "predictedFreq" : 698.4602928014485,
+    "cents" : 300.00949307052696
+  }, {
+    "note" : "D#5",
+    "targetFreq" : 622.2539674441618,
+    "predictedFreq" : 743.4907045942316,
+    "cents" : 308.1734178169515
+  }, {
+    "note" : "E5",
+    "targetFreq" : 659.25511382574,
+    "predictedFreq" : 782.6302438776163,
+    "cents" : 296.9928066986269
+  }, {
+    "note" : "F5",
+    "targetFreq" : 698.4564628660078,
+    "predictedFreq" : 835.2593005001341,
+    "cents" : 309.6647417383255
+  }, {
+    "note" : "F#5",
+    "targetFreq" : 739.9888454232688,
+    "predictedFreq" : 880.0003649139971,
+    "cents" : 300.00071789932485
+  }, {
+    "note" : "G5 (open)",
+    "targetFreq" : 783.9908719634986,
+    "predictedFreq" : 923.3215266923218,
+    "cents" : 283.19551863941365
+  }, {
+    "note" : "G5 (closed)",
+    "targetFreq" : 783.9908719634986,
+    "predictedFreq" : 915.1257489382785,
+    "cents" : 267.759771647767
+  }, {
+    "note" : "G#5",
+    "targetFreq" : 830.6093951598903,
+    "predictedFreq" : 967.0811769139543,
+    "cents" : 263.36016524288306
+  }, {
+    "note" : "A5",
+    "targetFreq" : 880.0,
+    "predictedFreq" : 1035.1909935824228,
+    "cents" : 281.18585019786025
+  } ]
+}, {
+  "instrument" : "0.875-bore_6-hole_NAF_starter.xml",
+  "tuning" : "A4_ET_6-hole_NAF_chromatic_tuning.xml",
+  "name" : "0.875-bore_6-hole_NAF_starter__A4_ET_6-hole_NAF_chromatic_tuning",
+  "numFingerings" : 15,
+  "fingerings" : [ {
+    "note" : "A4",
+    "targetFreq" : 440.0,
+    "predictedFreq" : 369.9972561524837,
+    "cents" : -299.9867421501769
+  }, {
+    "note" : "C5",
+    "targetFreq" : 523.25,
+    "predictedFreq" : 440.0001262240215,
+    "cents" : -299.99576263341277
+  }, {
+    "note" : "C#5",
+    "targetFreq" : 554.37,
+    "predictedFreq" : 465.4837899783486,
+    "cents" : -302.5419110957714
+  }, {
+    "note" : "D5",
+    "targetFreq" : 587.33,
+    "predictedFreq" : 493.8834425279282,
+    "cents" : -300.00087298264685
+  }, {
+    "note" : "D#5",
+    "targetFreq" : 622.25,
+    "predictedFreq" : 531.6683759355877,
+    "cents" : -272.36120267976713
+  }, {
+    "note" : "E5",
+    "targetFreq" : 659.26,
+    "predictedFreq" : 554.3654892219796,
+    "cents" : -300.0121215306936
+  }, {
+    "note" : "F5",
+    "targetFreq" : 698.46,
+    "predictedFreq" : 587.3297500230831,
+    "cents" : -300.00813597090666
+  }, {
+    "note" : "F#5",
+    "targetFreq" : 739.99,
+    "predictedFreq" : 624.0576064055803,
+    "cents" : -294.9918781572991
+  }, {
+    "note" : "G5",
+    "targetFreq" : 782.63,
+    "predictedFreq" : 659.255317986822,
+    "cents" : -296.991731087575
+  }, {
+    "note" : "G#5",
+    "targetFreq" : 830.61,
+    "predictedFreq" : 961.5725321287629,
+    "cents" : 253.4693331070754
+  }, {
+    "note" : "A5",
+    "targetFreq" : 880.0,
+    "predictedFreq" : 957.4615480533554,
+    "cents" : 146.053230455909
+  }, {
+    "note" : "A#5, open",
+    "targetFreq" : 932.33,
+    "predictedFreq" : 962.2612661602927,
+    "cents" : 54.70556070509942
+  }, {
+    "note" : "A#5, closed",
+    "targetFreq" : 932.33,
+    "predictedFreq" : 773.344030444161,
+    "cents" : -323.6764014529939
+  }, {
+    "note" : "B5",
+    "targetFreq" : 987.77,
+    "predictedFreq" : 1174.6957731536252,
+    "cents" : 300.04813579178966
+  }, {
+    "note" : "C6",
+    "targetFreq" : 1046.5,
+    "predictedFreq" : 1186.392571850317,
+    "cents" : 217.21099013867916
+  } ]
+}, {
+  "instrument" : "0.875-bore_6-hole_NAF_starter.xml",
+  "tuning" : "B3_ET_6-hole_NAF_chromatic_tuning.xml",
+  "name" : "0.875-bore_6-hole_NAF_starter__B3_ET_6-hole_NAF_chromatic_tuning",
+  "numFingerings" : 15,
+  "fingerings" : [ {
+    "note" : "B3",
+    "targetFreq" : 246.94165062806206,
+    "predictedFreq" : 369.99725613768845,
+    "cents" : 700.0132577805954
+  }, {
+    "note" : "D4",
+    "targetFreq" : 293.6647679174076,
+    "predictedFreq" : 440.00012623102725,
+    "cents" : 700.0004966714115
+  }, {
+    "note" : "D#4",
+    "targetFreq" : 311.1269837220809,
+    "predictedFreq" : 465.4837899711758,
+    "cents" : 697.4728853168557
+  }, {
+    "note" : "E4",
+    "targetFreq" : 329.6275569128699,
+    "predictedFreq" : 493.88344253752416,
+    "cents" : 700.0004952407477
+  }, {
+    "note" : "F4",
+    "targetFreq" : 349.22823143300394,
+    "predictedFreq" : 531.6683760764586,
+    "cents" : 727.6277595265916
+  }, {
+    "note" : "F#4",
+    "targetFreq" : 369.9944227116344,
+    "predictedFreq" : 554.3654892343243,
+    "cents" : 700.0007097771547
+  }, {
+    "note" : "G4",
+    "targetFreq" : 391.99543598174927,
+    "predictedFreq" : 587.3297501294159,
+    "cents" : 700.0006316624981
+  }, {
+    "note" : "G#4",
+    "targetFreq" : 415.3046975799451,
+    "predictedFreq" : 624.0576064122174,
+    "cents" : 705.0108230383033
+  }, {
+    "note" : "A4",
+    "targetFreq" : 440.0,
+    "predictedFreq" : 659.2553179861613,
+    "cents" : 700.0005361345115
+  }, {
+    "note" : "A#4",
+    "targetFreq" : 466.16376151808987,
+    "predictedFreq" : 703.4336082760376,
+    "cents" : 712.2928894096632
+  }, {
+    "note" : "B4",
+    "targetFreq" : 493.8833012561241,
+    "predictedFreq" : 739.9891193869163,
+    "cents" : 700.0006409489953
+  }, {
+    "note" : "C5 open",
+    "targetFreq" : 523.2511306011974,
+    "predictedFreq" : 778.6171095589056,
+    "cents" : 688.0926281809996
+  }, {
+    "note" : "C5 closed",
+    "targetFreq" : 523.2511306011974,
+    "predictedFreq" : 478.6903689382081,
+    "cents" : -154.0928926278973
+  }, {
+    "note" : "C#5",
+    "targetFreq" : 554.3652619537443,
+    "predictedFreq" : 520.4366061048473,
+    "cents" : -109.33729942451231
+  }, {
+    "note" : "D5",
+    "targetFreq" : 587.3295358348151,
+    "predictedFreq" : 621.5036570983209,
+    "cents" : 97.91122812028722
+  } ]
+}, {
+  "instrument" : "0.875-bore_6-hole_NAF_starter.xml",
+  "tuning" : "C5_ET_6-hole_NAF_chromatic_tuning.xml",
+  "name" : "0.875-bore_6-hole_NAF_starter__C5_ET_6-hole_NAF_chromatic_tuning",
+  "numFingerings" : 15,
+  "fingerings" : [ {
+    "note" : "C5",
+    "targetFreq" : 523.2511306011972,
+    "predictedFreq" : 369.9972561393233,
+    "cents" : -599.986742211755
+  }, {
+    "note" : "D#5",
+    "targetFreq" : 622.2539674441617,
+    "predictedFreq" : 842.4337156076907,
+    "cents" : 524.471583408014
+  }, {
+    "note" : "E5",
+    "targetFreq" : 659.2551138257398,
+    "predictedFreq" : 816.60227168208,
+    "cents" : 370.55606865204084
+  }, {
+    "note" : "F5",
+    "targetFreq" : 698.4564628660078,
+    "predictedFreq" : 910.9971539009338,
+    "cents" : 459.9316276925759
+  }, {
+    "note" : "F#5",
+    "targetFreq" : 739.9888454232688,
+    "predictedFreq" : 890.5025339030946,
+    "cents" : 320.5394312833371
+  }, {
+    "note" : "G5",
+    "targetFreq" : 783.9908719634985,
+    "predictedFreq" : 955.4387159448636,
+    "cents" : 342.3917775374962
+  }, {
+    "note" : "G#5",
+    "targetFreq" : 830.6093951598901,
+    "predictedFreq" : 919.6503736820174,
+    "cents" : 176.2983613948621
+  }, {
+    "note" : "A5",
+    "targetFreq" : 880.0,
+    "predictedFreq" : 962.0340788934593,
+    "cents" : 154.30137225259068
+  }, {
+    "note" : "A#5",
+    "targetFreq" : 932.3275230361799,
+    "predictedFreq" : 955.4914222471109,
+    "cents" : 42.48727756991516
+  }, {
+    "note" : "B5",
+    "targetFreq" : 987.7666025122483,
+    "predictedFreq" : 961.5725323108977,
+    "cents" : -46.529405900947225
+  }, {
+    "note" : "C6",
+    "targetFreq" : 1046.5022612023945,
+    "predictedFreq" : 957.461548053364,
+    "cents" : -153.9467695440753
+  }, {
+    "note" : "C#6, open",
+    "targetFreq" : 1108.7305239074883,
+    "predictedFreq" : 962.2612661428734,
+    "cents" : -245.28983987132608
+  }, {
+    "note" : "C#6, closed",
+    "targetFreq" : 1108.7305239074883,
+    "predictedFreq" : 1173.3708387077497,
+    "cents" : 98.10033681372185
+  }, {
+    "note" : "D6",
+    "targetFreq" : 1174.6590716696303,
+    "predictedFreq" : 1174.695773225031,
+    "cents" : 0.05409057938321345
+  }, {
+    "note" : "D#6",
+    "targetFreq" : 1244.5079348883235,
+    "predictedFreq" : 1186.3925718503797,
+    "cents" : -82.79275058396969
+  } ]
+}, {
+  "instrument" : "0.875-bore_6-hole_NAF_starter.xml",
+  "tuning" : "D#4_ET_6-hole_NAF_chromatic_tuning.xml",
+  "name" : "0.875-bore_6-hole_NAF_starter__D#4_ET_6-hole_NAF_chromatic_tuning",
+  "numFingerings" : 15,
+  "fingerings" : [ {
+    "note" : "D#4",
+    "targetFreq" : 311.12698372208087,
+    "predictedFreq" : 369.997256138935,
+    "cents" : 300.01325778642837
+  }, {
+    "note" : "F#4",
+    "targetFreq" : 369.99442271163434,
+    "predictedFreq" : 440.00012622467625,
+    "cents" : 300.0004966464231
+  }, {
+    "note" : "G4",
+    "targetFreq" : 391.99543598174927,
+    "predictedFreq" : 465.4837899990362,
+    "cents" : 297.472885420475
+  }, {
+    "note" : "G#4",
+    "targetFreq" : 415.30469757994507,
+    "predictedFreq" : 493.8834425271579,
+    "cents" : 300.00049520441047
+  }, {
+    "note" : "A4",
+    "targetFreq" : 439.99999999999994,
+    "predictedFreq" : 531.6683760206824,
+    "cents" : 327.62775934497245
+  }, {
+    "note" : "A#4",
+    "targetFreq" : 466.16376151808987,
+    "predictedFreq" : 554.3654892192492,
+    "cents" : 300.0007097300767
+  }, {
+    "note" : "B4",
+    "targetFreq" : 493.883301256124,
+    "predictedFreq" : 587.329750507571,
+    "cents" : 300.0006327771618
+  }, {
+    "note" : "C5",
+    "targetFreq" : 523.2511306011971,
+    "predictedFreq" : 624.0576064277241,
+    "cents" : 305.0108230813214
+  }, {
+    "note" : "C#5",
+    "targetFreq" : 554.365261953744,
+    "predictedFreq" : 659.255317986822,
+    "cents" : 300.00053613624686
+  }, {
+    "note" : "D5",
+    "targetFreq" : 587.329535834815,
+    "predictedFreq" : 703.4336083256893,
+    "cents" : 312.2928895318621
+  }, {
+    "note" : "D#5",
+    "targetFreq" : 622.2539674441617,
+    "predictedFreq" : 739.9891193900633,
+    "cents" : 300.000640956358
+  }, {
+    "note" : "E5 open",
+    "targetFreq" : 659.2551138257398,
+    "predictedFreq" : 778.6171095556629,
+    "cents" : 288.0926281737899
+  }, {
+    "note" : "E5 closed",
+    "targetFreq" : 659.2551138257398,
+    "predictedFreq" : 773.3440301669023,
+    "cents" : 276.3281973812395
+  }, {
+    "note" : "F5",
+    "targetFreq" : 698.4564628660077,
+    "predictedFreq" : 819.0838093515688,
+    "cents" : 275.80906414225944
+  }, {
+    "note" : "F#5",
+    "targetFreq" : 739.9888454232687,
+    "predictedFreq" : 868.9875079006637,
+    "cents" : 278.1982968324279
+  } ]
+}, {
+  "instrument" : "0.875-bore_6-hole_NAF_starter.xml",
+  "tuning" : "D#5_ET_6-hole_NAF_chromatic_tuning.xml",
+  "name" : "0.875-bore_6-hole_NAF_starter__D#5_ET_6-hole_NAF_chromatic_tuning",
+  "numFingerings" : 15,
+  "fingerings" : [ {
+    "note" : "D#5",
+    "targetFreq" : 622.2539674441617,
+    "predictedFreq" : 753.2926283723982,
+    "cents" : 330.8482651394206
+  }, {
+    "note" : "F#5",
+    "targetFreq" : 739.9888454232687,
+    "predictedFreq" : 842.4337155852974,
+    "cents" : 224.47158336199485
+  }, {
+    "note" : "G5",
+    "targetFreq" : 783.9908719634985,
+    "predictedFreq" : 816.6022717931154,
+    "cents" : 70.55606888744099
+  }, {
+    "note" : "G#5",
+    "targetFreq" : 830.6093951598901,
+    "predictedFreq" : 910.9971541971005,
+    "cents" : 159.93162825540355
+  }, {
+    "note" : "A5",
+    "targetFreq" : 879.9999999999999,
+    "predictedFreq" : 890.5025334873036,
+    "cents" : 20.539430474994283
+  }, {
+    "note" : "A#5",
+    "targetFreq" : 932.3275230361797,
+    "predictedFreq" : 955.4387159448894,
+    "cents" : 42.391777537543135
+  }, {
+    "note" : "B5",
+    "targetFreq" : 987.766602512248,
+    "predictedFreq" : 919.6503732912144,
+    "cents" : -123.70163934082153
+  }, {
+    "note" : "C6",
+    "targetFreq" : 1046.5022612023943,
+    "predictedFreq" : 962.0340788934587,
+    "cents" : -145.6986277474099
+  }, {
+    "note" : "C#6",
+    "targetFreq" : 1108.730523907488,
+    "predictedFreq" : 1239.8102565225824,
+    "cents" : 193.4526982415256
+  }, {
+    "note" : "D6",
+    "targetFreq" : 1174.65907166963,
+    "predictedFreq" : 1307.3069330892363,
+    "cents" : 185.2269663021172
+  }, {
+    "note" : "D#6",
+    "targetFreq" : 1244.5079348883235,
+    "predictedFreq" : 1245.08090415242,
+    "cents" : 0.7968736853501764
+  }, {
+    "note" : "E6 open",
+    "targetFreq" : 1318.5102276514797,
+    "predictedFreq" : 1316.3209866240625,
+    "cents" : -2.876912539923934
+  }, {
+    "note" : "E6 closed",
+    "targetFreq" : 1318.5102276514797,
+    "predictedFreq" : 1173.3708387077531,
+    "cents" : -201.89966318627336
+  }, {
+    "note" : "F6",
+    "targetFreq" : 1396.9129257320153,
+    "predictedFreq" : 1622.2346920340185,
+    "cents" : 258.8885481457459
+  }, {
+    "note" : "F#6",
+    "targetFreq" : 1479.9776908465374,
+    "predictedFreq" : 1639.858628355717,
+    "cents" : 177.5952205222815
+  } ]
+}, {
+  "instrument" : "0.875-bore_6-hole_NAF_starter.xml",
+  "tuning" : "F#4_ET_6-hole_NAF_chromatic_tuning.xml",
+  "name" : "0.875-bore_6-hole_NAF_starter__F#4_ET_6-hole_NAF_chromatic_tuning",
+  "numFingerings" : 15,
+  "fingerings" : [ {
+    "note" : "F#4",
+    "targetFreq" : 369.9944227116344,
+    "predictedFreq" : 369.997256247809,
+    "cents" : 0.013258295854402368
+  }, {
+    "note" : "A4",
+    "targetFreq" : 440.0,
+    "predictedFreq" : 440.0001261942062,
+    "cents" : 4.965265344081462E-4
+  }, {
+    "note" : "A#4",
+    "targetFreq" : 466.1637615180899,
+    "predictedFreq" : 465.48378993323246,
+    "cents" : -2.5271148242635055
+  }, {
+    "note" : "B4",
+    "targetFreq" : 493.8833012561241,
+    "predictedFreq" : 493.8834424909284,
+    "cents" : 4.95077413076782E-4
+  }, {
+    "note" : "C5",
+    "targetFreq" : 523.2511306011974,
+    "predictedFreq" : 531.6683759571081,
+    "cents" : 27.6277591379591
+  }, {
+    "note" : "C#5",
+    "targetFreq" : 554.3652619537442,
+    "predictedFreq" : 554.3654891523314,
+    "cents" : 7.095210981913231E-4
+  }, {
+    "note" : "D5",
+    "targetFreq" : 587.329535834815,
+    "predictedFreq" : 587.3297497586775,
+    "cents" : 6.305696964555898E-4
+  }, {
+    "note" : "D#5",
+    "targetFreq" : 622.2539674441618,
+    "predictedFreq" : 624.0576064096374,
+    "cents" : 5.010823031145918
+  }, {
+    "note" : "E5",
+    "targetFreq" : 659.25511382574,
+    "predictedFreq" : 659.2553175292591,
+    "cents" : 5.349346654523485E-4
+  }, {
+    "note" : "F5",
+    "targetFreq" : 698.4564628660078,
+    "predictedFreq" : 703.4336083162871,
+    "cents" : 12.292889508721894
+  }, {
+    "note" : "F#5",
+    "targetFreq" : 739.9888454232688,
+    "predictedFreq" : 739.9891193900643,
+    "cents" : 6.409563601100859E-4
+  }, {
+    "note" : "G5 (open)",
+    "targetFreq" : 783.9908719634986,
+    "predictedFreq" : 778.6171096021312,
+    "cents" : -11.90737172288913
+  }, {
+    "note" : "G5 (closed)",
+    "targetFreq" : 783.9908719634986,
+    "predictedFreq" : 773.3440302440816,
+    "cents" : -23.671802445984266
+  }, {
+    "note" : "G#5",
+    "targetFreq" : 830.6093951598903,
+    "predictedFreq" : 819.0838099589035,
+    "cents" : -24.19093457406423
+  }, {
+    "note" : "A5",
+    "targetFreq" : 880.0,
+    "predictedFreq" : 868.9875078895706,
+    "cents" : -21.801703189672523
+  } ]
+}, {
+  "instrument" : "1.00-bore_6-hole_NAF_starter.xml",
+  "tuning" : "A4_ET_6-hole_NAF_chromatic_tuning.xml",
+  "name" : "1.00-bore_6-hole_NAF_starter__A4_ET_6-hole_NAF_chromatic_tuning",
+  "numFingerings" : 15,
+  "fingerings" : [ {
+    "note" : "A4",
+    "targetFreq" : 440.0,
+    "predictedFreq" : 311.1283829101468,
+    "cents" : -599.9922143796562
+  }, {
+    "note" : "C5",
+    "targetFreq" : 523.25,
+    "predictedFreq" : 693.0844830200909,
+    "cents" : 486.636975413458
+  }, {
+    "note" : "C#5",
+    "targetFreq" : 554.37,
+    "predictedFreq" : 677.0949062322671,
+    "cents" : 346.2106541811956
+  }, {
+    "note" : "D5",
+    "targetFreq" : 587.33,
+    "predictedFreq" : 736.0239204246211,
+    "cents" : 390.6975880401432
+  }, {
+    "note" : "D#5",
+    "targetFreq" : 622.25,
+    "predictedFreq" : 726.7371490192793,
+    "cents" : 268.72719603626734
+  }, {
+    "note" : "E5",
+    "targetFreq" : 659.26,
+    "predictedFreq" : 765.3088044975034,
+    "cents" : 258.23333692666
+  }, {
+    "note" : "F5",
+    "targetFreq" : 698.46,
+    "predictedFreq" : 742.9315190241937,
+    "cents" : 106.8620850093484
+  }, {
+    "note" : "F#5",
+    "targetFreq" : 739.99,
+    "predictedFreq" : 770.105362894478,
+    "cents" : 69.06008237204662
+  }, {
+    "note" : "G5",
+    "targetFreq" : 782.63,
+    "predictedFreq" : 766.2672227048015,
+    "cents" : -36.57938131900469
+  }, {
+    "note" : "G#5",
+    "targetFreq" : 830.61,
+    "predictedFreq" : 770.05659954504,
+    "cents" : -131.0481029502611
+  }, {
+    "note" : "A5",
+    "targetFreq" : 880.0,
+    "predictedFreq" : 765.6347994015092,
+    "cents" : -241.0165433961228
+  }, {
+    "note" : "A#5, open",
+    "targetFreq" : 932.33,
+    "predictedFreq" : 1190.9927427698622,
+    "cents" : 423.90243263219975
+  }, {
+    "note" : "A#5, closed",
+    "targetFreq" : 932.33,
+    "predictedFreq" : 1017.4042213239574,
+    "cents" : 151.17646818450282
+  }, {
+    "note" : "B5",
+    "targetFreq" : 987.77,
+    "predictedFreq" : 1036.3105708573532,
+    "cents" : 83.05124383685269
+  }, {
+    "note" : "C6",
+    "targetFreq" : 1046.5,
+    "predictedFreq" : 1036.3599167080017,
+    "cents" : -16.856626799200722
+  } ]
+}, {
+  "instrument" : "1.00-bore_6-hole_NAF_starter.xml",
+  "tuning" : "B3_ET_6-hole_NAF_chromatic_tuning.xml",
+  "name" : "1.00-bore_6-hole_NAF_starter__B3_ET_6-hole_NAF_chromatic_tuning",
+  "numFingerings" : 15,
+  "fingerings" : [ {
+    "note" : "B3",
+    "targetFreq" : 246.94165062806206,
+    "predictedFreq" : 311.1283829097322,
+    "cents" : 400.00778561803673
+  }, {
+    "note" : "D4",
+    "targetFreq" : 293.6647679174076,
+    "predictedFreq" : 369.9945273842518,
+    "cents" : 400.0004897716356
+  }, {
+    "note" : "D#4",
+    "targetFreq" : 311.1269837220809,
+    "predictedFreq" : 388.23650688175024,
+    "cents" : 383.31871322661846
+  }, {
+    "note" : "E4",
+    "targetFreq" : 329.6275569128699,
+    "predictedFreq" : 415.30480142290634,
+    "cents" : 400.00043287843556
+  }, {
+    "note" : "F4",
+    "targetFreq" : 349.22823143300394,
+    "predictedFreq" : 447.3142948621146,
+    "cents" : 428.54240759332345
+  }, {
+    "note" : "F#4",
+    "targetFreq" : 369.9944227116344,
+    "predictedFreq" : 466.1639169616522,
+    "cents" : 400.00057728456187
+  }, {
+    "note" : "G4",
+    "targetFreq" : 391.99543598174927,
+    "predictedFreq" : 493.883464839473,
+    "cents" : 400.0005734168697
+  }, {
+    "note" : "G#4",
+    "targetFreq" : 415.3046975799451,
+    "predictedFreq" : 521.713001084188,
+    "cents" : 394.90343441632444
+  }, {
+    "note" : "A4",
+    "targetFreq" : 440.0,
+    "predictedFreq" : 554.3654260753996,
+    "cents" : 400.00051253744664
+  }, {
+    "note" : "A#4",
+    "targetFreq" : 466.16376151808987,
+    "predictedFreq" : 582.096234193032,
+    "cents" : 384.50499261280754
+  }, {
+    "note" : "B4",
+    "targetFreq" : 493.8833012561241,
+    "predictedFreq" : 622.2541802172485,
+    "cents" : 400.0005919768594
+  }, {
+    "note" : "C5 open",
+    "targetFreq" : 523.2511306011974,
+    "predictedFreq" : 639.8466990884541,
+    "cents" : 348.2673208401573
+  }, {
+    "note" : "C5 closed",
+    "targetFreq" : 523.2511306011974,
+    "predictedFreq" : 430.3410539303682,
+    "cents" : -338.42765498839594
+  }, {
+    "note" : "C#5",
+    "targetFreq" : 554.3652619537443,
+    "predictedFreq" : 482.22058129859147,
+    "cents" : -241.3723562794962
+  }, {
+    "note" : "D5",
+    "targetFreq" : 587.3295358348151,
+    "predictedFreq" : 556.9158211247897,
+    "cents" : -92.05309493386119
+  } ]
+}, {
+  "instrument" : "1.00-bore_6-hole_NAF_starter.xml",
+  "tuning" : "C5_ET_6-hole_NAF_chromatic_tuning.xml",
+  "name" : "1.00-bore_6-hole_NAF_starter__C5_ET_6-hole_NAF_chromatic_tuning",
+  "numFingerings" : 15,
+  "fingerings" : [ {
+    "note" : "C5",
+    "targetFreq" : 523.2511306011972,
+    "predictedFreq" : 636.4053389808678,
+    "cents" : 338.93089816627264
+  }, {
+    "note" : "D#5",
+    "targetFreq" : 622.2539674441617,
+    "predictedFreq" : 693.0844830308255,
+    "cents" : 186.63323471753108
+  }, {
+    "note" : "E5",
+    "targetFreq" : 659.2551138257398,
+    "predictedFreq" : 677.0949063064014,
+    "cents" : 46.22545081005092
+  }, {
+    "note" : "F5",
+    "targetFreq" : 698.4564628660078,
+    "predictedFreq" : 736.023919643658,
+    "cents" : 90.69895439296292
+  }, {
+    "note" : "F#5",
+    "targetFreq" : 739.9888454232688,
+    "predictedFreq" : 726.7371490156863,
+    "cents" : -31.283842224640505
+  }, {
+    "note" : "G5",
+    "targetFreq" : 783.9908719634985,
+    "predictedFreq" : 765.3088042888282,
+    "cents" : -41.753832276094904
+  }, {
+    "note" : "G#5",
+    "targetFreq" : 830.6093951598901,
+    "predictedFreq" : 742.931519024913,
+    "cents" : -193.12914766900113
+  }, {
+    "note" : "A5",
+    "targetFreq" : 880.0,
+    "predictedFreq" : 770.1053628960049,
+    "cents" : -230.93721644733128
+  }, {
+    "note" : "A#5",
+    "targetFreq" : 932.3275230361799,
+    "predictedFreq" : 1083.8060094187902,
+    "cents" : 260.63734731212435
+  }, {
+    "note" : "B5",
+    "targetFreq" : 987.7666025122483,
+    "predictedFreq" : 1146.151944102569,
+    "cents" : 257.4674612865249
+  }, {
+    "note" : "C6",
+    "targetFreq" : 1046.5022612023945,
+    "predictedFreq" : 1123.2653592954928,
+    "cents" : 122.548032292529
+  }, {
+    "note" : "C#6, open",
+    "targetFreq" : 1108.7305239074883,
+    "predictedFreq" : 1190.9927427698108,
+    "cents" : 123.9070320870396
+  }, {
+    "note" : "C#6, closed",
+    "targetFreq" : 1108.7305239074883,
+    "predictedFreq" : 1017.4042213239512,
+    "cents" : -148.81893236059335
+  }, {
+    "note" : "D6",
+    "targetFreq" : 1174.6590716696303,
+    "predictedFreq" : 1036.3105707491627,
+    "cents" : -216.94280166152998
+  }, {
+    "note" : "D#6",
+    "targetFreq" : 1244.5079348883235,
+    "predictedFreq" : 1406.2192540521153,
+    "cents" : 211.49534921741545
+  } ]
+}, {
+  "instrument" : "1.00-bore_6-hole_NAF_starter.xml",
+  "tuning" : "D#4_ET_6-hole_NAF_chromatic_tuning.xml",
+  "name" : "1.00-bore_6-hole_NAF_starter__D#4_ET_6-hole_NAF_chromatic_tuning",
+  "numFingerings" : 15,
+  "fingerings" : [ {
+    "note" : "D#4",
+    "targetFreq" : 311.12698372208087,
+    "predictedFreq" : 311.1283830008371,
+    "cents" : 0.007786124978770797
+  }, {
+    "note" : "F#4",
+    "targetFreq" : 369.99442271163434,
+    "predictedFreq" : 369.99452733810875,
+    "cents" : 4.89555728991205E-4
+  }, {
+    "note" : "G4",
+    "targetFreq" : 391.99543598174927,
+    "predictedFreq" : 388.2365068685944,
+    "cents" : -16.68128683204619
+  }, {
+    "note" : "G#4",
+    "targetFreq" : 415.30469757994507,
+    "predictedFreq" : 415.3048013684985,
+    "cents" : 4.3265163195809516E-4
+  }, {
+    "note" : "A4",
+    "targetFreq" : 439.99999999999994,
+    "predictedFreq" : 447.314294806113,
+    "cents" : 28.54240737658161
+  }, {
+    "note" : "A#4",
+    "targetFreq" : 466.16376151808987,
+    "predictedFreq" : 466.16391688417764,
+    "cents" : 5.769968379709764E-4
+  }, {
+    "note" : "B4",
+    "targetFreq" : 493.883301256124,
+    "predictedFreq" : 493.883464563284,
+    "cents" : 5.724487308791591E-4
+  }, {
+    "note" : "C5",
+    "targetFreq" : 523.2511306011971,
+    "predictedFreq" : 521.7130009490932,
+    "cents" : -5.096566031969391
+  }, {
+    "note" : "C#5",
+    "targetFreq" : 554.365261953744,
+    "predictedFreq" : 554.3654258164785,
+    "cents" : 5.117288596930637E-4
+  }, {
+    "note" : "D5",
+    "targetFreq" : 587.329535834815,
+    "predictedFreq" : 582.0962337942233,
+    "cents" : -15.495008573304231
+  }, {
+    "note" : "D#5",
+    "targetFreq" : 622.2539674441617,
+    "predictedFreq" : 622.2541805329834,
+    "cents" : 5.928552964701212E-4
+  }, {
+    "note" : "E5 open",
+    "targetFreq" : 659.2551138257398,
+    "predictedFreq" : 639.8466990859539,
+    "cents" : -51.73267916660724
+  }, {
+    "note" : "E5 closed",
+    "targetFreq" : 659.2551138257398,
+    "predictedFreq" : 643.0635045103703,
+    "cents" : -43.05077027597947
+  }, {
+    "note" : "F5",
+    "targetFreq" : 698.4564628660077,
+    "predictedFreq" : 668.2505065735095,
+    "cents" : -76.53739715933311
+  }, {
+    "note" : "F#5",
+    "targetFreq" : 739.9888454232687,
+    "predictedFreq" : 700.6659635806031,
+    "cents" : -94.53204955322381
+  } ]
+}, {
+  "instrument" : "1.00-bore_6-hole_NAF_starter.xml",
+  "tuning" : "D#5_ET_6-hole_NAF_chromatic_tuning.xml",
+  "name" : "1.00-bore_6-hole_NAF_starter__D#5_ET_6-hole_NAF_chromatic_tuning",
+  "numFingerings" : 15,
+  "fingerings" : [ {
+    "note" : "D#5",
+    "targetFreq" : 622.2539674441617,
+    "predictedFreq" : 636.4053389926981,
+    "cents" : 38.93089819845554
+  }, {
+    "note" : "F#5",
+    "targetFreq" : 739.9888454232687,
+    "predictedFreq" : 693.0844834584062,
+    "cents" : -113.36676421442822
+  }, {
+    "note" : "G5",
+    "targetFreq" : 783.9908719634985,
+    "predictedFreq" : 677.0949062116281,
+    "cents" : -253.77454943227087
+  }, {
+    "note" : "G#5",
+    "targetFreq" : 830.6093951598901,
+    "predictedFreq" : 736.0239199323642,
+    "cents" : -209.30104492795857
+  }, {
+    "note" : "A5",
+    "targetFreq" : 879.9999999999999,
+    "predictedFreq" : 1007.277522137323,
+    "cents" : 233.86295560749178
+  }, {
+    "note" : "A#5",
+    "targetFreq" : 932.3275230361797,
+    "predictedFreq" : 1013.802747480944,
+    "cents" : 145.04185999250186
+  }, {
+    "note" : "B5",
+    "targetFreq" : 987.766602512248,
+    "predictedFreq" : 1033.284857260716,
+    "cents" : 77.99512497371866
+  }, {
+    "note" : "C6",
+    "targetFreq" : 1046.5022612023943,
+    "predictedFreq" : 1076.0097344840624,
+    "cents" : 48.13884110046482
+  }, {
+    "note" : "C#6",
+    "targetFreq" : 1108.730523907488,
+    "predictedFreq" : 1083.8060095216374,
+    "cents" : -39.36265252359047
+  }, {
+    "note" : "D6",
+    "targetFreq" : 1174.65907166963,
+    "predictedFreq" : 1146.1519441025812,
+    "cents" : -42.53253871345628
+  }, {
+    "note" : "D#6",
+    "targetFreq" : 1244.5079348883235,
+    "predictedFreq" : 1123.2653592954596,
+    "cents" : -177.45196770752207
+  }, {
+    "note" : "E6 open",
+    "targetFreq" : 1318.5102276514797,
+    "predictedFreq" : 1452.7919720099999,
+    "cents" : 167.90324804671866
+  }, {
+    "note" : "E6 closed",
+    "targetFreq" : 1318.5102276514797,
+    "predictedFreq" : 1339.4194721744777,
+    "cents" : 27.23890162844675
+  }, {
+    "note" : "F6",
+    "targetFreq" : 1396.9129257320153,
+    "predictedFreq" : 1388.2313122106657,
+    "cents" : -10.792944511380423
+  }, {
+    "note" : "F#6",
+    "targetFreq" : 1479.9776908465374,
+    "predictedFreq" : 1406.2192540521073,
+    "cents" : -88.50465078259437
+  } ]
+}, {
+  "instrument" : "1.00-bore_6-hole_NAF_starter.xml",
+  "tuning" : "F#4_ET_6-hole_NAF_chromatic_tuning.xml",
+  "name" : "1.00-bore_6-hole_NAF_starter__F#4_ET_6-hole_NAF_chromatic_tuning",
+  "numFingerings" : 15,
+  "fingerings" : [ {
+    "note" : "F#4",
+    "targetFreq" : 369.9944227116344,
+    "predictedFreq" : 311.1283829241483,
+    "cents" : -299.99221430174686
+  }, {
+    "note" : "A4",
+    "targetFreq" : 440.0,
+    "predictedFreq" : 369.99452737435035,
+    "cents" : -299.9995102746939
+  }, {
+    "note" : "A#4",
+    "targetFreq" : 466.1637615180899,
+    "predictedFreq" : 388.2365068773866,
+    "cents" : -316.68128679284007
+  }, {
+    "note" : "B4",
+    "targetFreq" : 493.8833012561241,
+    "predictedFreq" : 415.30480140870014,
+    "cents" : -299.9995671807845
+  }, {
+    "note" : "C5",
+    "targetFreq" : 523.2511306011974,
+    "predictedFreq" : 447.31429479345974,
+    "cents" : -271.4575926723906
+  }, {
+    "note" : "C#5",
+    "targetFreq" : 554.3652619537442,
+    "predictedFreq" : 466.16391694713093,
+    "cents" : -299.9994227693668
+  }, {
+    "note" : "D5",
+    "targetFreq" : 587.329535834815,
+    "predictedFreq" : 493.8834647617013,
+    "cents" : -299.99942685574706
+  }, {
+    "note" : "D#5",
+    "targetFreq" : 622.2539674441618,
+    "predictedFreq" : 521.7130011209343,
+    "cents" : -305.0965654617382
+  }, {
+    "note" : "E5",
+    "targetFreq" : 659.25511382574,
+    "predictedFreq" : 766.2672226819984,
+    "cents" : 260.41288585329727
+  }, {
+    "note" : "F5",
+    "targetFreq" : 698.4564628660078,
+    "predictedFreq" : 770.0565995305543,
+    "cents" : 168.9531576812307
+  }, {
+    "note" : "F#5",
+    "targetFreq" : 739.9888454232688,
+    "predictedFreq" : 765.6347993990388,
+    "cents" : 58.98345659829097
+  }, {
+    "note" : "G5 (open)",
+    "targetFreq" : 783.9908719634986,
+    "predictedFreq" : 767.5847950042819,
+    "cents" : -36.61286812925113
+  }, {
+    "note" : "G5 (closed)",
+    "targetFreq" : 783.9908719634986,
+    "predictedFreq" : 643.063504683244,
+    "cents" : -343.05076981057505
+  }, {
+    "note" : "G#5",
+    "targetFreq" : 830.6093951598903,
+    "predictedFreq" : 1036.3105711692547,
+    "cents" : 383.05719904026523
+  }, {
+    "note" : "A5",
+    "targetFreq" : 880.0,
+    "predictedFreq" : 1036.3599167079872,
+    "cents" : 283.13963247803446
+  } ]
+}, {
+  "instrument" : "1.25-bore_6-hole_NAF_starter.xml",
+  "tuning" : "A4_ET_6-hole_NAF_chromatic_tuning.xml",
+  "name" : "1.25-bore_6-hole_NAF_starter__A4_ET_6-hole_NAF_chromatic_tuning",
+  "numFingerings" : 15,
+  "fingerings" : [ {
+    "note" : "A4",
+    "targetFreq" : 440.0,
+    "predictedFreq" : 508.6286325439426,
+    "cents" : 250.9309860983328
+  }, {
+    "note" : "C5",
+    "targetFreq" : 523.25,
+    "predictedFreq" : 547.786302936774,
+    "cents" : 79.33534356186357
+  }, {
+    "note" : "C#5",
+    "targetFreq" : 554.37,
+    "predictedFreq" : 537.3548838797265,
+    "cents" : -53.968786996359036
+  }, {
+    "note" : "D5",
+    "targetFreq" : 587.33,
+    "predictedFreq" : 577.4762021098603,
+    "cents" : -29.291803827743045
+  }, {
+    "note" : "D#5",
+    "targetFreq" : 622.25,
+    "predictedFreq" : 572.7448810671201,
+    "cents" : -143.52199892389658
+  }, {
+    "note" : "E5",
+    "targetFreq" : 659.26,
+    "predictedFreq" : 598.8627499828137,
+    "cents" : -166.34658257869324
+  }, {
+    "note" : "F5",
+    "targetFreq" : 698.46,
+    "predictedFreq" : 830.7959541549201,
+    "cents" : 300.38003278331917
+  }, {
+    "note" : "F#5",
+    "targetFreq" : 739.99,
+    "predictedFreq" : 868.0041632579929,
+    "cents" : 276.2354251633533
+  }, {
+    "note" : "G5",
+    "targetFreq" : 782.63,
+    "predictedFreq" : 867.0301959901926,
+    "cents" : 177.30219101030303
+  }, {
+    "note" : "G#5",
+    "targetFreq" : 830.61,
+    "predictedFreq" : 916.4069166210841,
+    "cents" : 170.18052782076234
+  }, {
+    "note" : "A5",
+    "targetFreq" : 880.0,
+    "predictedFreq" : 889.7735726610141,
+    "cents" : 19.12167075886966
+  }, {
+    "note" : "A#5, open",
+    "targetFreq" : 932.33,
+    "predictedFreq" : 942.151975343691,
+    "cents" : 18.14292587651987
+  }, {
+    "note" : "A#5, closed",
+    "targetFreq" : 932.33,
+    "predictedFreq" : 810.88781384693,
+    "cents" : -241.60602991180562
+  }, {
+    "note" : "B5",
+    "targetFreq" : 987.77,
+    "predictedFreq" : 1121.3831511678673,
+    "cents" : 219.63868890898416
+  }, {
+    "note" : "C6",
+    "targetFreq" : 1046.5,
+    "predictedFreq" : 1139.3288117269058,
+    "cents" : 147.13423097686695
+  } ]
+}, {
+  "instrument" : "1.25-bore_6-hole_NAF_starter.xml",
+  "tuning" : "B3_ET_6-hole_NAF_chromatic_tuning.xml",
+  "name" : "1.25-bore_6-hole_NAF_starter__B3_ET_6-hole_NAF_chromatic_tuning",
+  "numFingerings" : 15,
+  "fingerings" : [ {
+    "note" : "B3",
+    "targetFreq" : 246.94165062806206,
+    "predictedFreq" : 246.94278740066326,
+    "cents" : 0.00796955433976589
+  }, {
+    "note" : "D4",
+    "targetFreq" : 293.6647679174076,
+    "predictedFreq" : 293.66484213338987,
+    "cents" : 4.3752343930489015E-4
+  }, {
+    "note" : "D#4",
+    "targetFreq" : 311.1269837220809,
+    "predictedFreq" : 307.08558201436057,
+    "cents" : -22.635295044181245
+  }, {
+    "note" : "E4",
+    "targetFreq" : 329.6275569128699,
+    "predictedFreq" : 329.6276559847779,
+    "cents" : 5.203346352434169E-4
+  }, {
+    "note" : "F4",
+    "targetFreq" : 349.22823143300394,
+    "predictedFreq" : 355.0518271561191,
+    "cents" : 28.63132889555444
+  }, {
+    "note" : "F#4",
+    "targetFreq" : 369.9944227116344,
+    "predictedFreq" : 369.99451764173267,
+    "cents" : 4.4418560742434367E-4
+  }, {
+    "note" : "G4",
+    "targetFreq" : 391.99543598174927,
+    "predictedFreq" : 391.99555544866905,
+    "cents" : 5.276213668467756E-4
+  }, {
+    "note" : "G#4",
+    "targetFreq" : 415.3046975799451,
+    "predictedFreq" : 415.8617474097062,
+    "cents" : 2.3205551247016714
+  }, {
+    "note" : "A4",
+    "targetFreq" : 440.0,
+    "predictedFreq" : 440.0001161196047,
+    "cents" : 4.568867882406576E-4
+  }, {
+    "note" : "A#4",
+    "targetFreq" : 466.16376151808987,
+    "predictedFreq" : 464.91164583193773,
+    "cents" : -4.656350278169731
+  }, {
+    "note" : "B4",
+    "targetFreq" : 493.8833012561241,
+    "predictedFreq" : 493.88346689460883,
+    "cents" : 5.806208385661125E-4
+  }, {
+    "note" : "C5 open",
+    "targetFreq" : 523.2511306011974,
+    "predictedFreq" : 511.2290395986323,
+    "cents" : -40.24048201199034
+  }, {
+    "note" : "C5 closed",
+    "targetFreq" : 523.2511306011974,
+    "predictedFreq" : 515.6375801671142,
+    "cents" : -25.375333445240525
+  }, {
+    "note" : "C#5",
+    "targetFreq" : 554.3652619537443,
+    "predictedFreq" : 537.3328681089707,
+    "cents" : -54.02492176825263
+  }, {
+    "note" : "D5",
+    "targetFreq" : 587.3295358348151,
+    "predictedFreq" : 557.9963712492706,
+    "cents" : -88.69734052425356
+  } ]
+}, {
+  "instrument" : "1.25-bore_6-hole_NAF_starter.xml",
+  "tuning" : "C5_ET_6-hole_NAF_chromatic_tuning.xml",
+  "name" : "1.25-bore_6-hole_NAF_starter__C5_ET_6-hole_NAF_chromatic_tuning",
+  "numFingerings" : 15,
+  "fingerings" : [ {
+    "note" : "C5",
+    "targetFreq" : 523.2511306011972,
+    "predictedFreq" : 508.6286325445437,
+    "cents" : -49.06901389962118
+  }, {
+    "note" : "D#5",
+    "targetFreq" : 622.2539674441617,
+    "predictedFreq" : 547.7863030726513,
+    "cents" : -220.66839673144733
+  }, {
+    "note" : "E5",
+    "targetFreq" : 659.2551138257398,
+    "predictedFreq" : 788.0346965710817,
+    "cents" : 308.9067537206631
+  }, {
+    "note" : "F5",
+    "targetFreq" : 698.4564628660078,
+    "predictedFreq" : 788.0257055263422,
+    "cents" : 208.88700117467067
+  }, {
+    "note" : "F#5",
+    "targetFreq" : 739.9888454232688,
+    "predictedFreq" : 812.0402624065786,
+    "cents" : 160.8572841969572
+  }, {
+    "note" : "G5",
+    "targetFreq" : 783.9908719634985,
+    "predictedFreq" : 818.9322337948186,
+    "cents" : 75.48866097319475
+  }, {
+    "note" : "G#5",
+    "targetFreq" : 830.6093951598901,
+    "predictedFreq" : 830.795954132027,
+    "cents" : 0.3888000555880615
+  }, {
+    "note" : "A5",
+    "targetFreq" : 880.0,
+    "predictedFreq" : 868.0041629789625,
+    "cents" : -23.76187421598287
+  }, {
+    "note" : "A#5",
+    "targetFreq" : 932.3275230361799,
+    "predictedFreq" : 867.0301960200312,
+    "cents" : -125.70554170629576
+  }, {
+    "note" : "B5",
+    "targetFreq" : 987.7666025122483,
+    "predictedFreq" : 916.406916621086,
+    "cents" : -129.81821151517585
+  }, {
+    "note" : "C6",
+    "targetFreq" : 1046.5022612023945,
+    "predictedFreq" : 1173.9438442372984,
+    "cents" : 198.94556366802516
+  }, {
+    "note" : "C#6, open",
+    "targetFreq" : 1108.7305239074883,
+    "predictedFreq" : 1175.6416235073987,
+    "cents" : 101.4474975896522
+  }, {
+    "note" : "C#6, closed",
+    "targetFreq" : 1108.7305239074883,
+    "predictedFreq" : 1085.487439376287,
+    "cents" : -36.67887620008808
+  }, {
+    "note" : "D6",
+    "targetFreq" : 1174.6590716696303,
+    "predictedFreq" : 1121.383151167982,
+    "cents" : -80.3553564084806
+  }, {
+    "note" : "D#6",
+    "targetFreq" : 1244.5079348883235,
+    "predictedFreq" : 1139.3288117269165,
+    "cents" : -152.86950974585724
+  } ]
+}, {
+  "instrument" : "1.25-bore_6-hole_NAF_starter.xml",
+  "tuning" : "D#4_ET_6-hole_NAF_chromatic_tuning.xml",
+  "name" : "1.25-bore_6-hole_NAF_starter__D#4_ET_6-hole_NAF_chromatic_tuning",
+  "numFingerings" : 15,
+  "fingerings" : [ {
+    "note" : "D#4",
+    "targetFreq" : 311.12698372208087,
+    "predictedFreq" : 246.94278729325816,
+    "cents" : -399.99203119864137
+  }, {
+    "note" : "F#4",
+    "targetFreq" : 369.99442271163434,
+    "predictedFreq" : 293.66484212432465,
+    "cents" : -399.99956253000215
+  }, {
+    "note" : "G4",
+    "targetFreq" : 391.99543598174927,
+    "predictedFreq" : 307.0855820229423,
+    "cents" : -422.63529499580045
+  }, {
+    "note" : "G#4",
+    "targetFreq" : 415.30469757994507,
+    "predictedFreq" : 329.6276559606971,
+    "cents" : -399.99947979183895
+  }, {
+    "note" : "A4",
+    "targetFreq" : 439.99999999999994,
+    "predictedFreq" : 355.05182713609435,
+    "cents" : -371.3686712020857
+  }, {
+    "note" : "A#4",
+    "targetFreq" : 466.16376151808987,
+    "predictedFreq" : 369.99451762666143,
+    "cents" : -399.9995558849122
+  }, {
+    "note" : "B4",
+    "targetFreq" : 493.883301256124,
+    "predictedFreq" : 580.1949660958605,
+    "cents" : 278.8411056260182
+  }, {
+    "note" : "C5",
+    "targetFreq" : 523.2511306011971,
+    "predictedFreq" : 600.9685000808904,
+    "cents" : 239.7430199222003
+  }, {
+    "note" : "C#5",
+    "targetFreq" : 554.365261953744,
+    "predictedFreq" : 598.7874922430244,
+    "cents" : 133.4486747159046
+  }, {
+    "note" : "D5",
+    "targetFreq" : 587.329535834815,
+    "predictedFreq" : 600.6118918010026,
+    "cents" : 38.7154192412668
+  }, {
+    "note" : "D#5",
+    "targetFreq" : 622.2539674441617,
+    "predictedFreq" : 599.1292472899942,
+    "cents" : -65.56351374380941
+  }, {
+    "note" : "E5 open",
+    "targetFreq" : 659.2551138257398,
+    "predictedFreq" : 600.4773967370922,
+    "cents" : -161.67229953579377
+  }, {
+    "note" : "E5 closed",
+    "targetFreq" : 659.2551138257398,
+    "predictedFreq" : 810.88781340227,
+    "cents" : 358.39856859376584
+  }, {
+    "note" : "F5",
+    "targetFreq" : 698.4564628660077,
+    "predictedFreq" : 820.8308917441569,
+    "cents" : 279.4978043759231
+  }, {
+    "note" : "F#5",
+    "targetFreq" : 739.9888454232687,
+    "predictedFreq" : 821.7041414899049,
+    "cents" : 181.3386172718739
+  } ]
+}, {
+  "instrument" : "1.25-bore_6-hole_NAF_starter.xml",
+  "tuning" : "D#5_ET_6-hole_NAF_chromatic_tuning.xml",
+  "name" : "1.25-bore_6-hole_NAF_starter__D#5_ET_6-hole_NAF_chromatic_tuning",
+  "numFingerings" : 15,
+  "fingerings" : [ {
+    "note" : "D#5",
+    "targetFreq" : 622.2539674441617,
+    "predictedFreq" : 508.6286325817194,
+    "cents" : -349.069013773085
+  }, {
+    "note" : "F#5",
+    "targetFreq" : 739.9888454232687,
+    "predictedFreq" : 781.3540296130492,
+    "cents" : 94.16742524619006
+  }, {
+    "note" : "G5",
+    "targetFreq" : 783.9908719634985,
+    "predictedFreq" : 788.0346965095881,
+    "cents" : 8.906753585568051
+  }, {
+    "note" : "G#5",
+    "targetFreq" : 830.6093951598901,
+    "predictedFreq" : 788.0257055263445,
+    "cents" : -91.11299882532413
+  }, {
+    "note" : "A5",
+    "targetFreq" : 879.9999999999999,
+    "predictedFreq" : 812.0402623938064,
+    "cents" : -139.1427158302722
+  }, {
+    "note" : "A#5",
+    "targetFreq" : 932.3275230361797,
+    "predictedFreq" : 818.932233640707,
+    "cents" : -224.51133935259912
+  }, {
+    "note" : "B5",
+    "targetFreq" : 987.766602512248,
+    "predictedFreq" : 1110.7446095389978,
+    "cents" : 203.1420532968211
+  }, {
+    "note" : "C6",
+    "targetFreq" : 1046.5022612023943,
+    "predictedFreq" : 1139.933470733258,
+    "cents" : 148.04903858661532
+  }, {
+    "note" : "C#6",
+    "targetFreq" : 1108.730523907488,
+    "predictedFreq" : 1149.1306838871615,
+    "cents" : 61.96093722764857
+  }, {
+    "note" : "D6",
+    "targetFreq" : 1174.65907166963,
+    "predictedFreq" : 1149.1746787469183,
+    "cents" : -37.97278315568944
+  }, {
+    "note" : "D#6",
+    "targetFreq" : 1244.5079348883235,
+    "predictedFreq" : 1173.9438442359613,
+    "cents" : -101.05443633394663
+  }, {
+    "note" : "E6 open",
+    "targetFreq" : 1318.5102276514797,
+    "predictedFreq" : 1397.3644578131755,
+    "cents" : 100.55950617111786
+  }, {
+    "note" : "E6 closed",
+    "targetFreq" : 1318.5102276514797,
+    "predictedFreq" : 1351.1560097460044,
+    "cents" : 42.342601542193385
+  }, {
+    "note" : "F6",
+    "targetFreq" : 1396.9129257320153,
+    "predictedFreq" : 1355.5888196749,
+    "cents" : -51.98694274334061
+  }, {
+    "note" : "F#6",
+    "targetFreq" : 1479.9776908465374,
+    "predictedFreq" : 1367.2877524526832,
+    "cents" : -137.1102380114086
+  } ]
+}, {
+  "instrument" : "1.25-bore_6-hole_NAF_starter.xml",
+  "tuning" : "F#4_ET_6-hole_NAF_chromatic_tuning.xml",
+  "name" : "1.25-bore_6-hole_NAF_starter__F#4_ET_6-hole_NAF_chromatic_tuning",
+  "numFingerings" : 15,
+  "fingerings" : [ {
+    "note" : "F#4",
+    "targetFreq" : 369.9944227116344,
+    "predictedFreq" : 508.62863254818774,
+    "cents" : 550.9309861127823
+  }, {
+    "note" : "A4",
+    "targetFreq" : 440.0,
+    "predictedFreq" : 547.7863030104868,
+    "cents" : 379.33160307208647
+  }, {
+    "note" : "A#4",
+    "targetFreq" : 466.1637615180899,
+    "predictedFreq" : 537.3548843139375,
+    "cents" : 246.04601084187405
+  }, {
+    "note" : "B4",
+    "targetFreq" : 493.8833012561241,
+    "predictedFreq" : 577.4762015142716,
+    "cents" : 270.7095625764798
+  }, {
+    "note" : "C5",
+    "targetFreq" : 523.2511306011974,
+    "predictedFreq" : 572.7448807986775,
+    "cents" : 156.46696201233385
+  }, {
+    "note" : "C#5",
+    "targetFreq" : 554.3652619537442,
+    "predictedFreq" : 598.8627499828118,
+    "cents" : 133.66624869059848
+  }, {
+    "note" : "D5",
+    "targetFreq" : 587.329535834815,
+    "predictedFreq" : 580.1949661711596,
+    "cents" : -21.158894149298124
+  }, {
+    "note" : "D#5",
+    "targetFreq" : 622.2539674441618,
+    "predictedFreq" : 600.9685000850236,
+    "cents" : -60.25698006589346
+  }, {
+    "note" : "E5",
+    "targetFreq" : 659.25511382574,
+    "predictedFreq" : 598.7874923026118,
+    "cents" : -166.55132511181512
+  }, {
+    "note" : "F5",
+    "targetFreq" : 698.4564628660078,
+    "predictedFreq" : 600.6118918017746,
+    "cents" : -261.28458075650786
+  }, {
+    "note" : "F#5",
+    "targetFreq" : 739.9888454232688,
+    "predictedFreq" : 889.7735726610141,
+    "cents" : 319.1216707588697
+  }, {
+    "note" : "G5 (open)",
+    "targetFreq" : 783.9908719634986,
+    "predictedFreq" : 942.1519753436204,
+    "cents" : 318.14752533130445
+  }, {
+    "note" : "G5 (closed)",
+    "targetFreq" : 783.9908719634986,
+    "predictedFreq" : 810.8878138469315,
+    "cents" : 58.398569543111876
+  }, {
+    "note" : "G#5",
+    "targetFreq" : 830.6093951598903,
+    "predictedFreq" : 820.830891516522,
+    "cents" : -20.502196104187497
+  }, {
+    "note" : "A5",
+    "targetFreq" : 880.0,
+    "predictedFreq" : 821.7041418167416,
+    "cents" : -118.66138203951996
+  } ]
+} ]
