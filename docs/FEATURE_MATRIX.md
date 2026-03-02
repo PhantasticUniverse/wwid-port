@@ -17,9 +17,9 @@ Legend:
 
 | Feature                   | Baseline | Fixture(s)        | Milestone | Notes                                |
 | ------------------------- | -------: | ----------------- | --------- | ------------------------------------ |
-| Open/save Instrument XML  |        ✅ | XML-RT-01         | M2        | Round-trip + semantic validation     |
-| Open/save Tuning XML      |        ✅ | XML-RT-02         | M2        | Includes measured + min/max variants |
-| Open/save Constraints XML |        ✅ | CONSTRAINTS-01/02 | M2        | Constraints ordering ABI             |
+| Open/save Instrument XML  |        ✅ | XML-RT-01 ¹       | M4        | Round-trip + semantic validation     |
+| Open/save Tuning XML      |        ✅ | XML-RT-02 ¹       | M4        | Includes measured + min/max variants |
+| Open/save Constraints XML |        ✅ | CONSTRAINTS-01/02 | M3        | Constraints ordering ABI             |
 | Drag & drop open          |        ✅ | UX-01             | M4        | Web drop zone parity                 |
 | Calculate tuning (table)  |        ✅ | EVAL-*            | M2        | Whistle/Flute include min/max        |
 | Graph tuning              |        ✅ | GRAPH-01          | M5        | Curve samples                        |
@@ -94,3 +94,7 @@ Legend:
 | Scales (intervals/freqs) |        ✅ | WIZ-01/02  | M5        | reusable             |
 | Fingering patterns       |        ✅ | WIZ-02     | M5        | reusable             |
 | Final tuning generation  |        ✅ | WIZ-01     | M5        | parity of output XML |
+
+---
+
+¹ Fixture IDs without existing scenario files in `golden/scenarios/` are planned for their target milestone.

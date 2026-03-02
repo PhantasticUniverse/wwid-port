@@ -222,6 +222,186 @@ pub fn compile(raw: &InstrumentRaw) -> Result<InstrumentCompiled, CompileError> 
     })
 }
 
+// ── Instrument mutation API ──────────────────────────────────────
+
+/// Read the fipple factor from a raw instrument.
+pub fn get_fipple_factor(raw: &InstrumentRaw) -> Option<f64> {
+    raw.mouthpiece.fipple.as_ref()?.fipple_factor
+}
+
+/// Set the fipple factor on a raw instrument.
+pub fn set_fipple_factor(raw: &mut InstrumentRaw, value: f64) {
+    if let Some(ref mut fipple) = raw.mouthpiece.fipple {
+        fipple.fipple_factor = Some(value);
+    }
+}
+
+/// Extract the HoleFromTop geometry vector from a raw instrument (in metres).
+///
+/// Returns `[bore_end, top_hole_fraction, spacing_1..N-1, diameter_0..N-1]`
+/// where:
+/// - `bore_end` = last bore point position (metres)
+/// - `top_hole_fraction` = (top hole - mouthpiece) / (bore_end - mouthpiece)
+/// - `spacing_i` = distance between consecutive holes (metres)
+/// - `diameter_i` = hole diameters sorted by position ascending (metres)
+///
+/// Holes are sorted by bore position ascending (top to bottom).
+pub fn get_hole_geometry_from_top(raw: &InstrumentRaw) -> Vec<f64> {
+    let m = raw.length_type.to_metres();
+    let n_holes = raw.holes.len();
+
+    // Sort holes by bore position ascending
+    let mut sorted_holes: Vec<(f64, f64)> = raw
+        .holes
+        .iter()
+        .map(|h| (h.bore_position * m, h.diameter * m))
+        .collect();
+    sorted_holes.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
+
+    // Bore end = max bore point position
+    let bore_end = raw
+        .bore_points
+        .iter()
+        .map(|bp| bp.bore_position * m)
+        .fold(f64::NEG_INFINITY, f64::max);
+
+    let mouthpiece_pos = raw.mouthpiece.position * m;
+
+    let mut geometry = Vec::with_capacity(1 + 2 * n_holes);
+
+    // [0] bore end position
+    geometry.push(bore_end);
+
+    // [1] top hole as fraction of bore length from mouthpiece
+    if n_holes > 0 {
+        let top_hole_pos = sorted_holes[0].0;
+        geometry.push((top_hole_pos - mouthpiece_pos) / (bore_end - mouthpiece_pos));
+    }
+
+    // [2..N] spacings between consecutive holes
+    for i in 1..n_holes {
+        geometry.push(sorted_holes[i].0 - sorted_holes[i - 1].0);
+    }
+
+    // [N+1..2N] hole diameters (position order)
+    for i in 0..n_holes {
+        geometry.push(sorted_holes[i].1);
+    }
+
+    geometry
+}
+
+/// Apply a HoleFromTop geometry vector (in metres) to a raw instrument.
+///
+/// The geometry format matches [`get_hole_geometry_from_top`]:
+/// `[bore_end, top_hole_fraction, spacing_1..N-1, diameter_0..N-1]`.
+///
+/// After calling this, you must re-compile the instrument before evaluation.
+pub fn set_hole_geometry_from_top(raw: &mut InstrumentRaw, geometry: &[f64]) {
+    let m = raw.length_type.to_metres();
+    let n_holes = raw.holes.len();
+    let mouthpiece_pos = raw.mouthpiece.position * m;
+
+    // Sort holes by bore position to establish index mapping
+    let mut hole_order: Vec<usize> = (0..n_holes).collect();
+    hole_order.sort_by(|&a, &b| {
+        raw.holes[a]
+            .bore_position
+            .partial_cmp(&raw.holes[b].bore_position)
+            .unwrap()
+    });
+
+    // [0] bore end — update last bore point position
+    let new_bore_end = geometry[0];
+    // For PRESERVE_BORE: interpolate/extrapolate diameter at new position.
+    let new_dia = interpolate_bore_diameter(&raw.bore_points, new_bore_end, m);
+    // Find the bore point with max position and update it
+    if let Some(last_bp) = raw
+        .bore_points
+        .iter_mut()
+        .max_by(|a, b| a.bore_position.partial_cmp(&b.bore_position).unwrap())
+    {
+        last_bp.bore_position = new_bore_end / m;
+        if let Some(dia) = new_dia {
+            last_bp.bore_diameter = dia / m;
+        }
+    }
+
+    // Compute hole positions from fraction + spacings
+    if n_holes > 0 {
+        let bore_length_from_edge = new_bore_end - mouthpiece_pos;
+        let top_hole_pos = geometry[1] * bore_length_from_edge + mouthpiece_pos;
+
+        // Set top hole position
+        raw.holes[hole_order[0]].bore_position = top_hole_pos / m;
+
+        // Set remaining hole positions from spacings
+        let mut prior_pos = top_hole_pos;
+        for i in 1..n_holes {
+            let hole_pos = prior_pos + geometry[i + 1];
+            raw.holes[hole_order[i]].bore_position = hole_pos / m;
+            prior_pos = hole_pos;
+        }
+
+        // Set hole diameters
+        for i in 0..n_holes {
+            raw.holes[hole_order[i]].diameter = geometry[n_holes + 1 + i] / m;
+        }
+    }
+}
+
+/// Interpolate bore diameter at a position (in metres), using bore points.
+fn interpolate_bore_diameter(
+    bore_points: &[wid_types::BorePointRaw],
+    position_m: f64,
+    m: f64,
+) -> Option<f64> {
+    if bore_points.len() < 2 {
+        return bore_points.first().map(|bp| bp.bore_diameter * m);
+    }
+
+    let mut points: Vec<(f64, f64)> = bore_points
+        .iter()
+        .map(|bp| (bp.bore_position * m, bp.bore_diameter * m))
+        .collect();
+    points.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
+
+    // Find bounding segment
+    if position_m <= points[0].0 {
+        // Extrapolate from first segment
+        let (x0, y0) = points[0];
+        let (x1, y1) = points[1];
+        if (x1 - x0).abs() < f64::EPSILON {
+            return Some(y0);
+        }
+        return Some(y0 + (position_m - x0) * (y1 - y0) / (x1 - x0));
+    }
+    if position_m >= points.last().unwrap().0 {
+        // Extrapolate from last segment
+        let n = points.len();
+        let (x0, y0) = points[n - 2];
+        let (x1, y1) = points[n - 1];
+        if (x1 - x0).abs() < f64::EPSILON {
+            return Some(y1);
+        }
+        return Some(y0 + (position_m - x0) * (y1 - y0) / (x1 - x0));
+    }
+
+    // Interpolate
+    for w in points.windows(2) {
+        if position_m >= w[0].0 && position_m <= w[1].0 {
+            let (x0, y0) = w[0];
+            let (x1, y1) = w[1];
+            if (x1 - x0).abs() < f64::EPSILON {
+                return Some(y0);
+            }
+            return Some(y0 + (position_m - x0) * (y1 - y0) / (x1 - x0));
+        }
+    }
+
+    None
+}
+
 // ── Internal types and helpers ──────────────────────────────────
 
 #[derive(Debug, Clone)]
@@ -638,6 +818,92 @@ mod tests {
             if let Component::Hole(h) = c {
                 assert_abs_diff_eq!(h.bore_diameter, expected_bore_dia, epsilon = 1e-10);
             }
+        }
+    }
+
+    // ── Fipple factor mutation ───────────────────────────────────
+
+    #[test]
+    fn get_fipple_factor_returns_value() {
+        let raw = parse_instrument_xml(NAF_6HOLE_XML).unwrap();
+        assert_abs_diff_eq!(get_fipple_factor(&raw).unwrap(), 0.75, epsilon = 1e-15);
+    }
+
+    #[test]
+    fn set_fipple_factor_updates_value() {
+        let mut raw = parse_instrument_xml(NAF_6HOLE_XML).unwrap();
+        set_fipple_factor(&mut raw, 0.5);
+        assert_abs_diff_eq!(get_fipple_factor(&raw).unwrap(), 0.5, epsilon = 1e-15);
+    }
+
+    // ── Hole geometry extraction ─────────────────────────────────
+
+    // Golden initialGeometry from NAF-OPT-01
+    const GOLDEN_INITIAL_GEOMETRY: [f64; 13] = [
+        0.3248902169679828,
+        0.26393387003800606,
+        0.02084975171698325,
+        0.020849751716983278,
+        0.04085938293871649,
+        0.02865934261586897,
+        0.028659342615868943,
+        0.0057100938065062215,
+        0.006327228446346466,
+        0.006056222214560144,
+        0.007836036154750887,
+        0.007616195298537355,
+        0.007846589456097008,
+    ];
+
+    #[test]
+    fn get_hole_geometry_matches_golden() {
+        let raw = parse_instrument_xml(NAF_6HOLE_XML).unwrap();
+        let geom = get_hole_geometry_from_top(&raw);
+        assert_eq!(geom.len(), 13);
+        for (i, (&actual, &expected)) in
+            geom.iter().zip(GOLDEN_INITIAL_GEOMETRY.iter()).enumerate()
+        {
+            assert!(
+                (actual - expected).abs() < 1e-10,
+                "geometry[{i}]: expected {expected}, got {actual}, diff {}",
+                (actual - expected).abs()
+            );
+        }
+    }
+
+    #[test]
+    fn set_hole_geometry_roundtrips() {
+        let mut raw = parse_instrument_xml(NAF_6HOLE_XML).unwrap();
+        let original = get_hole_geometry_from_top(&raw);
+        // Apply the same geometry back
+        set_hole_geometry_from_top(&mut raw, &original);
+        let roundtripped = get_hole_geometry_from_top(&raw);
+        assert_eq!(original.len(), roundtripped.len());
+        for (i, (a, b)) in original.iter().zip(roundtripped.iter()).enumerate() {
+            assert!(
+                (a - b).abs() < 1e-12,
+                "roundtrip mismatch at [{i}]: {a} vs {b}"
+            );
+        }
+    }
+
+    #[test]
+    fn set_hole_geometry_changes_instrument() {
+        let mut raw = parse_instrument_xml(NAF_6HOLE_XML).unwrap();
+        let mut geom = get_hole_geometry_from_top(&raw);
+        // Double all diameters
+        let n_holes = raw.holes.len();
+        for i in 0..n_holes {
+            geom[n_holes + 1 + i] *= 2.0;
+        }
+        set_hole_geometry_from_top(&mut raw, &geom);
+        let new_geom = get_hole_geometry_from_top(&raw);
+        for i in 0..n_holes {
+            assert_abs_diff_eq!(
+                new_geom[n_holes + 1 + i],
+                GOLDEN_INITIAL_GEOMETRY[n_holes + 1 + i] * 2.0,
+                epsilon = 1e-12
+            );
         }
     }
 }

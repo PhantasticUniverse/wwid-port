@@ -1,0 +1,14 @@
+[package]
+name = "bobyqa"
+version = "0.1.0"
+edition = "2024"
+description = "Pure Rust implementation of Powell's BOBYQA bounded derivative-free optimizer"
+license = "Apache-2.0"
+keywords = ["optimization", "derivative-free", "bobyqa", "bounded"]
+categories = ["science", "mathematics"]
+readme = "README.md"
+repository = "https://github.com/xaviermac/bobyqa-rs"
+rust-version = "1.85"
+
+[dev-dependencies]
+approx = "0.5"

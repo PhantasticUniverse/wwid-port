@@ -4,13 +4,11 @@
 //! the components of a compiled instrument: bore sections, toneholes,
 //! termination, and mouthpiece.
 //!
-//! Each module ports a specific Java calculator class from WIDesigner v2.6.0:
-//!
-//! - [`tube`] — `Tube.java`: cylinder/cone matrices, radiation impedance
-//! - [`bore`] — `SimpleBoreSectionCalculator`: bore section TM
-//! - [`hole`] — `DefaultHoleCalculator`: Lefebvre-Scavone 2012 tonehole model
-//! - [`termination`] — `ThickFlangedOpenEndCalculator`: open end with flange
-//! - [`mouthpiece`] — `DefaultFippleMouthpieceCalculator`: fipple (NAF) mouthpiece
+//! - [`tube`] — Lossy cylinder/cone transfer matrices, radiation impedance (Silva 2008)
+//! - [`bore`] — Bore section transfer matrix (conical or cylindrical)
+//! - [`hole`] — Tonehole T-network model (Lefebvre & Scavone 2012)
+//! - [`termination`] — Thick-flanged open end with reflection coefficient
+//! - [`mouthpiece`] — Fipple mouthpiece: headspace, fipple factor, window impedance
 
 pub mod bore;
 pub mod hole;

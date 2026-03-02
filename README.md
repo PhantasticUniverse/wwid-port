@@ -41,16 +41,24 @@ Fipple factor behavior is treated as **load-bearing** and has dedicated fixtures
 - `wid/` — the actual port (Rust core + WASM + web app)
 - `tools/` — helper scripts (fetch oracle, run harness, etc.)
 
-## Quick start (once setup scripts exist)
+## Quick start
 
 1) Fetch oracle release:
-   - `./tools/fetch-oracle.sh`
+   ```bash
+   ./tools/fetch-oracle.sh
+   ```
 
 2) Generate golden outputs:
-   - `./tools/run-harness.sh <scenario-id>` (exact command depends on harness runner)
+   ```bash
+   cd golden-harness
+   ./gradlew run --args="<scenario-id>"   # or --args="--all"
+   ```
 
 3) Run port tests against fixtures:
-   - (later) `cargo test`
+   ```bash
+   cd wid
+   cargo test
+   ```
 
 ## Baseline
 

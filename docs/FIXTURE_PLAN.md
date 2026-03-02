@@ -51,6 +51,18 @@ A scenario describes:
 
 ## Fixture Suite v0 (Minimum, High-Leverage)
 
+**Generation status**: All 7 scenarios generated and committed (M1).
+
+| Scenario | Status |
+|----------|--------|
+| NAF-FF-01 | ✓ Generated and verified |
+| NAF-FF-02 | ✓ Generated |
+| NAF-FF-03 | ✓ Generated |
+| NAF-OPT-01 | ✓ Generated |
+| NAF-OPT-02 | ✓ Generated |
+| CONSTRAINTS-01 | ✓ Generated |
+| CONSTRAINTS-02 | ✓ Generated |
+
 ### Constraints creation semantics (all study models)
 
 CONSTRAINTS-01: Create default constraints

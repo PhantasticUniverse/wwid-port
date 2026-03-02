@@ -86,10 +86,10 @@ Constraints XML lower/upper bound arrays must match baseline ordering exactly �
 
 ## Milestones
 
-- **M0**: Repo setup + specs (current state)
-- **M1**: Golden harness + fixture suite v0 (NAF + fipple protected)
-- **M2**: NAF evaluation parity in Rust
-- **M3**: NAF calibration + optimization parity
+- **M0**: Repo setup + specs ✓
+- **M1**: Golden harness + fixture suite v0 (NAF + fipple protected) ✓
+- **M2**: NAF evaluation parity in Rust ✓
+- **M3**: NAF calibration + optimization parity ✓
 - **M4**: Browser-hosted MVP (NAF end-to-end)
 - **M5**: Full parity across all study models + tools
 

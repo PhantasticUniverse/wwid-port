@@ -40,7 +40,12 @@ All in `golden/scenarios/support/`, derived from oracle originals:
 
 ### Fixture generation status
 - NAF-FF-01: **generated and verified** — eval, zsample, and internals outputs all sane
-- NAF-FF-02 through CONSTRAINTS-02: pending
+- NAF-FF-02: **generated** — fipple calibration on 0-hole blank
+- NAF-FF-03: **generated** — fipple calibration with holes
+- NAF-OPT-01: **generated** — hole size + position optimization (BOBYQA)
+- NAF-OPT-02: **generated** — weight=0 exclusion
+- CONSTRAINTS-01: **generated** — default constraints creation
+- CONSTRAINTS-02: **generated** — blank constraints creation
 
 ## 2026-03-02: M2 — NAF Evaluation Parity in Rust
 
@@ -69,3 +74,64 @@ All in `golden/scenarios/support/`, derived from oracle originals:
 
 ### Notable fix
 Bracket search preference logic (`find_bracket`) needed to match Java's `PlayingRange.findBracket()` exactly — when the primary-direction bracket is outside `PreferredSolutionRatio`, the fallback direction is preferred unconditionally (not by distance comparison). Also uses `nearFreq²/bracket` as the search limit for the fallback, not `SearchBoundRatio`. This fixed fingering 14 (A5) which was finding the wrong Im(Z)=0 crossing.
+
+## 2026-03-02: M3 — NAF Calibration + Optimization Parity
+
+### Phase 1: Constraints types + XML parsing (wid-types)
+- Added `Constraints`, `Constraint`, `ConstraintType` types in `wid-types/src/constraints.rs`
+- XML deserialization with namespace stripping (reuses existing pattern)
+- `lower_bounds()` / `upper_bounds()` preserve category-then-constraint order (ABI)
+- Tested against CONSTRAINTS-01/02 golden fixtures
+
+### Phase 2: Instrument mutation API (wid-compile)
+- `get_hole_geometry_from_top()` — extract 13-element geometry vector (metres)
+- `set_hole_geometry_from_top()` — apply geometry to InstrumentRaw
+- `get_fipple_factor()` / `set_fipple_factor()` — read/write fipple factor
+- Hole sorting by bore position (ascending), unit conversion (instrument units ↔ metres)
+- Round-trip tested against NAF-OPT-01 golden initial geometry
+
+### Phase 3: Brent minimizer (wid-optimize)
+- New crate `wid-optimize` with `brent_min` module
+- Port of Apache Commons Math `BrentOptimizer` (golden section + parabolic interpolation)
+- 4 tests: quadratic, cosine, matching tolerances, start-at-boundary
+
+### Phase 4: Fipple factor calibration (wid-optimize)
+- `calibrate_fipple()` — 1D optimizer using Brent
+- Uses only the lowest-frequency fingering (matching Java `getLowestNote`)
+- NAF-FF-02 (0-hole): FF 0.75 → 0.266, norm 97743 → 0.0001
+- NAF-FF-03 (6-hole): FF 0.75 → 0.274, norm 90010 → 0.0009
+- Post-calibration eval within 1.0 cents on all fingerings
+
+### Phase 5: BOBYQA optimizer + hole optimization
+
+#### BOBYQA crate (standalone, open-source ready)
+- New crate `crates/bobyqa/` — pure Rust, zero dependencies
+- 1800 lines ported from Apache Commons Math 3.6.1 `BOBYQAOptimizer`
+- Fortran GOTO labels → Rust `loop { match state { 20 | 60 | 90 | ... } }`
+- State machine methods: `bobyqa`, `bobyqb`, `prelim`, `trsbox`, `altmov`, `update`
+- 32 unit tests + 1 doc test:
+  - 2D quadratics (bounded/unbounded), Rosenbrock 2D
+  - ACM3 13D suite: sphere, cigar, tablet, cigtab, two_axes, elli, rosenbrock, ackley, rastrigin
+  - DiffPow 6D, constrained Rosenbrock 13D
+  - Powell's "points in square" (m=5 npt=16/21, m=10 npt=26/41)
+  - Edge cases: tight bounds, minimum interp points, start at bound, asymmetric bounds
+  - ACM3 parity: 4 exact (sphere=56, cigar=56, tablet=57, bounded_quadratic=27), 5 near-parity
+- Java reference data generated from ACM3 via `BobyqaRef.java` + OpenJDK 17
+- Comprehensive documentation: module docs, README.md, algorithm overview, usage examples
+
+#### Hole optimization (wid-optimize)
+- `optimize_holes()` — multi-variable optimization using BOBYQA
+- Trust region: initial=10.0, stopping=1e-8, max_eval=20000+(n-1)*5000
+- NAF-OPT-01 (all weight=1): norm 1324815 → 975, all 15 notes within ±16 cents
+- NAF-OPT-02 (G5 weight=0): norm 1244615 → 964, fewer evaluations
+- Geometry tolerance: all 13 elements within 5e-3 of golden
+
+### Test count
+- **139 tests** total across 8 crates (up from 76 in M2)
+  - bobyqa: 32 + 1 doc test
+  - wid-optimize: 20 (brent: 4, fipple: 6, hole_from_top: 7, lib: 3)
+  - wid-eval: 8
+  - wid-compile: 22
+  - wid-types: 14
+  - wid-math: 22
+  - wid-physics: 20

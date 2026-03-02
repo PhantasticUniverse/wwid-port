@@ -213,12 +213,12 @@ In addition to generic XML checks, enforce baseline semantic rules, e.g.:
 
 ## Milestones
 
-M0: Repo setup + specs + fixture plan + API shape
-M1: Java golden harness + fixture suite v0 (NAF + fipple protected)
-M2: NAF evaluation parity in Rust
-M3: NAF calibration + optimization parity
-M4: Browser-hosted MVP (NAF end-to-end)
-M5: Full parity across all study models + tools (incl. DIRECT + multi-start + wizard components)
+- [x] M0: Repo setup + specs + fixture plan + API shape
+- [x] M1: Java golden harness + fixture suite v0 (NAF + fipple protected)
+- [x] M2: NAF evaluation parity in Rust (76 tests, all 15 fingerings within 0.5 cents)
+- [x] M3: NAF calibration + optimization parity (139 tests, fipple cal + BOBYQA hole optimization)
+- [ ] M4: Browser-hosted MVP (NAF end-to-end)
+- [ ] M5: Full parity across all study models + tools (incl. DIRECT + multi-start + wizard components)
 
 ---
 

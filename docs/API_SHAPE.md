@@ -2,6 +2,8 @@
 
 ## Purpose
 
+> **Status**: This is the designed API for the M4 browser-hosted MVP. It is not yet implemented.
+
 Define a stable “StudySession” API that mirrors baseline StudyModel behavior:
 
 * selection-driven tools

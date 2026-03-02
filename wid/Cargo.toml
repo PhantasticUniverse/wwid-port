@@ -7,6 +7,8 @@ members = [
     "crates/wid-compile",
     "crates/wid-acoustics",
     "crates/wid-eval",
+    "crates/bobyqa",
+    "crates/wid-optimize",
 ]
 
 [workspace.dependencies]

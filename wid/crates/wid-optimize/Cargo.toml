@@ -1,0 +1,16 @@
+[package]
+name = "wid-optimize"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+wid-types = { path = "../wid-types" }
+wid-compile = { path = "../wid-compile" }
+wid-eval = { path = "../wid-eval" }
+wid-physics = { path = "../wid-physics" }
+bobyqa = { path = "../bobyqa" }
+
+[dev-dependencies]
+approx = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }

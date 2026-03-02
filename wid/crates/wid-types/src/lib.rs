@@ -10,9 +10,11 @@
 //! `<ns2:instrument xmlns:ns2="...">`), but child elements are unqualified.
 //! Use [`strip_xml_namespaces`] to remove the prefix before deserializing.
 
+pub mod constraints;
 pub mod instrument;
 pub mod tuning;
 
+pub use constraints::*;
 pub use instrument::*;
 pub use tuning::*;
 
@@ -42,6 +44,12 @@ pub fn parse_instrument_xml(xml: &str) -> Result<InstrumentRaw, quick_xml::DeErr
 
 /// Deserialize a tuning from WIDesigner XML.
 pub fn parse_tuning_xml(xml: &str) -> Result<Tuning, quick_xml::DeError> {
+    let clean = strip_xml_namespaces(xml);
+    quick_xml::de::from_str(&clean)
+}
+
+/// Deserialize constraints from WIDesigner XML.
+pub fn parse_constraints_xml(xml: &str) -> Result<Constraints, quick_xml::DeError> {
     let clean = strip_xml_namespaces(xml);
     quick_xml::de::from_str(&clean)
 }
@@ -181,5 +189,105 @@ mod tests {
     #[test]
     fn inches_to_metres() {
         assert_abs_diff_eq!(LengthType::Inches.to_metres(), 0.0254, epsilon = 1e-10);
+    }
+
+    // ── Constraints parsing ───────────────────────────────────────
+
+    const CONSTRAINTS_6HOLE_XML: &str = include_str!(
+        "../../../../oracle/v2.6.0/constraints/NafStudyModel/HoleFromTopObjectiveFunction/6/1.25_max_hole_spacing.xml"
+    );
+    const CONSTRAINTS_FIPPLE_0HOLE_XML: &str = include_str!(
+        "../../../../oracle/v2.6.0/constraints/NafStudyModel/FippleFactorObjectiveFunction/0/0_holes.xml"
+    );
+    const CONSTRAINTS_FIPPLE_6HOLE_XML: &str = include_str!(
+        "../../../../oracle/v2.6.0/constraints/NafStudyModel/FippleFactorObjectiveFunction/6/6_holes.xml"
+    );
+
+    #[test]
+    fn parse_hole_from_top_constraints() {
+        let c = parse_constraints_xml(CONSTRAINTS_6HOLE_XML).expect("parse failed");
+        assert_eq!(c.name, "1-1/4\" max spacing");
+        assert_eq!(c.objective_function_name, "HoleFromTopObjectiveFunction");
+        assert_eq!(c.number_of_holes, 6);
+        assert_eq!(c.constraint_list.len(), 13);
+    }
+
+    #[test]
+    fn hole_from_top_lower_bounds() {
+        let c = parse_constraints_xml(CONSTRAINTS_6HOLE_XML).unwrap();
+        let lb = c.lower_bounds();
+        assert_eq!(lb.len(), 13);
+
+        // Position constraints (7): bore length, fraction, 5 spacings
+        assert_abs_diff_eq!(lb[0], 0.1905, epsilon = 1e-10);     // bore length
+        assert_abs_diff_eq!(lb[1], 0.25, epsilon = 1e-10);       // fraction (dimensionless)
+        assert_abs_diff_eq!(lb[2], 0.02032, epsilon = 1e-10);    // hole 6→5
+        assert_abs_diff_eq!(lb[3], 0.02032, epsilon = 1e-10);    // hole 5→4
+        assert_abs_diff_eq!(lb[4], 0.02032, epsilon = 1e-10);    // hole 4→3
+        assert_abs_diff_eq!(lb[5], 0.02032, epsilon = 1e-10);    // hole 3→2
+        assert_abs_diff_eq!(lb[6], 0.02032, epsilon = 1e-10);    // hole 2→1
+
+        // Size constraints (6): hole diameters
+        assert_abs_diff_eq!(lb[7], 0.0015875, epsilon = 1e-10);  // hole 6 (top)
+        assert_abs_diff_eq!(lb[8], 0.003175, epsilon = 1e-10);   // hole 5
+        assert_abs_diff_eq!(lb[9], 0.003175, epsilon = 1e-10);   // hole 4
+        assert_abs_diff_eq!(lb[10], 0.003175, epsilon = 1e-10);  // hole 3
+        assert_abs_diff_eq!(lb[11], 0.003175, epsilon = 1e-10);  // hole 2
+        assert_abs_diff_eq!(lb[12], 0.003175, epsilon = 1e-10);  // hole 1 (bottom)
+    }
+
+    #[test]
+    fn hole_from_top_upper_bounds() {
+        let c = parse_constraints_xml(CONSTRAINTS_6HOLE_XML).unwrap();
+        let ub = c.upper_bounds();
+        assert_eq!(ub.len(), 13);
+
+        // Position constraints
+        assert_abs_diff_eq!(ub[0], 0.6985, epsilon = 1e-10);     // bore length
+        assert_abs_diff_eq!(ub[1], 0.5, epsilon = 1e-10);        // fraction
+        assert_abs_diff_eq!(ub[2], 0.03175, epsilon = 1e-10);    // hole 6→5
+        assert_abs_diff_eq!(ub[3], 0.03175, epsilon = 1e-10);    // hole 5→4
+        assert_abs_diff_eq!(ub[4], 0.06985, epsilon = 1e-10);    // hole 4→3 (wider gap)
+        assert_abs_diff_eq!(ub[5], 0.03175, epsilon = 1e-10);    // hole 3→2
+        assert_abs_diff_eq!(ub[6], 0.03175, epsilon = 1e-10);    // hole 2→1
+
+        // Size constraints
+        assert_abs_diff_eq!(ub[7], 0.0127, epsilon = 1e-10);     // hole 6
+        assert_abs_diff_eq!(ub[8], 0.0127, epsilon = 1e-10);     // hole 5
+        assert_abs_diff_eq!(ub[9], 0.0127, epsilon = 1e-10);     // hole 4
+        assert_abs_diff_eq!(ub[10], 0.0127, epsilon = 1e-10);    // hole 3
+        assert_abs_diff_eq!(ub[11], 0.0127, epsilon = 1e-10);    // hole 2
+        assert_abs_diff_eq!(ub[12], 0.0127, epsilon = 1e-10);    // hole 1
+    }
+
+    #[test]
+    fn parse_fipple_factor_constraints() {
+        let c0 = parse_constraints_xml(CONSTRAINTS_FIPPLE_0HOLE_XML).unwrap();
+        assert_eq!(c0.objective_function_name, "FippleFactorObjectiveFunction");
+        assert_eq!(c0.number_of_holes, 0);
+        assert_eq!(c0.constraint_list.len(), 1);
+        let lb = c0.lower_bounds();
+        let ub = c0.upper_bounds();
+        assert_eq!(lb.len(), 1);
+        assert_abs_diff_eq!(lb[0], 0.2, epsilon = 1e-10);
+        assert_abs_diff_eq!(ub[0], 1.5, epsilon = 1e-10);
+
+        // 6-hole variant has same bounds
+        let c6 = parse_constraints_xml(CONSTRAINTS_FIPPLE_6HOLE_XML).unwrap();
+        assert_eq!(c6.number_of_holes, 6);
+        assert_abs_diff_eq!(c6.lower_bounds()[0], 0.2, epsilon = 1e-10);
+        assert_abs_diff_eq!(c6.upper_bounds()[0], 1.5, epsilon = 1e-10);
+    }
+
+    #[test]
+    fn constraint_category_ordering_preserved() {
+        let c = parse_constraints_xml(CONSTRAINTS_6HOLE_XML).unwrap();
+        // First 7 should be "Hole position", last 6 should be "Hole size"
+        for i in 0..7 {
+            assert_eq!(c.constraint_list[i].category, "Hole position");
+        }
+        for i in 7..13 {
+            assert_eq!(c.constraint_list[i].category, "Hole size");
+        }
     }
 }
