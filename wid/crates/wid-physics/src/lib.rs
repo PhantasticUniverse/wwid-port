@@ -201,6 +201,15 @@ impl PhysicalParameters {
     pub fn pressure(&self) -> f64 {
         self.pressure
     }
+    pub fn humidity(&self) -> f64 {
+        self.humidity
+    }
+    pub fn x_co2(&self) -> f64 {
+        self.x_co2
+    }
+    pub fn epsilon_constant(&self) -> f64 {
+        self.epsilon_constant
+    }
     pub fn speed_of_sound(&self) -> f64 {
         self.speed_of_sound
     }

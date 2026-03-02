@@ -31,7 +31,6 @@ pub mod types;
 
 use bobyqa::BobyqaProgress;
 use doc_store::{DocContent, DocStore};
-use types::*;
 use wid_compile::{compile, get_fipple_factor};
 use wid_eval::{cents, predicted_frequency};
 use wid_optimize::fingering_weights;
