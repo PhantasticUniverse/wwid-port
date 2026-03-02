@@ -18,6 +18,9 @@ pub enum DocKind {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum StudyKind {
     NAF,
+    Whistle,
+    Flute,
+    Reed,
 }
 
 /// Result of opening an XML document.

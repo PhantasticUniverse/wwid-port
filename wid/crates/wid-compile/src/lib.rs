@@ -64,6 +64,10 @@ pub struct CompiledMouthpiece {
     pub bore_diameter: f64,
     pub headspace: Vec<BoreSection>,
     pub mouthpiece_type: MouthpieceType,
+    /// Loop gain factor (Auvray, 2012): G = gain_factor * freq * rho / |Z|.
+    /// Computed from beta, windway_height, window_length, window_width.
+    /// None when beta or windway_height is absent.
+    pub gain_factor: Option<f64>,
 }
 
 /// The kind of mouthpiece, with its specific parameters (in metres).
@@ -205,6 +209,8 @@ pub fn compile(raw: &InstrumentRaw) -> Result<InstrumentCompiled, CompileError> 
 
     let mouthpiece_type = build_mouthpiece_type(&raw.mouthpiece, m);
 
+    let gain_factor = compute_gain_factor(&raw.mouthpiece, &mouthpiece_type);
+
     Ok(InstrumentCompiled {
         name: raw.name.clone(),
         mouthpiece: CompiledMouthpiece {
@@ -212,6 +218,7 @@ pub fn compile(raw: &InstrumentRaw) -> Result<InstrumentCompiled, CompileError> 
             bore_diameter: mp_bore_diameter,
             headspace,
             mouthpiece_type,
+            gain_factor,
         },
         components,
         termination: CompiledTermination {
@@ -547,6 +554,51 @@ fn build_mouthpiece_type(
         // For now, only NAF (fipple) and flute (embouchure) are supported.
         // Reed types will be added in M5.
         panic!("Unsupported mouthpiece type");
+    }
+}
+
+/// Compute the loop gain factor from mouthpiece parameters (Auvray, 2012).
+///
+/// For fipple instruments: `G0 = 8 * h * sqrt(2h/wl) * exp(beta * wl / h) / (wl * ww)`
+/// where h = windwayHeight, wl = windowLength, ww = windowWidth.
+/// Returns None if beta or windwayHeight is absent.
+fn compute_gain_factor(
+    mp: &wid_types::MouthpieceRaw,
+    compiled_type: &MouthpieceType,
+) -> Option<f64> {
+    let nominal_beta = mp.beta.unwrap_or(0.35);
+
+    match compiled_type {
+        MouthpieceType::Fipple {
+            window_length,
+            window_width,
+            windway_height: Some(wh),
+            ..
+        } => {
+            // Java: 8 * windwayHeight * sqrt(2 * windwayHeight / windowLength)
+            //       * exp(beta * windowLength / windwayHeight)
+            //       / (windowLength * windowWidth)
+            Some(
+                8.0 * wh
+                    * (2.0 * wh / window_length).sqrt()
+                    * (nominal_beta * window_length / wh).exp()
+                    / (window_length * window_width),
+            )
+        }
+        MouthpieceType::EmbouchureHole {
+            length,
+            airstream_length,
+            airstream_height,
+            ..
+        } => {
+            Some(
+                8.0 * airstream_height
+                    * (2.0 * airstream_height / airstream_length).sqrt()
+                    * (nominal_beta * airstream_length / airstream_height).exp()
+                    / (length * airstream_length),
+            )
+        }
+        _ => None,
     }
 }
 

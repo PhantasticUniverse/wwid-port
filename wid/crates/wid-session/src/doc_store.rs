@@ -101,4 +101,62 @@ impl DocStore {
             _ => None,
         }
     }
+
+    /// Get a mutable reference to the tuning content.
+    pub fn get_tuning_mut(&mut self, id: DocId) -> Option<&mut Tuning> {
+        match &mut self.get_mut(id)?.content {
+            DocContent::Tuning(tuning) => Some(tuning),
+            _ => None,
+        }
+    }
+
+    /// Get a mutable reference to the constraints content.
+    pub fn get_constraints_mut(&mut self, id: DocId) -> Option<&mut Constraints> {
+        match &mut self.get_mut(id)?.content {
+            DocContent::Constraints(c) => Some(c),
+            _ => None,
+        }
+    }
+
+    /// Replace the instrument content for a given doc ID.
+    /// Returns `None` if the doc doesn't exist or isn't an instrument.
+    pub fn replace_instrument(&mut self, id: DocId, inst: InstrumentRaw) -> Option<()> {
+        let doc = self.get_mut(id)?;
+        match &doc.content {
+            DocContent::Instrument(_) => {
+                doc.name = inst.name.clone();
+                doc.content = DocContent::Instrument(inst);
+                Some(())
+            }
+            _ => None,
+        }
+    }
+
+    /// Replace the tuning content for a given doc ID.
+    /// Returns `None` if the doc doesn't exist or isn't a tuning.
+    pub fn replace_tuning(&mut self, id: DocId, tuning: Tuning) -> Option<()> {
+        let doc = self.get_mut(id)?;
+        match &doc.content {
+            DocContent::Tuning(_) => {
+                doc.name = tuning.name.clone();
+                doc.content = DocContent::Tuning(tuning);
+                Some(())
+            }
+            _ => None,
+        }
+    }
+
+    /// Replace the constraints content for a given doc ID.
+    /// Returns `None` if the doc doesn't exist or isn't a constraints doc.
+    pub fn replace_constraints(&mut self, id: DocId, constraints: Constraints) -> Option<()> {
+        let doc = self.get_mut(id)?;
+        match &doc.content {
+            DocContent::Constraints(_) => {
+                doc.name = constraints.name.clone();
+                doc.content = DocContent::Constraints(constraints);
+                Some(())
+            }
+            _ => None,
+        }
+    }
 }

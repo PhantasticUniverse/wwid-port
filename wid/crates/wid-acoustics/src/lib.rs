@@ -13,5 +13,6 @@
 pub mod bore;
 pub mod hole;
 pub mod mouthpiece;
+pub mod simple_fipple;
 pub mod termination;
 pub mod tube;

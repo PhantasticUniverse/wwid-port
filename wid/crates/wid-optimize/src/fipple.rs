@@ -6,7 +6,7 @@
 //! Port of `FippleFactorObjectiveFunction` from WIDesigner.
 
 use wid_compile::{compile, get_fipple_factor, set_fipple_factor};
-use wid_eval::calculate_error_vector;
+use wid_eval::{CalculatorParams, calculate_error_vector};
 use wid_physics::PhysicalParameters;
 use wid_types::{Fingering, InstrumentRaw, Tuning};
 
@@ -28,6 +28,7 @@ pub fn calibrate_fipple(
     params: &PhysicalParameters,
     lower_bound: f64,
     upper_bound: f64,
+    calc_params: &CalculatorParams,
 ) -> CalibrationResult {
     // Extract the lowest-frequency fingering (matching Java getLowestNote)
     let lowest = get_lowest_fingering(&tuning.fingerings);
@@ -38,7 +39,7 @@ pub fn calibrate_fipple(
     let initial_ff = get_fipple_factor(instrument).unwrap_or(0.75);
 
     // Compute initial norm
-    let initial_norm = evaluate_norm(instrument, &lowest_fingerings, &weights, params);
+    let initial_norm = evaluate_norm(instrument, &lowest_fingerings, &weights, params, calc_params);
 
     // Clamp start point to bounds
     let start = initial_ff.clamp(lower_bound, upper_bound);
@@ -51,7 +52,7 @@ pub fn calibrate_fipple(
         &mut |ff| {
             eval_count += 1;
             set_fipple_factor(&mut work_inst, ff);
-            evaluate_norm(&work_inst, &lowest_fingerings, &weights, params)
+            evaluate_norm(&work_inst, &lowest_fingerings, &weights, params, calc_params)
         },
         lower_bound,
         upper_bound,
@@ -95,12 +96,13 @@ fn evaluate_norm(
     fingerings: &[Fingering],
     weights: &[i32],
     params: &PhysicalParameters,
+    calc_params: &CalculatorParams,
 ) -> f64 {
     let compiled = match compile(instrument) {
         Ok(c) => c,
         Err(_) => return f64::MAX,
     };
-    let errors = calculate_error_vector(&compiled, fingerings, params);
+    let errors = calculate_error_vector(&compiled, fingerings, params, calc_params);
     calc_norm(&errors, weights)
 }
 
@@ -151,7 +153,7 @@ mod tests {
         let params = default_params();
         let weights = fingering_weights(&tuning.fingerings);
 
-        let norm = evaluate_norm(&inst, &tuning.fingerings, &weights, &params);
+        let norm = evaluate_norm(&inst, &tuning.fingerings, &weights, &params, &CalculatorParams::NAF);
         assert!(
             (norm - FF02_INITIAL_NORM).abs() / FF02_INITIAL_NORM < 0.01,
             "initial norm: expected {FF02_INITIAL_NORM}, got {norm}"
@@ -170,6 +172,7 @@ mod tests {
             &params,
             DEFAULT_FF_LOWER,
             DEFAULT_FF_UPPER,
+            &CalculatorParams::NAF,
         );
 
         // Fipple factor (tolerance 1e-4: slight shift due to ≤0.5 cent eval tolerance)
@@ -206,12 +209,13 @@ mod tests {
             &params,
             DEFAULT_FF_LOWER,
             DEFAULT_FF_UPPER,
+            &CalculatorParams::NAF,
         );
 
         // After calibration, eval the single note
         // Golden eval_1.json: predictedFreq=369.99666945740086, cents=0.010512674575668225
         let compiled = compile(&inst).unwrap();
-        let errors = calculate_error_vector(&compiled, &tuning.fingerings, &params);
+        let errors = calculate_error_vector(&compiled, &tuning.fingerings, &params, &CalculatorParams::NAF);
         assert!(
             errors[0].abs() < 1.0,
             "post-calibration cents error too high: {}",
@@ -233,6 +237,7 @@ mod tests {
             &params,
             DEFAULT_FF_LOWER,
             DEFAULT_FF_UPPER,
+            &CalculatorParams::NAF,
         );
 
         // Fipple factor (tolerance 1e-4: slight shift due to ≤0.5 cent eval tolerance)
@@ -269,12 +274,13 @@ mod tests {
             &params,
             DEFAULT_FF_LOWER,
             DEFAULT_FF_UPPER,
+            &CalculatorParams::NAF,
         );
 
         // After calibration, evaluate all 15 fingerings
         // Golden eval_0.json: first note F#4 has cents=-0.02990
         let compiled = compile(&inst).unwrap();
-        let errors = calculate_error_vector(&compiled, &tuning.fingerings, &params);
+        let errors = calculate_error_vector(&compiled, &tuning.fingerings, &params, &CalculatorParams::NAF);
 
         // F#4 (all-closed) should be near zero after calibration
         assert!(

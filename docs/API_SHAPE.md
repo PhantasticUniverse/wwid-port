@@ -2,7 +2,7 @@
 
 ## Purpose
 
-> **Status**: This is the designed API for the M4 browser-hosted MVP. It is not yet implemented.
+> **Status**: Core API implemented through Phase 4e (NAF study model). Session lifecycle, document I/O, selection, evaluation, optimization, calibration, and constraints creation are all working end-to-end in the browser. Graph/spectrum/sketch/compare tools are Phase 4f/M5.
 
 Define a stable “StudySession” API that mirrors baseline StudyModel behavior:
 

@@ -28,7 +28,7 @@
 
 use bobyqa::{BobyqaProgress, bobyqa_minimize, bobyqa_minimize_with_callback};
 use wid_compile::{compile, get_hole_geometry_from_top, set_hole_geometry_from_top};
-use wid_eval::calculate_error_vector;
+use wid_eval::{CalculatorParams, calculate_error_vector};
 use wid_physics::PhysicalParameters;
 use wid_types::{Constraints, InstrumentRaw, Tuning};
 
@@ -51,6 +51,7 @@ pub fn optimize_holes(
     tuning: &Tuning,
     constraints: &Constraints,
     params: &PhysicalParameters,
+    calc_params: &CalculatorParams,
 ) -> OptimizationResult {
     let weights = fingering_weights(&tuning.fingerings);
     let lower_bounds = constraints.lower_bounds();
@@ -72,7 +73,7 @@ pub fn optimize_holes(
         .collect();
 
     // Compute initial norm
-    let initial_norm = evaluate_norm(instrument, &tuning.fingerings, &weights, params);
+    let initial_norm = evaluate_norm(instrument, &tuning.fingerings, &weights, params, calc_params);
 
     // Trust region parameters (matching Java HoleFromTopObjectiveFunction)
     let initial_trust = 10.0;
@@ -87,7 +88,7 @@ pub fn optimize_holes(
     let result = bobyqa_minimize(
         &mut |point: &[f64]| {
             set_hole_geometry_from_top(&mut work_inst, point);
-            evaluate_norm(&work_inst, &fingerings, &weights, params)
+            evaluate_norm(&work_inst, &fingerings, &weights, params, calc_params)
         },
         &initial_geometry,
         &lower_bounds,
@@ -134,6 +135,7 @@ pub fn optimize_holes_with_progress(
     tuning: &Tuning,
     constraints: &Constraints,
     params: &PhysicalParameters,
+    calc_params: &CalculatorParams,
     on_progress: &mut dyn FnMut(BobyqaProgress) -> bool,
 ) -> OptimizationResult {
     let weights = fingering_weights(&tuning.fingerings);
@@ -154,7 +156,7 @@ pub fn optimize_holes_with_progress(
         })
         .collect();
 
-    let initial_norm = evaluate_norm(instrument, &tuning.fingerings, &weights, params);
+    let initial_norm = evaluate_norm(instrument, &tuning.fingerings, &weights, params, calc_params);
 
     let initial_trust = 10.0;
     let stopping_trust = 1e-8;
@@ -167,7 +169,7 @@ pub fn optimize_holes_with_progress(
     let result = bobyqa_minimize_with_callback(
         &mut |point: &[f64]| {
             set_hole_geometry_from_top(&mut work_inst, point);
-            evaluate_norm(&work_inst, &fingerings, &weights, params)
+            evaluate_norm(&work_inst, &fingerings, &weights, params, calc_params)
         },
         &initial_geometry,
         &lower_bounds,
@@ -206,12 +208,13 @@ fn evaluate_norm(
     fingerings: &[wid_types::Fingering],
     weights: &[i32],
     params: &PhysicalParameters,
+    calc_params: &CalculatorParams,
 ) -> f64 {
     let compiled = match compile(instrument) {
         Ok(c) => c,
         Err(_) => return f64::MAX,
     };
-    let errors = calculate_error_vector(&compiled, fingerings, params);
+    let errors = calculate_error_vector(&compiled, fingerings, params, calc_params);
     calc_norm(&errors, weights)
 }
 
@@ -322,7 +325,7 @@ mod tests {
         let params = default_params();
         let weights = fingering_weights(&tuning.fingerings);
 
-        let norm = evaluate_norm(&inst, &tuning.fingerings, &weights, &params);
+        let norm = evaluate_norm(&inst, &tuning.fingerings, &weights, &params, &CalculatorParams::NAF);
         let rel_err = (norm - OPT01_INITIAL_NORM).abs() / OPT01_INITIAL_NORM;
         assert!(
             rel_err < 0.01,
@@ -337,7 +340,7 @@ mod tests {
         let constraints = parse_constraints_xml(CONSTRAINTS_XML).unwrap();
         let params = default_params();
 
-        let result = optimize_holes(&mut inst, &tuning, &constraints, &params);
+        let result = optimize_holes(&mut inst, &tuning, &constraints, &params, &CalculatorParams::NAF);
 
         // Final norm must be low (optimization succeeded)
         assert!(
@@ -373,11 +376,11 @@ mod tests {
         let constraints = parse_constraints_xml(CONSTRAINTS_XML).unwrap();
         let params = default_params();
 
-        optimize_holes(&mut inst, &tuning, &constraints, &params);
+        optimize_holes(&mut inst, &tuning, &constraints, &params, &CalculatorParams::NAF);
 
         // After optimization, evaluate all 15 fingerings
         let compiled = compile(&inst).unwrap();
-        let errors = calculate_error_vector(&compiled, &tuning.fingerings, &params);
+        let errors = calculate_error_vector(&compiled, &tuning.fingerings, &params, &CalculatorParams::NAF);
 
         // Load golden eval results
         #[derive(serde::Deserialize)]
@@ -417,7 +420,7 @@ mod tests {
         let params = default_params();
         let weights = fingering_weights(&tuning.fingerings);
 
-        let norm = evaluate_norm(&inst, &tuning.fingerings, &weights, &params);
+        let norm = evaluate_norm(&inst, &tuning.fingerings, &weights, &params, &CalculatorParams::NAF);
         let rel_err = (norm - OPT02_INITIAL_NORM).abs() / OPT02_INITIAL_NORM;
         assert!(
             rel_err < 0.01,
@@ -432,7 +435,7 @@ mod tests {
         let constraints = parse_constraints_xml(CONSTRAINTS_XML).unwrap();
         let params = default_params();
 
-        let result = optimize_holes(&mut inst, &tuning, &constraints, &params);
+        let result = optimize_holes(&mut inst, &tuning, &constraints, &params, &CalculatorParams::NAF);
 
         // Final norm must be low
         assert!(

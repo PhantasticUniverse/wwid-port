@@ -10,18 +10,19 @@
 //! to mouthpiece, cascading transfer matrices through the state vector.
 
 mod brent;
+pub mod calculator_params;
+pub mod linear_v;
+
+pub use calculator_params::CalculatorParams;
+pub use linear_v::LinearVTuner;
 
 use num_complex::Complex64;
-use wid_acoustics::{bore, hole, mouthpiece, termination};
+use wid_acoustics::{bore, hole, mouthpiece, simple_fipple, termination};
+use wid_acoustics::termination::TerminationType;
+use calculator_params::MouthpieceModel;
 use wid_compile::{Component, InstrumentCompiled};
 use wid_physics::PhysicalParameters;
 use wid_types::Fingering;
-
-/// NAF hole size multiplier.
-const NAF_HOLE_SIZE_MULT: f64 = 0.9605;
-
-/// NAF finger adjustment (no adjustment for NAF).
-const NAF_FINGER_ADJ: f64 = 0.0;
 
 /// Compute the input impedance at a given frequency for a fingering.
 ///
@@ -35,13 +36,20 @@ pub fn calc_z(
     freq: f64,
     fingering: &Fingering,
     params: &PhysicalParameters,
+    calc_params: &CalculatorParams,
 ) -> Complex64 {
     let wave_number = params.calc_wave_number(freq);
 
     // Step 1: Termination state vector
     let is_open_end = fingering.open_end.unwrap_or(true);
-    let mut sv =
-        termination::calc_termination_sv(&instrument.termination, is_open_end, wave_number, params);
+    let term_type = if calc_params.unflanged_end {
+        TerminationType::Unflanged
+    } else {
+        TerminationType::ThickFlanged
+    };
+    let mut sv = termination::calc_termination_sv(
+        &instrument.termination, is_open_end, wave_number, params, term_type,
+    );
 
     // Step 2: Walk components in reverse (termination → mouthpiece)
     // Holes are matched to fingering in reverse order:
@@ -57,19 +65,34 @@ pub fn calc_z(
             Component::Hole(h) => {
                 let is_open = fingering.open_holes[next_hole_index as usize];
                 next_hole_index -= 1;
-                hole::calc_hole_tm(h, is_open, wave_number, params, NAF_HOLE_SIZE_MULT, NAF_FINGER_ADJ)
+                hole::calc_hole_tm(
+                    h, is_open, wave_number, params,
+                    calc_params.hole_size_mult, calc_params.finger_adjustment,
+                )
             }
         };
         sv = tm.multiply_sv(&sv);
     }
 
     // Step 3: Apply mouthpiece
-    let mp_tm = mouthpiece::calc_fipple_mouthpiece_tm(
-        &instrument.mouthpiece,
-        wave_number,
-        params,
-    );
-    sv = mp_tm.multiply_sv(&sv);
+    match calc_params.mouthpiece_model {
+        MouthpieceModel::DefaultFipple => {
+            let mp_tm = mouthpiece::calc_fipple_mouthpiece_tm(
+                &instrument.mouthpiece,
+                wave_number,
+                params,
+            );
+            sv = mp_tm.multiply_sv(&sv);
+        }
+        MouthpieceModel::SimpleFipple => {
+            sv = simple_fipple::calc_simple_fipple_sv(
+                &instrument.mouthpiece,
+                sv,
+                wave_number,
+                params,
+            );
+        }
+    }
 
     // Step 4: Z = P/U
     sv.impedance()
@@ -81,19 +104,20 @@ pub fn calc_z_samples(
     frequencies: &[f64],
     fingering: &Fingering,
     params: &PhysicalParameters,
+    calc_params: &CalculatorParams,
 ) -> Vec<Complex64> {
     frequencies
         .iter()
-        .map(|&f| calc_z(instrument, f, fingering, params))
+        .map(|&f| calc_z(instrument, f, fingering, params, calc_params))
         .collect()
 }
 
 // ── Playing range and frequency prediction ──────────────────────
 
 /// Search constants for bracket finding.
-const SEARCH_BOUND_RATIO: f64 = 2.0; // within an octave
+pub(crate) const SEARCH_BOUND_RATIO: f64 = 2.0; // within an octave
 const PREFERRED_SOLUTION_RATIO: f64 = 1.12; // within ~200 cents
-const GRANULARITY: f64 = 0.012; // ~20 cents step
+pub(crate) const GRANULARITY: f64 = 0.012; // ~20 cents step
 
 /// Find the predicted playing frequency for a fingering.
 ///
@@ -104,9 +128,10 @@ pub fn predicted_frequency(
     instrument: &InstrumentCompiled,
     fingering: &Fingering,
     params: &PhysicalParameters,
+    calc_params: &CalculatorParams,
 ) -> Option<f64> {
     let target_freq = fingering.note.frequency?;
-    find_x_zero(instrument, fingering, params, target_freq)
+    find_x_zero(instrument, fingering, params, calc_params, target_freq)
 }
 
 /// Find a zero of Im(Z) near `near_freq`.
@@ -114,10 +139,11 @@ fn find_x_zero(
     instrument: &InstrumentCompiled,
     fingering: &Fingering,
     params: &PhysicalParameters,
+    calc_params: &CalculatorParams,
     near_freq: f64,
 ) -> Option<f64> {
     let reactance = |f: f64| -> f64 {
-        calc_z(instrument, f, fingering, params).im
+        calc_z(instrument, f, fingering, params, calc_params).im
     };
 
     let bracket = find_bracket(near_freq, &reactance)?;
@@ -131,7 +157,7 @@ fn find_x_zero(
 /// Searches in the primary direction first, then tries the opposite direction
 /// if the primary result is outside the preferred range. Prefers the fallback
 /// direction unconditionally when found (matching upstream logic).
-fn find_bracket(
+pub(crate) fn find_bracket(
     near_freq: f64,
     reactance: &dyn Fn(f64) -> f64,
 ) -> Option<(f64, f64)> {
@@ -267,25 +293,59 @@ fn find_bracket_below(
 ///
 /// Returns one value per fingering: 1200 × log2(predicted/target).
 /// Returns 1200.0 (huge error) if prediction fails.
+///
+/// For `SimpleFipple` instruments (Whistle), pre-builds a [`LinearVTuner`]
+/// from the full fingering set and uses `predicted_frequency_linear_v`.
+/// For `DefaultFipple` instruments (NAF), uses `predicted_frequency`.
 pub fn calculate_error_vector(
     instrument: &InstrumentCompiled,
     fingerings: &[Fingering],
     params: &PhysicalParameters,
+    calc_params: &CalculatorParams,
 ) -> Vec<f64> {
-    fingerings
-        .iter()
-        .map(|f| {
-            if let Some(target) = f.note.frequency {
-                if let Some(predicted) = predicted_frequency(instrument, f, params) {
-                    cents(target, predicted)
-                } else {
-                    1200.0
-                }
-            } else {
-                1200.0
-            }
-        })
-        .collect()
+    match calc_params.mouthpiece_model {
+        MouthpieceModel::DefaultFipple => {
+            fingerings
+                .iter()
+                .map(|f| {
+                    if let Some(target) = f.note.frequency {
+                        if let Some(predicted) = predicted_frequency(instrument, f, params, calc_params) {
+                            cents(target, predicted)
+                        } else {
+                            1200.0
+                        }
+                    } else {
+                        1200.0
+                    }
+                })
+                .collect()
+        }
+        MouthpieceModel::SimpleFipple => {
+            let tuner = LinearVTuner::new(
+                instrument,
+                fingerings,
+                params,
+                calc_params,
+                calc_params.blowing_level,
+            );
+            fingerings
+                .iter()
+                .map(|f| {
+                    if let Some(target) = f.note.frequency {
+                        if let Some(predicted) = linear_v::predicted_frequency_linear_v(
+                            &tuner, instrument, f, params, calc_params,
+                        ) {
+                            cents(target, predicted)
+                        } else {
+                            1200.0
+                        }
+                    } else {
+                        1200.0
+                    }
+                })
+                .collect()
+        }
+    }
 }
 
 /// Cents deviation: 1200 × log2(f_predicted / f_target).
@@ -338,7 +398,7 @@ mod tests {
         let fingering = &tuning.fingerings[0];
 
         for sample in &samples {
-            let z = calc_z(&inst, sample.frequency, fingering, &params);
+            let z = calc_z(&inst, sample.frequency, fingering, &params, &CalculatorParams::NAF);
 
             // Tolerance: abs_err <= A + R * max(|expected|, |actual|)
             let a = 1.0; // absolute tolerance
@@ -382,7 +442,7 @@ mod tests {
 
         for (i, exp) in expected.iter().enumerate() {
             let fingering = &tuning.fingerings[i];
-            let predicted = predicted_frequency(&inst, fingering, &params);
+            let predicted = predicted_frequency(&inst, fingering, &params, &CalculatorParams::NAF);
 
             assert!(
                 predicted.is_some(),
@@ -406,7 +466,7 @@ mod tests {
         let (inst, tuning, params) = setup();
         let expected: Vec<EvalResult> = serde_json::from_str(EVAL_JSON).unwrap();
 
-        let errors = calculate_error_vector(&inst, &tuning.fingerings, &params);
+        let errors = calculate_error_vector(&inst, &tuning.fingerings, &params, &CalculatorParams::NAF);
 
         assert_eq!(errors.len(), expected.len());
         for (i, (err, exp)) in errors.iter().zip(expected.iter()).enumerate() {

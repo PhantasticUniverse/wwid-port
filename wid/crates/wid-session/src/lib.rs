@@ -32,7 +32,8 @@ pub mod types;
 use bobyqa::BobyqaProgress;
 use doc_store::{DocContent, DocStore};
 use wid_compile::{compile, get_fipple_factor};
-use wid_eval::{cents, predicted_frequency};
+use wid_eval::{CalculatorParams, LinearVTuner, cents, predicted_frequency};
+use wid_eval::calculator_params::MouthpieceModel;
 use wid_optimize::fingering_weights;
 pub use wid_physics::{PhysicalParameters, TemperatureType};
 use wid_types::{
@@ -54,6 +55,7 @@ pub use types::{
 /// crate (wid-eval, wid-optimize, etc.).
 pub struct StudySession {
     pub study_kind: StudyKind,
+    calc_params: CalculatorParams,
     docs: DocStore,
     selection: Selection,
     params: PhysicalParameters,
@@ -69,8 +71,21 @@ impl StudySession {
     /// so users of the Java app see 20°C. We'll add a similar override when
     /// we implement the settings/preferences UI.
     pub fn new(study_kind: StudyKind) -> Self {
+        let calc_params = match study_kind {
+            StudyKind::NAF => CalculatorParams::NAF,
+            StudyKind::Whistle => CalculatorParams::WHISTLE,
+            StudyKind::Flute => CalculatorParams::FLUTE,
+            _ => CalculatorParams {
+                hole_size_mult: 1.0,
+                finger_adjustment: 0.0,
+                unflanged_end: true,
+                mouthpiece_model: wid_eval::calculator_params::MouthpieceModel::DefaultFipple,
+                blowing_level: 5,
+            },
+        };
         StudySession {
             study_kind,
+            calc_params,
             docs: DocStore::new(),
             selection: Selection::default(),
             params: PhysicalParameters::new(72.0, TemperatureType::F),
@@ -229,14 +244,19 @@ impl StudySession {
         let Some(ref key) = self.selection.optimizer_key else {
             return false;
         };
-        if !naf::is_valid_optimizer(key) {
-            return false;
+        match self.study_kind {
+            StudyKind::NAF => {
+                if !naf::is_valid_optimizer(key) {
+                    return false;
+                }
+                // Fipple calibration doesn't require constraints
+                if naf::is_fipple_optimizer(key) {
+                    return true;
+                }
+                self.selection.constraints_id.is_some()
+            }
+            _ => false, // Other study models not yet implemented
         }
-        // Fipple calibration doesn't require constraints
-        if naf::is_fipple_optimizer(key) {
-            return true;
-        }
-        self.selection.constraints_id.is_some()
     }
 
     /// Check if instrument sketching is possible (only needs instrument).
@@ -253,6 +273,7 @@ impl StudySession {
     pub fn available_optimizers(&self) -> Vec<OptimizerInfo> {
         match self.study_kind {
             StudyKind::NAF => naf::available_optimizers(),
+            _ => Vec::new(),
         }
     }
 
@@ -285,17 +306,35 @@ impl StudySession {
 
         let weights = fingering_weights(&tuning.fingerings);
 
+        // Pre-build LinearV tuner for Whistle instruments
+        let linear_v_tuner = match self.calc_params.mouthpiece_model {
+            MouthpieceModel::SimpleFipple => Some(LinearVTuner::new(
+                &compiled,
+                &tuning.fingerings,
+                &self.params,
+                &self.calc_params,
+                self.calc_params.blowing_level,
+            )),
+            _ => None,
+        };
+
         let mut rows = Vec::with_capacity(tuning.fingerings.len());
         for (i, fingering) in tuning.fingerings.iter().enumerate() {
             let target_freq = fingering.note.frequency.unwrap_or(0.0);
             let weight = weights[i];
 
-            let (predicted_freq, cent_dev) =
-                if let Some(pred) = predicted_frequency(&compiled, fingering, &self.params) {
-                    (pred, cents(target_freq, pred))
-                } else {
-                    (0.0, 1200.0)
-                };
+            let pred = match &linear_v_tuner {
+                Some(tuner) => wid_eval::linear_v::predicted_frequency_linear_v(
+                    tuner, &compiled, fingering, &self.params, &self.calc_params,
+                ),
+                None => predicted_frequency(&compiled, fingering, &self.params, &self.calc_params),
+            };
+
+            let (predicted_freq, cent_dev) = if let Some(pred) = pred {
+                (pred, cents(target_freq, pred))
+            } else {
+                (0.0, 1200.0)
+            };
 
             rows.push(EvalRow {
                 note: fingering.note.name.clone(),
@@ -371,6 +410,7 @@ impl StudySession {
             &self.params,
             lower,
             upper,
+            &self.calc_params,
         );
 
         Ok(CalibResult {
@@ -400,7 +440,7 @@ impl StudySession {
         let constraints_id = self.selection.constraints_id
             .ok_or(SessionError::MissingSelection("constraints"))?;
 
-        if naf::is_fipple_optimizer(&optimizer_key) {
+        if self.study_kind == StudyKind::NAF && naf::is_fipple_optimizer(&optimizer_key) {
             return Err(SessionError::CannotOptimize(
                 "Use calibrate() for fipple factor optimization".to_string(),
             ));
@@ -431,6 +471,7 @@ impl StudySession {
             &tuning,
             &constraints,
             &self.params,
+            &self.calc_params,
             &mut progress_adapter,
         );
 
@@ -467,7 +508,12 @@ impl StudySession {
         optimizer_key: &str,
     ) -> Result<OpenResult, SessionError> {
         let n_holes = self.instrument_hole_count()?;
-        let constraints = naf::create_default_constraints(optimizer_key, n_holes);
+        let constraints = match self.study_kind {
+            StudyKind::NAF => naf::create_default_constraints(optimizer_key, n_holes),
+            _ => return Err(SessionError::CannotOptimize(
+                format!("Constraints not yet implemented for {:?}", self.study_kind),
+            )),
+        };
         let name = constraints.name.clone();
         let id = self.docs.insert(
             DocKind::Constraints,
@@ -487,7 +533,12 @@ impl StudySession {
         optimizer_key: &str,
     ) -> Result<OpenResult, SessionError> {
         let n_holes = self.instrument_hole_count()?;
-        let constraints = naf::create_blank_constraints(optimizer_key, n_holes);
+        let constraints = match self.study_kind {
+            StudyKind::NAF => naf::create_blank_constraints(optimizer_key, n_holes),
+            _ => return Err(SessionError::CannotOptimize(
+                format!("Constraints not yet implemented for {:?}", self.study_kind),
+            )),
+        };
         let name = constraints.name.clone();
         let id = self.docs.insert(
             DocKind::Constraints,
@@ -516,6 +567,58 @@ impl StudySession {
         let inst = self.docs.get_instrument(doc_id)
             .ok_or(SessionError::DocNotFound(doc_id))?;
         Ok(get_fipple_factor(inst))
+    }
+
+    // ── Document get/set ────────────────────────────────────────────
+
+    /// Get the instrument data for a given doc ID.
+    pub fn get_instrument(&self, doc_id: DocId) -> Result<&InstrumentRaw, SessionError> {
+        self.docs
+            .get_instrument(doc_id)
+            .ok_or(SessionError::DocNotFound(doc_id))
+    }
+
+    /// Get the tuning data for a given doc ID.
+    pub fn get_tuning(&self, doc_id: DocId) -> Result<&Tuning, SessionError> {
+        self.docs
+            .get_tuning(doc_id)
+            .ok_or(SessionError::DocNotFound(doc_id))
+    }
+
+    /// Get the constraints data for a given doc ID.
+    pub fn get_constraints(&self, doc_id: DocId) -> Result<&Constraints, SessionError> {
+        self.docs
+            .get_constraints(doc_id)
+            .ok_or(SessionError::DocNotFound(doc_id))
+    }
+
+    /// Replace the instrument content for a given doc ID.
+    pub fn set_instrument(
+        &mut self,
+        doc_id: DocId,
+        inst: InstrumentRaw,
+    ) -> Result<(), SessionError> {
+        self.docs
+            .replace_instrument(doc_id, inst)
+            .ok_or(SessionError::DocNotFound(doc_id))
+    }
+
+    /// Replace the tuning content for a given doc ID.
+    pub fn set_tuning(&mut self, doc_id: DocId, tuning: Tuning) -> Result<(), SessionError> {
+        self.docs
+            .replace_tuning(doc_id, tuning)
+            .ok_or(SessionError::DocNotFound(doc_id))
+    }
+
+    /// Replace the constraints content for a given doc ID.
+    pub fn set_constraints(
+        &mut self,
+        doc_id: DocId,
+        constraints: Constraints,
+    ) -> Result<(), SessionError> {
+        self.docs
+            .replace_constraints(doc_id, constraints)
+            .ok_or(SessionError::DocNotFound(doc_id))
     }
 
     // ── Document access ─────────────────────────────────────────────
@@ -842,5 +945,81 @@ mod tests {
             session.docs().get_instrument(inst.doc_id).unwrap().holes.len(),
             0
         );
+    }
+
+    // ── Document get/set ──────────────────────────────────────────
+
+    #[test]
+    fn get_and_set_instrument_roundtrip() {
+        let mut session = StudySession::new(StudyKind::NAF);
+        let result = session.open_xml(NAF_6HOLE_XML).unwrap();
+        let doc_id = result.doc_id;
+
+        let mut inst = session.get_instrument(doc_id).unwrap().clone();
+        assert_eq!(inst.holes.len(), 6);
+
+        // Modify and set back
+        inst.name = "Modified NAF".to_string();
+        inst.holes[0].diameter = 0.999;
+        session.set_instrument(doc_id, inst).unwrap();
+
+        let updated = session.get_instrument(doc_id).unwrap();
+        assert_eq!(updated.name, "Modified NAF");
+        assert!((updated.holes[0].diameter - 0.999).abs() < 1e-10);
+    }
+
+    #[test]
+    fn get_and_set_tuning_roundtrip() {
+        let mut session = StudySession::new(StudyKind::NAF);
+        let result = session.open_xml(TUNING_6HOLE_XML).unwrap();
+        let doc_id = result.doc_id;
+
+        let mut tuning = session.get_tuning(doc_id).unwrap().clone();
+        assert_eq!(tuning.fingerings.len(), 15);
+
+        tuning.name = "Modified Tuning".to_string();
+        session.set_tuning(doc_id, tuning).unwrap();
+
+        let updated = session.get_tuning(doc_id).unwrap();
+        assert_eq!(updated.name, "Modified Tuning");
+        assert_eq!(updated.fingerings.len(), 15);
+    }
+
+    #[test]
+    fn get_and_set_constraints_roundtrip() {
+        let mut session = StudySession::new(StudyKind::NAF);
+        let result = session.open_xml(CONSTRAINTS_XML).unwrap();
+        let doc_id = result.doc_id;
+
+        let mut constraints = session.get_constraints(doc_id).unwrap().clone();
+        constraints.name = "Modified Constraints".to_string();
+        session.set_constraints(doc_id, constraints).unwrap();
+
+        let updated = session.get_constraints(doc_id).unwrap();
+        assert_eq!(updated.name, "Modified Constraints");
+    }
+
+    #[test]
+    fn set_instrument_updates_doc_name() {
+        let mut session = StudySession::new(StudyKind::NAF);
+        let result = session.open_xml(NAF_6HOLE_XML).unwrap();
+        let doc_id = result.doc_id;
+
+        let mut inst = session.get_instrument(doc_id).unwrap().clone();
+        inst.name = "New Name".to_string();
+        session.set_instrument(doc_id, inst).unwrap();
+
+        // list_docs should reflect the new name
+        let docs = session.list_docs(DocKind::Instrument);
+        let entry = docs.iter().find(|(id, _)| *id == doc_id).unwrap();
+        assert_eq!(entry.1, "New Name");
+    }
+
+    #[test]
+    fn set_nonexistent_doc_fails() {
+        let mut session = StudySession::new(StudyKind::NAF);
+        let fake_id = DocId(999);
+        let inst = parse_instrument_xml(NAF_6HOLE_XML).unwrap();
+        assert!(session.set_instrument(fake_id, inst).is_err());
     }
 }

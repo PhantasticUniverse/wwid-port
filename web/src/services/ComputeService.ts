@@ -27,6 +27,21 @@ export class ComputeService {
     this.worker.onmessage = (event: MessageEvent<WorkerResponse>) => {
       this.handleMessage(event.data);
     };
+
+    // Catch unhandled Worker errors (e.g. WASM panics) — reject all pending
+    // promises so callers get an error instead of hanging forever.
+    this.worker.onerror = (event: ErrorEvent) => {
+      const msg = event.message || "Worker error";
+      for (const [, p] of this.pending) {
+        p.reject(new Error(msg));
+      }
+      this.pending.clear();
+      if (this.optimizePending) {
+        this.optimizePending.reject(new Error(msg));
+        this.optimizePending = null;
+        this.onProgress = null;
+      }
+    };
   }
 
   /** Initialize the WASM module and create a session. */

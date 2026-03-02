@@ -54,11 +54,14 @@ impl Response {
 
 #[wasm_bindgen]
 impl WasmSession {
-    /// Create a new session. study_kind should be "NAF".
+    /// Create a new session for the given study kind.
     #[wasm_bindgen(constructor)]
     pub fn new(study_kind: &str) -> Result<WasmSession, JsValue> {
         let kind = match study_kind {
             "NAF" => StudyKind::NAF,
+            "Whistle" => StudyKind::Whistle,
+            "Flute" => StudyKind::Flute,
+            "Reed" => StudyKind::Reed,
             _ => return Err(JsValue::from_str(&format!("Unknown study kind: {study_kind}"))),
         };
         Ok(WasmSession {
@@ -102,6 +105,12 @@ impl WasmSession {
             }
             "get_params" => self.cmd_get_params(),
             "set_params" => self.cmd_set_params(&cmd.args),
+            "get_instrument" => self.cmd_get_instrument(&cmd.args),
+            "get_tuning" => self.cmd_get_tuning(&cmd.args),
+            "get_constraints" => self.cmd_get_constraints(&cmd.args),
+            "set_instrument" => self.cmd_set_instrument(&cmd.args),
+            "set_tuning" => self.cmd_set_tuning(&cmd.args),
+            "set_constraints" => self.cmd_set_constraints(&cmd.args),
             _ => Response::err(format!("Unknown command: {}", cmd.cmd)),
         }
     }
@@ -265,5 +274,95 @@ impl WasmSession {
         self.session.set_params(params);
         // Return the updated params so the UI can refresh
         self.cmd_get_params()
+    }
+
+    fn cmd_get_instrument(&self, args: &serde_json::Value) -> String {
+        let doc_id = match args.get("docId").and_then(|v| v.as_u64()) {
+            Some(id) => wid_session::DocId(id as u32),
+            None => return Response::err("Missing 'docId' argument"),
+        };
+        match self.session.get_instrument(doc_id) {
+            Ok(inst) => Response::ok(inst),
+            Err(e) => Response::err(e),
+        }
+    }
+
+    fn cmd_get_tuning(&self, args: &serde_json::Value) -> String {
+        let doc_id = match args.get("docId").and_then(|v| v.as_u64()) {
+            Some(id) => wid_session::DocId(id as u32),
+            None => return Response::err("Missing 'docId' argument"),
+        };
+        match self.session.get_tuning(doc_id) {
+            Ok(tuning) => Response::ok(tuning),
+            Err(e) => Response::err(e),
+        }
+    }
+
+    fn cmd_get_constraints(&self, args: &serde_json::Value) -> String {
+        let doc_id = match args.get("docId").and_then(|v| v.as_u64()) {
+            Some(id) => wid_session::DocId(id as u32),
+            None => return Response::err("Missing 'docId' argument"),
+        };
+        match self.session.get_constraints(doc_id) {
+            Ok(c) => Response::ok(c),
+            Err(e) => Response::err(e),
+        }
+    }
+
+    fn cmd_set_instrument(&mut self, args: &serde_json::Value) -> String {
+        let doc_id = match args.get("docId").and_then(|v| v.as_u64()) {
+            Some(id) => wid_session::DocId(id as u32),
+            None => return Response::err("Missing 'docId' argument"),
+        };
+        let data = match args.get("data") {
+            Some(d) => d,
+            None => return Response::err("Missing 'data' argument"),
+        };
+        let inst: wid_types::InstrumentRaw = match serde_json::from_value(data.clone()) {
+            Ok(i) => i,
+            Err(e) => return Response::err(format!("Invalid instrument data: {e}")),
+        };
+        match self.session.set_instrument(doc_id, inst) {
+            Ok(()) => Response::ok(true),
+            Err(e) => Response::err(e),
+        }
+    }
+
+    fn cmd_set_tuning(&mut self, args: &serde_json::Value) -> String {
+        let doc_id = match args.get("docId").and_then(|v| v.as_u64()) {
+            Some(id) => wid_session::DocId(id as u32),
+            None => return Response::err("Missing 'docId' argument"),
+        };
+        let data = match args.get("data") {
+            Some(d) => d,
+            None => return Response::err("Missing 'data' argument"),
+        };
+        let tuning: wid_types::Tuning = match serde_json::from_value(data.clone()) {
+            Ok(t) => t,
+            Err(e) => return Response::err(format!("Invalid tuning data: {e}")),
+        };
+        match self.session.set_tuning(doc_id, tuning) {
+            Ok(()) => Response::ok(true),
+            Err(e) => Response::err(e),
+        }
+    }
+
+    fn cmd_set_constraints(&mut self, args: &serde_json::Value) -> String {
+        let doc_id = match args.get("docId").and_then(|v| v.as_u64()) {
+            Some(id) => wid_session::DocId(id as u32),
+            None => return Response::err("Missing 'docId' argument"),
+        };
+        let data = match args.get("data") {
+            Some(d) => d,
+            None => return Response::err("Missing 'data' argument"),
+        };
+        let constraints: wid_types::Constraints = match serde_json::from_value(data.clone()) {
+            Ok(c) => c,
+            Err(e) => return Response::err(format!("Invalid constraints data: {e}")),
+        };
+        match self.session.set_constraints(doc_id, constraints) {
+            Ok(()) => Response::ok(true),
+            Err(e) => Response::err(e),
+        }
     }
 }

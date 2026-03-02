@@ -81,3 +81,11 @@ export interface PhysicalParams {
   density: number;
   epsilonConstant: number;
 }
+
+/** An open editor tab in the workspace. */
+export interface WorkspaceTab {
+  id: string;
+  docId: DocId;
+  kind: DocKind;
+  title: string;
+}

@@ -111,14 +111,17 @@ Constraints XML lower/upper bound arrays must match baseline ordering exactly �
 - **M1**: Golden harness + fixture suite v0 (NAF + fipple protected) ✓
 - **M2**: NAF evaluation parity in Rust ✓
 - **M3**: NAF calibration + optimization parity ✓
-- **M4**: Browser-hosted MVP (NAF end-to-end) — **in progress**
+- **M4**: Browser-hosted MVP (NAF end-to-end) ✓
   - Phase 4a: wid-session crate ✓
   - Phase 4b: WASM + Web Worker + frontend ✓
   - Phase 4c: UI shell + settings + file handling ✓
-  - Phase 4d: Editors (instrument/tuning/constraints) — next
-  - Phase 4e: Optimization + calibration UI
-  - Phase 4f: Remaining tools + polish
-- **M5**: Full parity across all study models + tools
+  - Phase 4d: Editors (instrument/tuning/constraints) ✓
+  - Phase 4e: Optimization + calibration UI ✓
+  - Phase 4f: Bug fixes + polish ✓
+- **M5**: Full parity across all study models + tools — in progress
+  - M5.1: Study model infrastructure refactor ✓
+  - M5.2: Whistle evaluation parity ✓
+  - M5.3: Flute evaluation parity ✓
 
 ## Temperature Default
 

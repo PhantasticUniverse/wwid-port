@@ -6,7 +6,7 @@
 //! Tolerance: <= 0.5 cents per fingering.
 
 use wid_compile::compile;
-use wid_eval::{calculate_error_vector, predicted_frequency};
+use wid_eval::{CalculatorParams, calculate_error_vector, predicted_frequency};
 use wid_physics::{PhysicalParameters, TemperatureType};
 use wid_types::{parse_instrument_xml, parse_tuning_xml};
 
@@ -145,7 +145,7 @@ fn all_36_naf_combos_match_golden_within_half_cent() {
             combo.name
         );
 
-        let errors = calculate_error_vector(&compiled, &tuning.fingerings, &params);
+        let errors = calculate_error_vector(&compiled, &tuning.fingerings, &params, &CalculatorParams::NAF);
 
         for (i, golden_f) in combo.fingerings.iter().enumerate() {
             let rust_cents = errors[i];
@@ -202,7 +202,7 @@ fn all_36_naf_combos_predicted_freq_matches_golden() {
 
         for (i, golden_f) in combo.fingerings.iter().enumerate() {
             let fingering = &tuning.fingerings[i];
-            let predicted = predicted_frequency(&compiled, fingering, &params);
+            let predicted = predicted_frequency(&compiled, fingering, &params, &CalculatorParams::NAF);
 
             match (predicted, golden_f.predicted_freq) {
                 (Some(pred), Some(golden_pred)) => {

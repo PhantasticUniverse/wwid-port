@@ -1,0 +1,1457 @@
+[ {
+  "instrument" : "FeadogMk1.xml",
+  "tuning" : "A4-Equal.xml",
+  "name" : "FeadogMk1__A4-Equal",
+  "numFingerings" : 17,
+  "fingerings" : [ {
+    "note" : "low A",
+    "targetFreq" : 440.0,
+    "predictedFreq" : 600.3451980730035,
+    "cents" : 537.9465170480623
+  }, {
+    "note" : "B",
+    "targetFreq" : 493.88,
+    "predictedFreq" : 677.1805084723686,
+    "cents" : 546.4558814698701
+  }, {
+    "note" : "C#",
+    "targetFreq" : 554.37,
+    "predictedFreq" : 756.9716521641716,
+    "cents" : 539.2681035338899
+  }, {
+    "note" : "D",
+    "targetFreq" : 587.33,
+    "predictedFreq" : 811.7382411816477,
+    "cents" : 560.2119002956787
+  }, {
+    "note" : "E",
+    "targetFreq" : 659.26,
+    "predictedFreq" : 901.384896689035,
+    "cents" : 541.5548725453693
+  }, {
+    "note" : "F#",
+    "targetFreq" : 739.99,
+    "predictedFreq" : 1034.1443449217293,
+    "cents" : 579.4318679019423
+  }, {
+    "note" : "G-nat",
+    "targetFreq" : 783.99,
+    "predictedFreq" : 1109.5219783399873,
+    "cents" : 601.2373059786516
+  }, {
+    "note" : "G#",
+    "targetFreq" : 830.61,
+    "predictedFreq" : 1158.4552965944404,
+    "cents" : 575.951072779934
+  }, {
+    "note" : "A",
+    "targetFreq" : 880.0,
+    "predictedFreq" : 942.6469553500435,
+    "cents" : 119.05682790620759
+  }, {
+    "note" : "B",
+    "targetFreq" : 987.77,
+    "predictedFreq" : 1337.916574936684,
+    "cents" : 525.289323061885
+  }, {
+    "note" : "C#",
+    "targetFreq" : 1108.73,
+    "predictedFreq" : 1495.904327712802,
+    "cents" : 518.5317941638315
+  }, {
+    "note" : "D",
+    "targetFreq" : 1174.7,
+    "predictedFreq" : 1604.3298186714565,
+    "cents" : 539.6140799196838
+  }, {
+    "note" : "E",
+    "targetFreq" : 1318.5,
+    "predictedFreq" : 1775.1717329459273,
+    "cents" : 514.8732345438743
+  }, {
+    "note" : "F#",
+    "targetFreq" : 1480.0,
+    "predictedFreq" : 2026.141870561443,
+    "cents" : 543.7656232860542
+  }, {
+    "note" : "G-nat",
+    "targetFreq" : 1568.0,
+    "predictedFreq" : 2090.75537351328,
+    "cents" : 498.11845372101385
+  }, {
+    "note" : "G#",
+    "targetFreq" : 1661.2,
+    "predictedFreq" : 2251.268361870564,
+    "cents" : 526.2147195142817
+  }, {
+    "note" : "A",
+    "targetFreq" : 1760.0,
+    "predictedFreq" : 1794.307256526566,
+    "cents" : 33.42183495222064
+  } ]
+}, {
+  "instrument" : "FeadogMk1.xml",
+  "tuning" : "A4-Just.xml",
+  "name" : "FeadogMk1__A4-Just",
+  "numFingerings" : 17,
+  "fingerings" : [ {
+    "note" : "low A",
+    "targetFreq" : 440.0,
+    "predictedFreq" : 600.3451980730035,
+    "cents" : 537.9465170480623
+  }, {
+    "note" : "B",
+    "targetFreq" : 495.0,
+    "predictedFreq" : 677.1405088425626,
+    "cents" : 542.4320442627613
+  }, {
+    "note" : "C#",
+    "targetFreq" : 550.0,
+    "predictedFreq" : 757.1175037208005,
+    "cents" : 553.3027241708245
+  }, {
+    "note" : "D",
+    "targetFreq" : 586.67,
+    "predictedFreq" : 811.7593353432173,
+    "cents" : 562.2034207924277
+  }, {
+    "note" : "E",
+    "targetFreq" : 660.0,
+    "predictedFreq" : 901.3631874483294,
+    "cents" : 539.571006855386
+  }, {
+    "note" : "F#",
+    "targetFreq" : 733.33,
+    "predictedFreq" : 1034.3349686344209,
+    "cents" : 595.4028141160885
+  }, {
+    "note" : "G-nat",
+    "targetFreq" : 782.22,
+    "predictedFreq" : 1109.5703116882669,
+    "cents" : 605.2257154198899
+  }, {
+    "note" : "G#",
+    "targetFreq" : 825.0,
+    "predictedFreq" : 1158.604423420738,
+    "cents" : 587.9064644500643
+  }, {
+    "note" : "A",
+    "targetFreq" : 880.0,
+    "predictedFreq" : 942.6469553500435,
+    "cents" : 119.05682790620759
+  }, {
+    "note" : "B",
+    "targetFreq" : 990.0,
+    "predictedFreq" : 1337.8682379329944,
+    "cents" : 521.3227278846172
+  }, {
+    "note" : "C#",
+    "targetFreq" : 1100.0,
+    "predictedFreq" : 1496.0836862109868,
+    "cents" : 532.4248242612089
+  }, {
+    "note" : "D",
+    "targetFreq" : 1173.3,
+    "predictedFreq" : 1604.3573457413681,
+    "cents" : 541.7082883772745
+  }, {
+    "note" : "E",
+    "targetFreq" : 1320.0,
+    "predictedFreq" : 1775.1441160496581,
+    "cents" : 512.8778709327431
+  }, {
+    "note" : "F#",
+    "targetFreq" : 1466.7,
+    "predictedFreq" : 2026.3936820169954,
+    "cents" : 559.608807467477
+  }, {
+    "note" : "G-nat",
+    "targetFreq" : 1564.4,
+    "predictedFreq" : 2090.819572528956,
+    "cents" : 502.1509543339565
+  }, {
+    "note" : "G#",
+    "targetFreq" : 1650.0,
+    "predictedFreq" : 2251.468534532868,
+    "cents" : 538.0803491052436
+  }, {
+    "note" : "A",
+    "targetFreq" : 1760.0,
+    "predictedFreq" : 1794.307256526566,
+    "cents" : 33.42183495222064
+  } ]
+}, {
+  "instrument" : "FeadogMk1.xml",
+  "tuning" : "Bb4-Just.xml",
+  "name" : "FeadogMk1__Bb4-Just",
+  "numFingerings" : 17,
+  "fingerings" : [ {
+    "note" : "Bb",
+    "targetFreq" : 466.16,
+    "predictedFreq" : 599.3540944279933,
+    "cents" : 435.1000485166556
+  }, {
+    "note" : "C",
+    "targetFreq" : 524.43,
+    "predictedFreq" : 676.132849133494,
+    "cents" : 439.8678279415485
+  }, {
+    "note" : "D",
+    "targetFreq" : 582.7,
+    "predictedFreq" : 756.0648462347448,
+    "cents" : 450.9079995121076
+  }, {
+    "note" : "Eb",
+    "targetFreq" : 621.55,
+    "predictedFreq" : 810.690096616248,
+    "cents" : 459.9360804565307
+  }, {
+    "note" : "F",
+    "targetFreq" : 699.25,
+    "predictedFreq" : 900.2620758945399,
+    "cents" : 437.4440373613046
+  }, {
+    "note" : "G",
+    "targetFreq" : 776.94,
+    "predictedFreq" : 1033.1333274851208,
+    "cents" : 493.3816246392739
+  }, {
+    "note" : "Ab",
+    "targetFreq" : 828.74,
+    "predictedFreq" : 1108.3547060427823,
+    "cents" : 503.3138374792234
+  }, {
+    "note" : "A",
+    "targetFreq" : 874.06,
+    "predictedFreq" : 1157.352503949243,
+    "cents" : 486.02894646807806
+  }, {
+    "note" : "Bb",
+    "targetFreq" : 932.33,
+    "predictedFreq" : 941.8581797312509,
+    "cents" : 17.602982956917664
+  }, {
+    "note" : "C",
+    "targetFreq" : 1048.9,
+    "predictedFreq" : 1336.651502718894,
+    "cents" : 419.69547386243704
+  }, {
+    "note" : "D",
+    "targetFreq" : 1165.4,
+    "predictedFreq" : 1494.7937237418166,
+    "cents" : 430.9454346444697
+  }, {
+    "note" : "Eb",
+    "targetFreq" : 1243.1,
+    "predictedFreq" : 1603.0477629560223,
+    "cents" : 440.2500648868483
+  }, {
+    "note" : "F",
+    "targetFreq" : 1398.5,
+    "predictedFreq" : 1773.7689325175415,
+    "cents" : 411.52539518147404
+  }, {
+    "note" : "G",
+    "targetFreq" : 1553.9,
+    "predictedFreq" : 2024.8101971396366,
+    "cents" : 458.2716178695761
+  }, {
+    "note" : "Ab",
+    "targetFreq" : 1657.5,
+    "predictedFreq" : 2089.2348308416413,
+    "cents" : 400.7589488261772
+  }, {
+    "note" : "A",
+    "targetFreq" : 1748.1,
+    "predictedFreq" : 2249.7912840446334,
+    "cents" : 436.80414060625145
+  }, {
+    "note" : "Bb",
+    "targetFreq" : 1864.7,
+    "predictedFreq" : 1792.5629958975892,
+    "cents" : -68.30366708625469
+  } ]
+}, {
+  "instrument" : "FeadogMk1.xml",
+  "tuning" : "D4-Just.xml",
+  "name" : "FeadogMk1__D4-Just",
+  "numFingerings" : 17,
+  "fingerings" : [ {
+    "note" : "D",
+    "targetFreq" : 293.66,
+    "predictedFreq" : null,
+    "cents" : 1200.0
+  }, {
+    "note" : "E",
+    "targetFreq" : 330.37,
+    "predictedFreq" : null,
+    "cents" : 1200.0
+  }, {
+    "note" : "F#",
+    "targetFreq" : 367.08,
+    "predictedFreq" : null,
+    "cents" : 1200.0
+  }, {
+    "note" : "G",
+    "targetFreq" : 391.55,
+    "predictedFreq" : null,
+    "cents" : 1200.0
+  }, {
+    "note" : "A",
+    "targetFreq" : 440.5,
+    "predictedFreq" : null,
+    "cents" : 1200.0
+  }, {
+    "note" : "B",
+    "targetFreq" : 489.44,
+    "predictedFreq" : null,
+    "cents" : 1200.0
+  }, {
+    "note" : "C-nat",
+    "targetFreq" : 522.07,
+    "predictedFreq" : null,
+    "cents" : 1200.0
+  }, {
+    "note" : "C#",
+    "targetFreq" : 550.62,
+    "predictedFreq" : null,
+    "cents" : 1200.0
+  }, {
+    "note" : "D",
+    "targetFreq" : 587.33,
+    "predictedFreq" : 920.0707726669566,
+    "cents" : 777.0882099077364
+  }, {
+    "note" : "E",
+    "targetFreq" : 660.75,
+    "predictedFreq" : 638.2058088330301,
+    "cents" : -60.099336050843256
+  }, {
+    "note" : "F#",
+    "targetFreq" : 734.16,
+    "predictedFreq" : 709.2147838637961,
+    "cents" : -59.846283154607505
+  }, {
+    "note" : "G",
+    "targetFreq" : 783.1,
+    "predictedFreq" : 758.0690151625803,
+    "cents" : -56.24081951398126
+  }, {
+    "note" : "A",
+    "targetFreq" : 880.99,
+    "predictedFreq" : 835.4190176329245,
+    "cents" : -91.95078929824936
+  }, {
+    "note" : "B",
+    "targetFreq" : 978.88,
+    "predictedFreq" : 950.6308380968727,
+    "cents" : -50.69617096801755
+  }, {
+    "note" : "C-nat",
+    "targetFreq" : 1044.1,
+    "predictedFreq" : 1026.9240575040137,
+    "cents" : -28.716477865678524
+  }, {
+    "note" : "C#",
+    "targetFreq" : 1101.2,
+    "predictedFreq" : 1055.7127947514196,
+    "cents" : -73.03093226555659
+  }, {
+    "note" : "D",
+    "targetFreq" : 1174.7,
+    "predictedFreq" : 1004.4623932747076,
+    "cents" : -271.0425732134278
+  } ]
+}, {
+  "instrument" : "FeadogMk1.xml",
+  "tuning" : "D5-Equal.xml",
+  "name" : "FeadogMk1__D5-Equal",
+  "numFingerings" : 17,
+  "fingerings" : [ {
+    "note" : "D",
+    "targetFreq" : 587.33,
+    "predictedFreq" : 595.8192706318918,
+    "cents" : 24.844145966641904
+  }, {
+    "note" : "E",
+    "targetFreq" : 659.26,
+    "predictedFreq" : 671.5505931981613,
+    "cents" : 31.97825223080026
+  }, {
+    "note" : "F#",
+    "targetFreq" : 739.99,
+    "predictedFreq" : 749.906460471351,
+    "cents" : 23.045853164811387
+  }, {
+    "note" : "G",
+    "targetFreq" : 783.99,
+    "predictedFreq" : 803.8619558073245,
+    "cents" : 43.3350258911948
+  }, {
+    "note" : "A",
+    "targetFreq" : 880.0,
+    "predictedFreq" : 891.7320070887645,
+    "cents" : 22.928012729983628
+  }, {
+    "note" : "B",
+    "targetFreq" : 987.77,
+    "predictedFreq" : 1021.7895975191427,
+    "cents" : 58.62131470703617
+  }, {
+    "note" : "C-nat",
+    "targetFreq" : 1046.5,
+    "predictedFreq" : 1095.9440307173709,
+    "cents" : 79.92217309508827
+  }, {
+    "note" : "C#",
+    "targetFreq" : 1108.73,
+    "predictedFreq" : 1143.3577127386095,
+    "cents" : 53.24250911048814
+  }, {
+    "note" : "D",
+    "targetFreq" : 1174.7,
+    "predictedFreq" : 1185.7367354989576,
+    "cents" : 16.18964087727765
+  }, {
+    "note" : "E",
+    "targetFreq" : 1318.5,
+    "predictedFreq" : 1318.8752699917623,
+    "cents" : 0.492671785549988
+  }, {
+    "note" : "F#",
+    "targetFreq" : 1480.0,
+    "predictedFreq" : 1472.5669193857502,
+    "cents" : -8.716774106100782
+  }, {
+    "note" : "G",
+    "targetFreq" : 1568.0,
+    "predictedFreq" : 1578.7738246278611,
+    "cents" : 11.854735011311822
+  }, {
+    "note" : "A",
+    "targetFreq" : 1760.0,
+    "predictedFreq" : 1744.0689176931635,
+    "cents" : -15.742054628237943
+  }, {
+    "note" : "B",
+    "targetFreq" : 1975.5,
+    "predictedFreq" : 1984.9404167665773,
+    "cents" : 8.253426476964131
+  }, {
+    "note" : "C-nat",
+    "targetFreq" : 2093.0,
+    "predictedFreq" : 2043.4690321306753,
+    "cents" : -41.46231776952706
+  }, {
+    "note" : "C#",
+    "targetFreq" : 2217.5,
+    "predictedFreq" : 2200.775691166694,
+    "cents" : -13.106394081692816
+  }, {
+    "note" : "D",
+    "targetFreq" : 2349.3,
+    "predictedFreq" : 2338.676110478678,
+    "cents" : -7.846657203562824
+  } ]
+}, {
+  "instrument" : "FeadogMk1.xml",
+  "tuning" : "D5-Just.xml",
+  "name" : "FeadogMk1__D5-Just",
+  "numFingerings" : 17,
+  "fingerings" : [ {
+    "note" : "D",
+    "targetFreq" : 587.33,
+    "predictedFreq" : 595.8192706318918,
+    "cents" : 24.844145966641904
+  }, {
+    "note" : "E",
+    "targetFreq" : 660.75,
+    "predictedFreq" : 671.4945290528409,
+    "cents" : 27.925350711644885
+  }, {
+    "note" : "F#",
+    "targetFreq" : 734.16,
+    "predictedFreq" : 750.1154017579443,
+    "cents" : 37.221662232601915
+  }, {
+    "note" : "G",
+    "targetFreq" : 783.1,
+    "predictedFreq" : 803.8928123562843,
+    "cents" : 45.36792410833337
+  }, {
+    "note" : "A",
+    "targetFreq" : 880.99,
+    "predictedFreq" : 891.6999252266762,
+    "cents" : 20.919183384358224
+  }, {
+    "note" : "B",
+    "targetFreq" : 978.88,
+    "predictedFreq" : 1022.0748866723349,
+    "cents" : 74.75638587274608
+  }, {
+    "note" : "C-nat",
+    "targetFreq" : 1044.1,
+    "predictedFreq" : 1096.0179583516979,
+    "cents" : 84.01385125019527
+  }, {
+    "note" : "C#",
+    "targetFreq" : 1101.2,
+    "predictedFreq" : 1143.5854111725716,
+    "cents" : 65.38512666674325
+  }, {
+    "note" : "D",
+    "targetFreq" : 1174.7,
+    "predictedFreq" : 1185.7367354989576,
+    "cents" : 16.18964087727765
+  }, {
+    "note" : "E",
+    "targetFreq" : 1321.5,
+    "predictedFreq" : 1318.7948691117301,
+    "cents" : -3.547494936588612
+  }, {
+    "note" : "F#",
+    "targetFreq" : 1468.3,
+    "predictedFreq" : 1472.8701815512716,
+    "cents" : 5.380212494667553
+  }, {
+    "note" : "G",
+    "targetFreq" : 1566.2,
+    "predictedFreq" : 1578.8187751672365,
+    "cents" : 13.89255328515371
+  }, {
+    "note" : "A",
+    "targetFreq" : 1762.0,
+    "predictedFreq" : 1744.0211397221212,
+    "cents" : -17.755676118447656
+  }, {
+    "note" : "B",
+    "targetFreq" : 1957.8,
+    "predictedFreq" : 1985.3890690676485,
+    "cents" : 24.226033456886725
+  }, {
+    "note" : "C-nat",
+    "targetFreq" : 2088.3,
+    "predictedFreq" : 2043.6020164518964,
+    "cents" : -37.45765969105743
+  }, {
+    "note" : "C#",
+    "targetFreq" : 2202.5,
+    "predictedFreq" : 2201.146563055346,
+    "cents" : -1.0641708693357772
+  }, {
+    "note" : "D",
+    "targetFreq" : 2349.3,
+    "predictedFreq" : 2338.676110478678,
+    "cents" : -7.846657203562824
+  } ]
+}, {
+  "instrument" : "FeadogMk1.xml",
+  "tuning" : "FeadogMk1-tuning.xml",
+  "name" : "FeadogMk1__FeadogMk1-tuning",
+  "numFingerings" : 17,
+  "fingerings" : [ {
+    "note" : "D",
+    "targetFreq" : 587.33,
+    "predictedFreq" : 595.8192706318918,
+    "cents" : 24.844145966641904
+  }, {
+    "note" : "E",
+    "targetFreq" : 660.75,
+    "predictedFreq" : 671.4945290528409,
+    "cents" : 27.925350711644885
+  }, {
+    "note" : "F#",
+    "targetFreq" : 734.16,
+    "predictedFreq" : 750.1154017579443,
+    "cents" : 37.221662232601915
+  }, {
+    "note" : "G",
+    "targetFreq" : 783.1,
+    "predictedFreq" : 803.8928123562843,
+    "cents" : 45.36792410833337
+  }, {
+    "note" : "A",
+    "targetFreq" : 880.99,
+    "predictedFreq" : 891.6999252266762,
+    "cents" : 20.919183384358224
+  }, {
+    "note" : "B",
+    "targetFreq" : 978.88,
+    "predictedFreq" : 1022.0748866723349,
+    "cents" : 74.75638587274608
+  }, {
+    "note" : "C-nat",
+    "targetFreq" : 1044.1,
+    "predictedFreq" : 1096.0179583516979,
+    "cents" : 84.01385125019527
+  }, {
+    "note" : "C#",
+    "targetFreq" : 1101.2,
+    "predictedFreq" : 1143.5854111725716,
+    "cents" : 65.38512666674325
+  }, {
+    "note" : "D",
+    "targetFreq" : 1174.7,
+    "predictedFreq" : 1185.7367354989576,
+    "cents" : 16.18964087727765
+  }, {
+    "note" : "E",
+    "targetFreq" : 1321.5,
+    "predictedFreq" : 1318.7948691117301,
+    "cents" : -3.547494936588612
+  }, {
+    "note" : "F#",
+    "targetFreq" : 1468.3,
+    "predictedFreq" : 1472.8701815512716,
+    "cents" : 5.380212494667553
+  }, {
+    "note" : "G",
+    "targetFreq" : 1566.2,
+    "predictedFreq" : 1578.8187751672365,
+    "cents" : 13.89255328515371
+  }, {
+    "note" : "A",
+    "targetFreq" : 1762.0,
+    "predictedFreq" : 1744.0211397221212,
+    "cents" : -17.755676118447656
+  }, {
+    "note" : "B",
+    "targetFreq" : 1957.8,
+    "predictedFreq" : 1985.3890690676485,
+    "cents" : 24.226033456886725
+  }, {
+    "note" : "C-nat",
+    "targetFreq" : 2088.3,
+    "predictedFreq" : 2043.6020164518964,
+    "cents" : -37.45765969105743
+  }, {
+    "note" : "C#",
+    "targetFreq" : 2202.5,
+    "predictedFreq" : 2201.146563055346,
+    "cents" : -1.0641708693357772
+  }, {
+    "note" : "D",
+    "targetFreq" : 2349.3,
+    "predictedFreq" : 2338.676110478678,
+    "cents" : -7.846657203562824
+  } ]
+}, {
+  "instrument" : "FeadogMk1.xml",
+  "tuning" : "SamplePVC-tuning.xml",
+  "name" : "FeadogMk1__SamplePVC-tuning",
+  "numFingerings" : 17,
+  "fingerings" : [ {
+    "note" : "D",
+    "targetFreq" : 587.33,
+    "predictedFreq" : 595.8192706318918,
+    "cents" : 24.844145966641904
+  }, {
+    "note" : "E",
+    "targetFreq" : 660.74,
+    "predictedFreq" : 671.4949048104501,
+    "cents" : 27.952520725565567
+  }, {
+    "note" : "F#",
+    "targetFreq" : 734.16,
+    "predictedFreq" : 750.1154017579443,
+    "cents" : 37.221662232601915
+  }, {
+    "note" : "G",
+    "targetFreq" : 783.1,
+    "predictedFreq" : 803.8928123562843,
+    "cents" : 45.36792410833337
+  }, {
+    "note" : "A",
+    "targetFreq" : 880.99,
+    "predictedFreq" : 891.6999252266762,
+    "cents" : 20.919183384358224
+  }, {
+    "note" : "B",
+    "targetFreq" : 978.88,
+    "predictedFreq" : 1022.0748866723349,
+    "cents" : 74.75638587274608
+  }, {
+    "note" : "C-nat",
+    "targetFreq" : 1044.1,
+    "predictedFreq" : 1096.0179583516979,
+    "cents" : 84.01385125019527
+  }, {
+    "note" : "C#",
+    "targetFreq" : 1101.2,
+    "predictedFreq" : 1143.5854111725716,
+    "cents" : 65.38512666674325
+  }, {
+    "note" : "D",
+    "targetFreq" : 1174.7,
+    "predictedFreq" : 1185.7367354989576,
+    "cents" : 16.18964087727765
+  }, {
+    "note" : "E",
+    "targetFreq" : 1321.5,
+    "predictedFreq" : 1318.7948691117301,
+    "cents" : -3.547494936588612
+  }, {
+    "note" : "F#",
+    "targetFreq" : 1468.3,
+    "predictedFreq" : 1472.8701815512716,
+    "cents" : 5.380212494667553
+  }, {
+    "note" : "G",
+    "targetFreq" : 1566.2,
+    "predictedFreq" : 1578.8187751672365,
+    "cents" : 13.89255328515371
+  }, {
+    "note" : "A",
+    "targetFreq" : 1762.0,
+    "predictedFreq" : 1744.0211397221212,
+    "cents" : -17.755676118447656
+  }, {
+    "note" : "B",
+    "targetFreq" : 1957.8,
+    "predictedFreq" : 1985.3890690676485,
+    "cents" : 24.226033456886725
+  }, {
+    "note" : "C-nat",
+    "targetFreq" : 2088.3,
+    "predictedFreq" : 2043.6020164518964,
+    "cents" : -37.45765969105743
+  }, {
+    "note" : "C#",
+    "targetFreq" : 2202.5,
+    "predictedFreq" : 2201.146563055346,
+    "cents" : -1.0641708693357772
+  }, {
+    "note" : "D",
+    "targetFreq" : 2349.3,
+    "predictedFreq" : 2338.676110478678,
+    "cents" : -7.846657203562824
+  } ]
+}, {
+  "instrument" : "SamplePVC-Whistle.xml",
+  "tuning" : "A4-Equal.xml",
+  "name" : "SamplePVC-Whistle__A4-Equal",
+  "numFingerings" : 17,
+  "fingerings" : [ {
+    "note" : "low A",
+    "targetFreq" : 440.0,
+    "predictedFreq" : 587.1972697276947,
+    "cents" : 499.6100836727304
+  }, {
+    "note" : "B",
+    "targetFreq" : 493.88,
+    "predictedFreq" : 661.1179401488886,
+    "cents" : 504.89654076401234
+  }, {
+    "note" : "C#",
+    "targetFreq" : 554.37,
+    "predictedFreq" : 733.9637867344215,
+    "cents" : 485.83163495957757
+  }, {
+    "note" : "D",
+    "targetFreq" : 587.33,
+    "predictedFreq" : 782.3262600535851,
+    "cents" : 496.3188739336564
+  }, {
+    "note" : "E",
+    "targetFreq" : 659.26,
+    "predictedFreq" : 886.3169987574387,
+    "cents" : 512.3702799966842
+  }, {
+    "note" : "F#",
+    "targetFreq" : 739.99,
+    "predictedFreq" : 989.4558616032392,
+    "cents" : 502.9554925725347
+  }, {
+    "note" : "G-nat",
+    "targetFreq" : 783.99,
+    "predictedFreq" : 1070.3523526295764,
+    "cents" : 539.0143709782478
+  }, {
+    "note" : "G#",
+    "targetFreq" : 830.61,
+    "predictedFreq" : 1128.1954911519642,
+    "cents" : 530.1287162816573
+  }, {
+    "note" : "A",
+    "targetFreq" : 880.0,
+    "predictedFreq" : 898.1046373342241,
+    "cents" : 35.2560216763702
+  }, {
+    "note" : "B",
+    "targetFreq" : 987.77,
+    "predictedFreq" : 1314.658883317031,
+    "cents" : 494.92974225156786
+  }, {
+    "note" : "C#",
+    "targetFreq" : 1108.73,
+    "predictedFreq" : 1461.3883985337627,
+    "cents" : 478.1178947457593
+  }, {
+    "note" : "D",
+    "targetFreq" : 1174.7,
+    "predictedFreq" : 1558.7988452371987,
+    "cents" : 489.77088693369126
+  }, {
+    "note" : "E",
+    "targetFreq" : 1318.5,
+    "predictedFreq" : 1753.2855424652164,
+    "cents" : 493.3960839649839
+  }, {
+    "note" : "F#",
+    "targetFreq" : 1480.0,
+    "predictedFreq" : 1954.5335574666663,
+    "cents" : 481.4726144110049
+  }, {
+    "note" : "G-nat",
+    "targetFreq" : 1568.0,
+    "predictedFreq" : 2049.5201203287074,
+    "cents" : 463.6327123917973
+  }, {
+    "note" : "G#",
+    "targetFreq" : 1661.2,
+    "predictedFreq" : 2192.076144721103,
+    "cents" : 480.08656350162516
+  }, {
+    "note" : "A",
+    "targetFreq" : 1760.0,
+    "predictedFreq" : 1691.1488204638983,
+    "cents" : -69.08616828490919
+  } ]
+}, {
+  "instrument" : "SamplePVC-Whistle.xml",
+  "tuning" : "A4-Just.xml",
+  "name" : "SamplePVC-Whistle__A4-Just",
+  "numFingerings" : 17,
+  "fingerings" : [ {
+    "note" : "low A",
+    "targetFreq" : 440.0,
+    "predictedFreq" : 587.1972697276947,
+    "cents" : 499.6100836727304
+  }, {
+    "note" : "B",
+    "targetFreq" : 495.0,
+    "predictedFreq" : 661.0847476276589,
+    "cents" : 500.88804527993426
+  }, {
+    "note" : "C#",
+    "targetFreq" : 550.0,
+    "predictedFreq" : 734.0823093035765,
+    "cents" : 499.812259584264
+  }, {
+    "note" : "D",
+    "targetFreq" : 586.67,
+    "predictedFreq" : 782.3432072735783,
+    "cents" : 498.3029090822831
+  }, {
+    "note" : "E",
+    "targetFreq" : 660.0,
+    "predictedFreq" : 886.2996038646967,
+    "cents" : 510.3941327987238
+  }, {
+    "note" : "F#",
+    "targetFreq" : 733.33,
+    "predictedFreq" : 989.6006386185799,
+    "cents" : 518.8606453582612
+  }, {
+    "note" : "G-nat",
+    "targetFreq" : 782.22,
+    "predictedFreq" : 1070.3888470601864,
+    "cents" : 542.98639215488
+  }, {
+    "note" : "G#",
+    "targetFreq" : 825.0,
+    "predictedFreq" : 1128.3095597957683,
+    "cents" : 542.0362935278938
+  }, {
+    "note" : "A",
+    "targetFreq" : 880.0,
+    "predictedFreq" : 898.1046373342241,
+    "cents" : 35.2560216763702
+  }, {
+    "note" : "B",
+    "targetFreq" : 990.0,
+    "predictedFreq" : 1314.6213992615258,
+    "cents" : 490.9763328939121
+  }, {
+    "note" : "C#",
+    "targetFreq" : 1100.0,
+    "predictedFreq" : 1461.5234890912946,
+    "cents" : 491.963390480946
+  }, {
+    "note" : "D",
+    "targetFreq" : 1173.3,
+    "predictedFreq" : 1558.8192320318042,
+    "cents" : 491.8580330003023
+  }, {
+    "note" : "E",
+    "targetFreq" : 1320.0,
+    "predictedFreq" : 1753.2651133102224,
+    "cents" : 491.407481577349
+  }, {
+    "note" : "F#",
+    "targetFreq" : 1466.7,
+    "predictedFreq" : 1954.7046760158585,
+    "cents" : 497.25221416167386
+  }, {
+    "note" : "G-nat",
+    "targetFreq" : 1564.4,
+    "predictedFreq" : 2049.565642976259,
+    "cents" : 467.650506966499
+  }, {
+    "note" : "G#",
+    "targetFreq" : 1650.0,
+    "predictedFreq" : 2192.2144949034837,
+    "cents" : 491.9075276406934
+  }, {
+    "note" : "A",
+    "targetFreq" : 1760.0,
+    "predictedFreq" : 1691.1488204638983,
+    "cents" : -69.08616828490919
+  } ]
+}, {
+  "instrument" : "SamplePVC-Whistle.xml",
+  "tuning" : "Bb4-Just.xml",
+  "name" : "SamplePVC-Whistle__Bb4-Just",
+  "numFingerings" : 17,
+  "fingerings" : [ {
+    "note" : "Bb",
+    "targetFreq" : 466.16,
+    "predictedFreq" : 586.3624310441166,
+    "cents" : 397.1609464855911
+  }, {
+    "note" : "C",
+    "targetFreq" : 524.43,
+    "predictedFreq" : 660.2506785574461,
+    "cents" : 398.7163942195022
+  }, {
+    "note" : "D",
+    "targetFreq" : 582.7,
+    "predictedFreq" : 733.2285911753391,
+    "cents" : 397.81167848419454
+  }, {
+    "note" : "Eb",
+    "targetFreq" : 621.55,
+    "predictedFreq" : 781.4860504608789,
+    "cents" : 396.4196029732384
+  }, {
+    "note" : "F",
+    "targetFreq" : 699.25,
+    "predictedFreq" : 885.4192082902306,
+    "cents" : 408.66278749161256
+  }, {
+    "note" : "G",
+    "targetFreq" : 776.94,
+    "predictedFreq" : 988.6894869889514,
+    "cents" : 417.25716291981894
+  }, {
+    "note" : "Ab",
+    "targetFreq" : 828.74,
+    "predictedFreq" : 1069.4725937593362,
+    "cents" : 441.48966049442487
+  }, {
+    "note" : "A",
+    "targetFreq" : 874.06,
+    "predictedFreq" : 1127.3534632509445,
+    "cents" : 440.5628371144411
+  }, {
+    "note" : "Bb",
+    "targetFreq" : 932.33,
+    "predictedFreq" : 897.4827138846206,
+    "cents" : -65.94784563281098
+  }, {
+    "note" : "C",
+    "targetFreq" : 1048.9,
+    "predictedFreq" : 1313.6795561236434,
+    "cents" : 389.683515953537
+  }, {
+    "note" : "D",
+    "targetFreq" : 1165.4,
+    "predictedFreq" : 1460.553253372613,
+    "cents" : 390.82769468498475
+  }, {
+    "note" : "Eb",
+    "targetFreq" : 1243.1,
+    "predictedFreq" : 1557.8507869079551,
+    "cents" : 390.7376392899312
+  }, {
+    "note" : "F",
+    "targetFreq" : 1398.5,
+    "predictedFreq" : 1752.2492566143037,
+    "cents" : 390.3933100784693
+  }, {
+    "note" : "G",
+    "targetFreq" : 1553.9,
+    "predictedFreq" : 1953.6298073705386,
+    "cents" : 396.31614502214785
+  }, {
+    "note" : "Ab",
+    "targetFreq" : 1657.5,
+    "predictedFreq" : 2048.44326703065,
+    "cents" : 366.622879986752
+  }, {
+    "note" : "A",
+    "targetFreq" : 1748.1,
+    "predictedFreq" : 2191.0563073700628,
+    "cents" : 391.0066124634353
+  }, {
+    "note" : "Bb",
+    "targetFreq" : 1864.7,
+    "predictedFreq" : 1690.0114002608134,
+    "cents" : -170.29267730370518
+  } ]
+}, {
+  "instrument" : "SamplePVC-Whistle.xml",
+  "tuning" : "D4-Just.xml",
+  "name" : "SamplePVC-Whistle__D4-Just",
+  "numFingerings" : 17,
+  "fingerings" : [ {
+    "note" : "D",
+    "targetFreq" : 293.66,
+    "predictedFreq" : null,
+    "cents" : 1200.0
+  }, {
+    "note" : "E",
+    "targetFreq" : 330.37,
+    "predictedFreq" : null,
+    "cents" : 1200.0
+  }, {
+    "note" : "F#",
+    "targetFreq" : 367.08,
+    "predictedFreq" : 730.2790779300601,
+    "cents" : 1190.8240632752616
+  }, {
+    "note" : "G",
+    "targetFreq" : 391.55,
+    "predictedFreq" : 776.2490221234855,
+    "cents" : 1184.787597496046
+  }, {
+    "note" : "A",
+    "targetFreq" : 440.5,
+    "predictedFreq" : 875.0096640129962,
+    "cents" : 1188.1883180173716
+  }, {
+    "note" : "B",
+    "targetFreq" : 489.44,
+    "predictedFreq" : 972.2653913356198,
+    "cents" : 1188.2617874995974
+  }, {
+    "note" : "C-nat",
+    "targetFreq" : 522.07,
+    "predictedFreq" : null,
+    "cents" : 1200.0
+  }, {
+    "note" : "C#",
+    "targetFreq" : 550.62,
+    "predictedFreq" : null,
+    "cents" : 1200.0
+  }, {
+    "note" : "D",
+    "targetFreq" : 587.33,
+    "predictedFreq" : 878.4614160594566,
+    "cents" : 696.9691088868353
+  }, {
+    "note" : "E",
+    "targetFreq" : 660.75,
+    "predictedFreq" : 628.1878134723004,
+    "cents" : -87.49027699660624
+  }, {
+    "note" : "F#",
+    "targetFreq" : 734.16,
+    "predictedFreq" : 694.3162849309584,
+    "cents" : -96.60180362086656
+  }, {
+    "note" : "G",
+    "targetFreq" : 783.1,
+    "predictedFreq" : 738.234396689455,
+    "cents" : -102.14110690783662
+  }, {
+    "note" : "A",
+    "targetFreq" : 880.99,
+    "predictedFreq" : 832.284152476351,
+    "cents" : -98.4593716261213
+  }, {
+    "note" : "B",
+    "targetFreq" : 978.88,
+    "predictedFreq" : 924.4289068607738,
+    "cents" : -99.08356616703409
+  }, {
+    "note" : "C-nat",
+    "targetFreq" : 1044.1,
+    "predictedFreq" : 1010.5894792482568,
+    "cents" : -56.47539421727968
+  }, {
+    "note" : "C#",
+    "targetFreq" : 1101.2,
+    "predictedFreq" : 1047.6947927780418,
+    "cents" : -86.22961552432548
+  }, {
+    "note" : "D",
+    "targetFreq" : 1174.7,
+    "predictedFreq" : 989.915564184678,
+    "cents" : -296.29797914361467
+  } ]
+}, {
+  "instrument" : "SamplePVC-Whistle.xml",
+  "tuning" : "D5-Equal.xml",
+  "name" : "SamplePVC-Whistle__D5-Equal",
+  "numFingerings" : 17,
+  "fingerings" : [ {
+    "note" : "D",
+    "targetFreq" : 587.33,
+    "predictedFreq" : 583.2761529080584,
+    "cents" : -11.990687309054511
+  }, {
+    "note" : "E",
+    "targetFreq" : 659.26,
+    "predictedFreq" : 656.0462321882949,
+    "cents" : -8.460075984214743
+  }, {
+    "note" : "F#",
+    "targetFreq" : 739.99,
+    "predictedFreq" : 727.4621563679564,
+    "cents" : -29.56029100517156
+  }, {
+    "note" : "G",
+    "targetFreq" : 783.99,
+    "predictedFreq" : 775.0311924359362,
+    "cents" : -19.897052703691763
+  }, {
+    "note" : "A",
+    "targetFreq" : 880.0,
+    "predictedFreq" : 877.1322411790957,
+    "cents" : -5.650987452210926
+  }, {
+    "note" : "B",
+    "targetFreq" : 987.77,
+    "predictedFreq" : 978.042175961794,
+    "cents" : -17.134167620855333
+  }, {
+    "note" : "C-nat",
+    "targetFreq" : 1046.5,
+    "predictedFreq" : 1057.7491880366176,
+    "cents" : 18.51031996856557
+  }, {
+    "note" : "C#",
+    "targetFreq" : 1108.73,
+    "predictedFreq" : 1113.8689710342517,
+    "cents" : 8.005742467924208
+  }, {
+    "note" : "D",
+    "targetFreq" : 1174.7,
+    "predictedFreq" : 1168.9131886658465,
+    "cents" : -8.549486942530612
+  }, {
+    "note" : "E",
+    "targetFreq" : 1318.5,
+    "predictedFreq" : 1295.81002008982,
+    "cents" : -30.052022802858087
+  }, {
+    "note" : "F#",
+    "targetFreq" : 1480.0,
+    "predictedFreq" : 1438.6526685736615,
+    "cents" : -49.05461892774571
+  }, {
+    "note" : "G",
+    "targetFreq" : 1568.0,
+    "predictedFreq" : 1534.16059933126,
+    "cents" : -37.7712530316232
+  }, {
+    "note" : "A",
+    "targetFreq" : 1760.0,
+    "predictedFreq" : 1722.9532067331334,
+    "cents" : -36.83029028543623
+  }, {
+    "note" : "B",
+    "targetFreq" : 1975.5,
+    "predictedFreq" : 1917.366517403862,
+    "cents" : -51.71004259646174
+  }, {
+    "note" : "C-nat",
+    "targetFreq" : 2093.0,
+    "predictedFreq" : 2003.5544115928126,
+    "cents" : -75.61274550757719
+  }, {
+    "note" : "C#",
+    "targetFreq" : 2217.5,
+    "predictedFreq" : 2144.777782210261,
+    "cents" : -57.72710990211712
+  }, {
+    "note" : "D",
+    "targetFreq" : 2349.3,
+    "predictedFreq" : 2325.0698755074036,
+    "cents" : -17.948255431297433
+  } ]
+}, {
+  "instrument" : "SamplePVC-Whistle.xml",
+  "tuning" : "D5-Just.xml",
+  "name" : "SamplePVC-Whistle__D5-Just",
+  "numFingerings" : 17,
+  "fingerings" : [ {
+    "note" : "D",
+    "targetFreq" : 587.33,
+    "predictedFreq" : 583.2761529080584,
+    "cents" : -11.990687309054511
+  }, {
+    "note" : "E",
+    "targetFreq" : 660.75,
+    "predictedFreq" : 655.9947211581934,
+    "cents" : -12.504377350509202
+  }, {
+    "note" : "F#",
+    "targetFreq" : 734.16,
+    "predictedFreq" : 727.6512154356814,
+    "cents" : -15.416907193753008
+  }, {
+    "note" : "G",
+    "targetFreq" : 783.1,
+    "predictedFreq" : 775.0588783265797,
+    "cents" : -17.86876474916537
+  }, {
+    "note" : "A",
+    "targetFreq" : 880.99,
+    "predictedFreq" : 877.1033861898238,
+    "cents" : -7.654484315801101
+  }, {
+    "note" : "B",
+    "targetFreq" : 978.88,
+    "predictedFreq" : 978.2867464051634,
+    "cents" : -1.0495384273767931
+  }, {
+    "note" : "C-nat",
+    "targetFreq" : 1044.1,
+    "predictedFreq" : 1057.8123545655274,
+    "cents" : 22.58860304044562
+  }, {
+    "note" : "C#",
+    "targetFreq" : 1101.2,
+    "predictedFreq" : 1114.0664357043167,
+    "cents" : 20.11050381881105
+  }, {
+    "note" : "D",
+    "targetFreq" : 1174.7,
+    "predictedFreq" : 1168.9131886658465,
+    "cents" : -8.549486942530612
+  }, {
+    "note" : "E",
+    "targetFreq" : 1321.5,
+    "predictedFreq" : 1295.7381523901156,
+    "cents" : -34.08266701193207
+  }, {
+    "note" : "F#",
+    "targetFreq" : 1468.3,
+    "predictedFreq" : 1438.9173245410411,
+    "cents" : -34.99567776137753
+  }, {
+    "note" : "G",
+    "targetFreq" : 1566.2,
+    "predictedFreq" : 1534.1992905969785,
+    "cents" : -35.739064539563536
+  }, {
+    "note" : "A",
+    "targetFreq" : 1762.0,
+    "predictedFreq" : 1722.9117432009634,
+    "cents" : -38.83814807549332
+  }, {
+    "note" : "B",
+    "targetFreq" : 1957.8,
+    "predictedFreq" : 1917.7237455726997,
+    "cents" : -35.80617949979138
+  }, {
+    "note" : "C-nat",
+    "targetFreq" : 2088.3,
+    "predictedFreq" : 2003.6738887804677,
+    "cents" : -71.61751360687033
+  }, {
+    "note" : "C#",
+    "targetFreq" : 2202.5,
+    "predictedFreq" : 2145.0891108869773,
+    "cents" : -45.72532561307502
+  }, {
+    "note" : "D",
+    "targetFreq" : 2349.3,
+    "predictedFreq" : 2325.0698755074036,
+    "cents" : -17.948255431297433
+  } ]
+}, {
+  "instrument" : "SamplePVC-Whistle.xml",
+  "tuning" : "FeadogMk1-tuning.xml",
+  "name" : "SamplePVC-Whistle__FeadogMk1-tuning",
+  "numFingerings" : 17,
+  "fingerings" : [ {
+    "note" : "D",
+    "targetFreq" : 587.33,
+    "predictedFreq" : 583.2761529080584,
+    "cents" : -11.990687309054511
+  }, {
+    "note" : "E",
+    "targetFreq" : 660.75,
+    "predictedFreq" : 655.9947211581934,
+    "cents" : -12.504377350509202
+  }, {
+    "note" : "F#",
+    "targetFreq" : 734.16,
+    "predictedFreq" : 727.6512154356814,
+    "cents" : -15.416907193753008
+  }, {
+    "note" : "G",
+    "targetFreq" : 783.1,
+    "predictedFreq" : 775.0588783265797,
+    "cents" : -17.86876474916537
+  }, {
+    "note" : "A",
+    "targetFreq" : 880.99,
+    "predictedFreq" : 877.1033861898238,
+    "cents" : -7.654484315801101
+  }, {
+    "note" : "B",
+    "targetFreq" : 978.88,
+    "predictedFreq" : 978.2867464051634,
+    "cents" : -1.0495384273767931
+  }, {
+    "note" : "C-nat",
+    "targetFreq" : 1044.1,
+    "predictedFreq" : 1057.8123545655274,
+    "cents" : 22.58860304044562
+  }, {
+    "note" : "C#",
+    "targetFreq" : 1101.2,
+    "predictedFreq" : 1114.0664357043167,
+    "cents" : 20.11050381881105
+  }, {
+    "note" : "D",
+    "targetFreq" : 1174.7,
+    "predictedFreq" : 1168.9131886658465,
+    "cents" : -8.549486942530612
+  }, {
+    "note" : "E",
+    "targetFreq" : 1321.5,
+    "predictedFreq" : 1295.7381523901156,
+    "cents" : -34.08266701193207
+  }, {
+    "note" : "F#",
+    "targetFreq" : 1468.3,
+    "predictedFreq" : 1438.9173245410411,
+    "cents" : -34.99567776137753
+  }, {
+    "note" : "G",
+    "targetFreq" : 1566.2,
+    "predictedFreq" : 1534.1992905969785,
+    "cents" : -35.739064539563536
+  }, {
+    "note" : "A",
+    "targetFreq" : 1762.0,
+    "predictedFreq" : 1722.9117432009634,
+    "cents" : -38.83814807549332
+  }, {
+    "note" : "B",
+    "targetFreq" : 1957.8,
+    "predictedFreq" : 1917.7237455726997,
+    "cents" : -35.80617949979138
+  }, {
+    "note" : "C-nat",
+    "targetFreq" : 2088.3,
+    "predictedFreq" : 2003.6738887804677,
+    "cents" : -71.61751360687033
+  }, {
+    "note" : "C#",
+    "targetFreq" : 2202.5,
+    "predictedFreq" : 2145.0891108869773,
+    "cents" : -45.72532561307502
+  }, {
+    "note" : "D",
+    "targetFreq" : 2349.3,
+    "predictedFreq" : 2325.0698755074036,
+    "cents" : -17.948255431297433
+  } ]
+}, {
+  "instrument" : "SamplePVC-Whistle.xml",
+  "tuning" : "SamplePVC-tuning.xml",
+  "name" : "SamplePVC-Whistle__SamplePVC-tuning",
+  "numFingerings" : 17,
+  "fingerings" : [ {
+    "note" : "D",
+    "targetFreq" : 587.33,
+    "predictedFreq" : 583.2761529080584,
+    "cents" : -11.990687309054511
+  }, {
+    "note" : "E",
+    "targetFreq" : 660.74,
+    "predictedFreq" : 655.9950663866614,
+    "cents" : -12.477265015871652
+  }, {
+    "note" : "F#",
+    "targetFreq" : 734.16,
+    "predictedFreq" : 727.6512154356814,
+    "cents" : -15.416907193753008
+  }, {
+    "note" : "G",
+    "targetFreq" : 783.1,
+    "predictedFreq" : 775.0588783265797,
+    "cents" : -17.86876474916537
+  }, {
+    "note" : "A",
+    "targetFreq" : 880.99,
+    "predictedFreq" : 877.1033861898238,
+    "cents" : -7.654484315801101
+  }, {
+    "note" : "B",
+    "targetFreq" : 978.88,
+    "predictedFreq" : 978.2867464051634,
+    "cents" : -1.0495384273767931
+  }, {
+    "note" : "C-nat",
+    "targetFreq" : 1044.1,
+    "predictedFreq" : 1057.8123545655274,
+    "cents" : 22.58860304044562
+  }, {
+    "note" : "C#",
+    "targetFreq" : 1101.2,
+    "predictedFreq" : 1114.0664357043167,
+    "cents" : 20.11050381881105
+  }, {
+    "note" : "D",
+    "targetFreq" : 1174.7,
+    "predictedFreq" : 1168.9131886658465,
+    "cents" : -8.549486942530612
+  }, {
+    "note" : "E",
+    "targetFreq" : 1321.5,
+    "predictedFreq" : 1295.7381523901156,
+    "cents" : -34.08266701193207
+  }, {
+    "note" : "F#",
+    "targetFreq" : 1468.3,
+    "predictedFreq" : 1438.9173245410411,
+    "cents" : -34.99567776137753
+  }, {
+    "note" : "G",
+    "targetFreq" : 1566.2,
+    "predictedFreq" : 1534.1992905969785,
+    "cents" : -35.739064539563536
+  }, {
+    "note" : "A",
+    "targetFreq" : 1762.0,
+    "predictedFreq" : 1722.9117432009634,
+    "cents" : -38.83814807549332
+  }, {
+    "note" : "B",
+    "targetFreq" : 1957.8,
+    "predictedFreq" : 1917.7237455726997,
+    "cents" : -35.80617949979138
+  }, {
+    "note" : "C-nat",
+    "targetFreq" : 2088.3,
+    "predictedFreq" : 2003.6738887804677,
+    "cents" : -71.61751360687033
+  }, {
+    "note" : "C#",
+    "targetFreq" : 2202.5,
+    "predictedFreq" : 2145.0891108869773,
+    "cents" : -45.72532561307502
+  }, {
+    "note" : "D",
+    "targetFreq" : 2349.3,
+    "predictedFreq" : 2325.0698755074036,
+    "cents" : -17.948255431297433
+  } ]
+} ]

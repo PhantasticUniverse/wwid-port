@@ -1,0 +1,663 @@
+[ {
+  "instrument" : "SamplePVC-Flute.xml",
+  "tuning" : "D4-Equal.xml",
+  "name" : "SamplePVC-Flute__D4-Equal",
+  "numFingerings" : 17,
+  "fingerings" : [ {
+    "note" : "low D",
+    "targetFreq" : 293.66,
+    "predictedFreq" : 292.44581918871296,
+    "cents" : -7.172882781252704
+  }, {
+    "note" : "E",
+    "targetFreq" : 329.63,
+    "predictedFreq" : 331.27444910819355,
+    "cents" : 8.615261002007928
+  }, {
+    "note" : "F#",
+    "targetFreq" : 369.99,
+    "predictedFreq" : 366.4612676879745,
+    "cents" : -16.590665396523665
+  }, {
+    "note" : "G",
+    "targetFreq" : 392.0,
+    "predictedFreq" : 390.2063895820948,
+    "cents" : -7.939502693490783
+  }, {
+    "note" : "A",
+    "targetFreq" : 440.0,
+    "predictedFreq" : 438.9292058202765,
+    "cents" : -4.2183062034212755
+  }, {
+    "note" : "B",
+    "targetFreq" : 493.88,
+    "predictedFreq" : 492.77845309650536,
+    "cents" : -3.8656462980200117
+  }, {
+    "note" : "C-nat",
+    "targetFreq" : 523.25,
+    "predictedFreq" : 525.728467260997,
+    "cents" : 8.18093989579233
+  }, {
+    "note" : "C#",
+    "targetFreq" : 554.37,
+    "predictedFreq" : 550.3974132980429,
+    "cents" : -12.450597150344864
+  }, {
+    "note" : "D",
+    "targetFreq" : 587.33,
+    "predictedFreq" : 587.7378603330928,
+    "cents" : 1.201805866888013
+  }, {
+    "note" : "E",
+    "targetFreq" : 659.26,
+    "predictedFreq" : 659.4465691155513,
+    "cents" : 0.4898660779679218
+  }, {
+    "note" : "F#",
+    "targetFreq" : 739.99,
+    "predictedFreq" : 733.3089568804705,
+    "cents" : -15.701536423114847
+  }, {
+    "note" : "G",
+    "targetFreq" : 783.99,
+    "predictedFreq" : 783.792394828019,
+    "cents" : -0.4364136310564766
+  }, {
+    "note" : "A",
+    "targetFreq" : 880.0,
+    "predictedFreq" : 875.8873701923845,
+    "cents" : -8.109788696853032
+  }, {
+    "note" : "B",
+    "targetFreq" : 987.77,
+    "predictedFreq" : 983.4403712641401,
+    "cents" : -7.605086550220507
+  }, {
+    "note" : "hi C-nat",
+    "targetFreq" : 1046.5,
+    "predictedFreq" : 1036.7376432512888,
+    "cents" : -16.225751462852156
+  }, {
+    "note" : "C#",
+    "targetFreq" : 1108.7,
+    "predictedFreq" : 1092.829124501087,
+    "cents" : -24.96144678790813
+  }, {
+    "note" : "high D",
+    "targetFreq" : 1174.7,
+    "predictedFreq" : 1157.2336654415556,
+    "cents" : -25.934595854419964
+  } ]
+}, {
+  "instrument" : "SamplePVC-Flute.xml",
+  "tuning" : "D4-Equal-3octave.xml",
+  "name" : "SamplePVC-Flute__D4-Equal-3octave",
+  "numFingerings" : 22,
+  "fingerings" : [ {
+    "note" : "low D",
+    "targetFreq" : 293.66,
+    "predictedFreq" : 292.4152183844556,
+    "cents" : -7.354044291095554
+  }, {
+    "note" : "E",
+    "targetFreq" : 329.63,
+    "predictedFreq" : 332.1623715947207,
+    "cents" : 13.249319623615733
+  }, {
+    "note" : "F#",
+    "targetFreq" : 369.99,
+    "predictedFreq" : 368.35135804807356,
+    "cents" : -7.684460224811889
+  }, {
+    "note" : "G",
+    "targetFreq" : 392.0,
+    "predictedFreq" : 392.6516411427614,
+    "cents" : 2.8755272641508447
+  }, {
+    "note" : "A",
+    "targetFreq" : 440.0,
+    "predictedFreq" : 442.5299744274484,
+    "cents" : 9.925985513150849
+  }, {
+    "note" : "B",
+    "targetFreq" : 493.88,
+    "predictedFreq" : 497.7458841549709,
+    "cents" : 13.498607272702849
+  }, {
+    "note" : "C-nat",
+    "targetFreq" : 523.25,
+    "predictedFreq" : 531.3487016872369,
+    "cents" : 26.590254129218497
+  }, {
+    "note" : "C#",
+    "targetFreq" : 554.37,
+    "predictedFreq" : 556.8738346125206,
+    "cents" : 7.801584017807947
+  }, {
+    "note" : "D",
+    "targetFreq" : 587.33,
+    "predictedFreq" : 595.0418156725044,
+    "cents" : 22.583669570177577
+  }, {
+    "note" : "E",
+    "targetFreq" : 659.26,
+    "predictedFreq" : 667.5813053467793,
+    "cents" : 21.715205833420193
+  }, {
+    "note" : "F#",
+    "targetFreq" : 739.99,
+    "predictedFreq" : 743.2085411990139,
+    "cents" : 7.513568417686886
+  }, {
+    "note" : "G",
+    "targetFreq" : 783.99,
+    "predictedFreq" : 794.7050907338452,
+    "cents" : 23.501200314311216
+  }, {
+    "note" : "A",
+    "targetFreq" : 880.0,
+    "predictedFreq" : 888.9479825753507,
+    "cents" : 17.514572935937533
+  }, {
+    "note" : "B",
+    "targetFreq" : 987.77,
+    "predictedFreq" : 999.4708703463523,
+    "cents" : 20.387240970376233
+  }, {
+    "note" : "hi C-nat",
+    "targetFreq" : 1046.5,
+    "predictedFreq" : 1054.2188255159567,
+    "cents" : 12.722458168765911
+  }, {
+    "note" : "C#",
+    "targetFreq" : 1108.7,
+    "predictedFreq" : 1112.040847502369,
+    "cents" : 5.20888632150626
+  }, {
+    "note" : "high D",
+    "targetFreq" : 1174.7,
+    "predictedFreq" : 1179.2053538428765,
+    "cents" : 6.627141136063261
+  }, {
+    "note" : "E",
+    "targetFreq" : 1318.5,
+    "predictedFreq" : 1315.039767464805,
+    "cents" : -4.549371840791629
+  }, {
+    "note" : "F#",
+    "targetFreq" : 1480.0,
+    "predictedFreq" : 1548.0680690267513,
+    "cents" : 77.84607931828843
+  }, {
+    "note" : "G",
+    "targetFreq" : 1568.0,
+    "predictedFreq" : 1626.5502280342005,
+    "cents" : 63.467777017655855
+  }, {
+    "note" : "A",
+    "targetFreq" : 1760.0,
+    "predictedFreq" : 1836.6475115173364,
+    "cents" : 73.79921140025502
+  }, {
+    "note" : "C-nat",
+    "targetFreq" : 2093.0,
+    "predictedFreq" : 2169.580542284261,
+    "cents" : 62.21260002252297
+  } ]
+}, {
+  "instrument" : "SamplePVC-Flute.xml",
+  "tuning" : "fife-tuning.xml",
+  "name" : "SamplePVC-Flute__fife-tuning",
+  "numFingerings" : 20,
+  "fingerings" : [ {
+    "note" : "low Bb",
+    "targetFreq" : 466.16,
+    "predictedFreq" : 592.7913199903132,
+    "cents" : 416.03892862271874
+  }, {
+    "note" : "C",
+    "targetFreq" : 523.25,
+    "predictedFreq" : 666.5482751441047,
+    "cents" : 419.05075276738864
+  }, {
+    "note" : "D",
+    "targetFreq" : 587.33,
+    "predictedFreq" : 741.3757393879398,
+    "cents" : 403.2402899141599
+  }, {
+    "note" : "Eb",
+    "targetFreq" : 622.25,
+    "predictedFreq" : 792.427091129001,
+    "cents" : 418.5406536618897
+  }, {
+    "note" : "F",
+    "targetFreq" : 698.46,
+    "predictedFreq" : 885.7149038274497,
+    "cents" : 411.1978783505965
+  }, {
+    "note" : "G",
+    "targetFreq" : 783.99,
+    "predictedFreq" : 995.0131967584654,
+    "cents" : 412.6564891194958
+  }, {
+    "note" : "Ab",
+    "targetFreq" : 830.61,
+    "predictedFreq" : 892.2768886644933,
+    "cents" : 123.98427769619386
+  }, {
+    "note" : "A",
+    "targetFreq" : 880.0,
+    "predictedFreq" : 1106.2020533542766,
+    "cents" : 396.0473955187782
+  }, {
+    "note" : "high Bb",
+    "targetFreq" : 932.33,
+    "predictedFreq" : 992.1804043745047,
+    "cents" : 107.71412907797618
+  }, {
+    "note" : "Bb x 2",
+    "predictedFreq" : 893.0838619601333,
+    "cents" : 0.0
+  }, {
+    "note" : "C",
+    "targetFreq" : 1046.5,
+    "predictedFreq" : 980.14374907093,
+    "cents" : -113.40846519771759
+  }, {
+    "note" : "D",
+    "targetFreq" : 1174.7,
+    "predictedFreq" : 1083.3702152926426,
+    "cents" : -140.1192349413272
+  }, {
+    "note" : "Eb",
+    "targetFreq" : 1244.5,
+    "predictedFreq" : 1155.2588177673244,
+    "cents" : -128.82015490185995
+  }, {
+    "note" : "F",
+    "targetFreq" : 1396.9,
+    "predictedFreq" : 1321.876852997846,
+    "cents" : -95.56915861971406
+  }, {
+    "note" : "G",
+    "targetFreq" : 1568.0,
+    "predictedFreq" : 1637.0736639467148,
+    "cents" : 74.63241749625266
+  }, {
+    "note" : "A",
+    "targetFreq" : 1760.0,
+    "predictedFreq" : 1705.4393007614883,
+    "cents" : -54.51842491074715
+  }, {
+    "note" : "high Bb",
+    "targetFreq" : 1864.6,
+    "predictedFreq" : 1817.0068957140704,
+    "cents" : -44.762732803459684
+  }, {
+    "note" : "Bb x 3",
+    "predictedFreq" : 1501.381457724868,
+    "cents" : 0.0
+  }, {
+    "note" : "C x 3",
+    "predictedFreq" : 1502.757047641622,
+    "cents" : 0.0
+  }, {
+    "note" : "Bb x 4",
+    "predictedFreq" : 1802.0098858157498,
+    "cents" : 0.0
+  } ]
+}, {
+  "instrument" : "SamplePVC-Flute.xml",
+  "tuning" : "BellNoteTuning-6hole.xml",
+  "name" : "SamplePVC-Flute__BellNoteTuning-6hole",
+  "numFingerings" : 4,
+  "fingerings" : [ {
+    "note" : "1st",
+    "predictedFreq" : 591.7973033252639,
+    "cents" : 0.0
+  }, {
+    "note" : "2nd",
+    "predictedFreq" : 1201.9265914090722,
+    "cents" : 0.0
+  }, {
+    "note" : "3rd",
+    "predictedFreq" : 1810.188039338861,
+    "cents" : 0.0
+  }, {
+    "note" : "4th",
+    "predictedFreq" : 2112.9282407064516,
+    "cents" : 0.0
+  } ]
+}, {
+  "instrument" : "fife.xml",
+  "tuning" : "D4-Equal.xml",
+  "name" : "fife__D4-Equal",
+  "numFingerings" : 17,
+  "fingerings" : [ {
+    "note" : "low D",
+    "targetFreq" : 293.66,
+    "predictedFreq" : 470.1782289384982,
+    "cents" : 814.8731657499683
+  }, {
+    "note" : "E",
+    "targetFreq" : 329.63,
+    "predictedFreq" : 536.7490317167652,
+    "cents" : 844.080160426996
+  }, {
+    "note" : "F#",
+    "targetFreq" : 369.99,
+    "predictedFreq" : 594.345554529154,
+    "cents" : 820.5788211719968
+  }, {
+    "note" : "G",
+    "targetFreq" : 392.0,
+    "predictedFreq" : 635.0221034210355,
+    "cents" : 835.1437857289601
+  }, {
+    "note" : "A",
+    "targetFreq" : 440.0,
+    "predictedFreq" : 721.5255814037607,
+    "cents" : 856.2564264656095
+  }, {
+    "note" : "B",
+    "targetFreq" : 493.88,
+    "predictedFreq" : 806.0847533028634,
+    "cents" : 848.1251849531267
+  }, {
+    "note" : "C-nat",
+    "targetFreq" : 523.25,
+    "predictedFreq" : 846.2157103492094,
+    "cents" : 832.2300764397669
+  }, {
+    "note" : "C#",
+    "targetFreq" : 554.37,
+    "predictedFreq" : 893.9840974032685,
+    "cents" : 827.2799770443776
+  }, {
+    "note" : "D",
+    "targetFreq" : 587.33,
+    "predictedFreq" : 714.818485529919,
+    "cents" : 340.0867356414364
+  }, {
+    "note" : "E",
+    "targetFreq" : 659.26,
+    "predictedFreq" : 529.5684988674933,
+    "cents" : -379.23629177354934
+  }, {
+    "note" : "F#",
+    "targetFreq" : 739.99,
+    "predictedFreq" : 587.0597266412605,
+    "cents" : -400.7981833665732
+  }, {
+    "note" : "G",
+    "targetFreq" : 783.99,
+    "predictedFreq" : 627.6882516612818,
+    "cents" : -384.94445521793995
+  }, {
+    "note" : "A",
+    "targetFreq" : 880.0,
+    "predictedFreq" : 714.0206825082173,
+    "cents" : -361.8451912940359
+  }, {
+    "note" : "B",
+    "targetFreq" : 987.77,
+    "predictedFreq" : 798.4400051819403,
+    "cents" : -368.38937413607573
+  }, {
+    "note" : "hi C-nat",
+    "targetFreq" : 1046.5,
+    "predictedFreq" : 849.9496124650618,
+    "cents" : -360.14770792593475
+  }, {
+    "note" : "C#",
+    "targetFreq" : 1108.7,
+    "predictedFreq" : 886.2783571065773,
+    "cents" : -387.64470632819376
+  }, {
+    "note" : "high D",
+    "targetFreq" : 1174.7,
+    "predictedFreq" : 1381.9226972400375,
+    "cents" : 281.2614643404263
+  } ]
+}, {
+  "instrument" : "fife.xml",
+  "tuning" : "D4-Equal-3octave.xml",
+  "name" : "fife__D4-Equal-3octave",
+  "numFingerings" : 22,
+  "fingerings" : [ {
+    "note" : "low D",
+    "targetFreq" : 293.66,
+    "predictedFreq" : 466.33563746528955,
+    "cents" : 800.6663018350123
+  }, {
+    "note" : "E",
+    "targetFreq" : 329.63,
+    "predictedFreq" : 533.7664112168504,
+    "cents" : 834.4331673636875
+  }, {
+    "note" : "F#",
+    "targetFreq" : 369.99,
+    "predictedFreq" : 592.2270463391212,
+    "cents" : 814.3969197760123
+  }, {
+    "note" : "G",
+    "targetFreq" : 392.0,
+    "predictedFreq" : 633.3785986356078,
+    "cents" : 830.6573595829323
+  }, {
+    "note" : "A",
+    "targetFreq" : 440.0,
+    "predictedFreq" : 720.9171151266033,
+    "cents" : 854.7958518421067
+  }, {
+    "note" : "B",
+    "targetFreq" : 493.88,
+    "predictedFreq" : 806.6704689383823,
+    "cents" : 849.382673853958
+  }, {
+    "note" : "C-nat",
+    "targetFreq" : 523.25,
+    "predictedFreq" : 847.4009815043955,
+    "cents" : 834.6532718724934
+  }, {
+    "note" : "C#",
+    "targetFreq" : 554.37,
+    "predictedFreq" : 895.919557510118,
+    "cents" : 831.024017383471
+  }, {
+    "note" : "D",
+    "targetFreq" : 587.33,
+    "predictedFreq" : 716.5921354874804,
+    "cents" : 344.37705558744653
+  }, {
+    "note" : "E",
+    "targetFreq" : 659.26,
+    "predictedFreq" : 532.0677281075468,
+    "cents" : -371.0851781628107
+  }, {
+    "note" : "F#",
+    "targetFreq" : 739.99,
+    "predictedFreq" : 590.5671041630076,
+    "cents" : -390.4857326239985
+  }, {
+    "note" : "G",
+    "targetFreq" : 783.99,
+    "predictedFreq" : 631.7370271937813,
+    "cents" : -373.8133427595942
+  }, {
+    "note" : "A",
+    "targetFreq" : 880.0,
+    "predictedFreq" : 719.2918341104021,
+    "cents" : -349.11155760774244
+  }, {
+    "note" : "B",
+    "targetFreq" : 987.77,
+    "predictedFreq" : 805.063943773222,
+    "cents" : -354.0861312089969
+  }, {
+    "note" : "hi C-nat",
+    "targetFreq" : 1046.5,
+    "predictedFreq" : 856.9924358473793,
+    "cents" : -345.8615230576871
+  }, {
+    "note" : "C#",
+    "targetFreq" : 1108.7,
+    "predictedFreq" : 894.3435782535945,
+    "cents" : -371.9615557694857
+  }, {
+    "note" : "high D",
+    "targetFreq" : 1174.7,
+    "predictedFreq" : 1392.9612632951169,
+    "cents" : 295.0353319942506
+  }, {
+    "note" : "E",
+    "targetFreq" : 1318.5,
+    "predictedFreq" : 1274.4564848744603,
+    "cents" : -58.81854777025608
+  }, {
+    "note" : "F#",
+    "targetFreq" : 1480.0,
+    "predictedFreq" : 1582.2731139926666,
+    "cents" : 115.68176047613255
+  }, {
+    "note" : "G",
+    "targetFreq" : 1568.0,
+    "predictedFreq" : 1490.3810015105955,
+    "cents" : -87.89324467307486
+  }, {
+    "note" : "A",
+    "targetFreq" : 1760.0,
+    "predictedFreq" : 1691.1313159887163,
+    "cents" : -69.10408776066143
+  }, {
+    "note" : "C-nat",
+    "targetFreq" : 2093.0,
+    "predictedFreq" : 2073.3341364122193,
+    "cents" : -16.34360777966331
+  } ]
+}, {
+  "instrument" : "fife.xml",
+  "tuning" : "fife-tuning.xml",
+  "name" : "fife__fife-tuning",
+  "numFingerings" : 20,
+  "fingerings" : [ {
+    "note" : "low Bb",
+    "targetFreq" : 466.16,
+    "predictedFreq" : 465.05279021900475,
+    "cents" : -4.116868229778168
+  }, {
+    "note" : "C",
+    "targetFreq" : 523.25,
+    "predictedFreq" : 531.5510252086613,
+    "cents" : 27.249336758715963
+  }, {
+    "note" : "D",
+    "targetFreq" : 587.33,
+    "predictedFreq" : 588.9341785478671,
+    "cents" : 4.722085897542318
+  }, {
+    "note" : "Eb",
+    "targetFreq" : 622.25,
+    "predictedFreq" : 629.5016248026234,
+    "cents" : 20.05893176849113
+  }, {
+    "note" : "F",
+    "targetFreq" : 698.46,
+    "predictedFreq" : 715.7147508863733,
+    "cents" : 42.24866088008786
+  }, {
+    "note" : "G",
+    "targetFreq" : 783.99,
+    "predictedFreq" : 799.9856001209681,
+    "cents" : 34.96653476764122
+  }, {
+    "note" : "Ab",
+    "targetFreq" : 830.61,
+    "predictedFreq" : 840.274989221497,
+    "cents" : 20.028362395219595
+  }, {
+    "note" : "A",
+    "targetFreq" : 880.0,
+    "predictedFreq" : 887.6365253467925,
+    "cents" : 14.958612540857631
+  }, {
+    "note" : "high Bb",
+    "targetFreq" : 932.33,
+    "predictedFreq" : 935.5054367321374,
+    "cents" : 5.886417378611233
+  }, {
+    "note" : "Bb x 2",
+    "predictedFreq" : 927.917745576067,
+    "cents" : 0.0
+  }, {
+    "note" : "C",
+    "targetFreq" : 1046.5,
+    "predictedFreq" : 1051.1929334686988,
+    "cents" : 7.746205019754188
+  }, {
+    "note" : "D",
+    "targetFreq" : 1174.7,
+    "predictedFreq" : 1164.6542801623666,
+    "cents" : -14.868717646516611
+  }, {
+    "note" : "Eb",
+    "targetFreq" : 1244.5,
+    "predictedFreq" : 1242.36696747402,
+    "cents" : -2.9698246754747726
+  }, {
+    "note" : "F",
+    "targetFreq" : 1396.9,
+    "predictedFreq" : 1399.9248526693748,
+    "cents" : 3.744767908116672
+  }, {
+    "note" : "G",
+    "targetFreq" : 1568.0,
+    "predictedFreq" : 1560.9378365273938,
+    "cents" : -7.814970615559455
+  }, {
+    "note" : "A",
+    "targetFreq" : 1760.0,
+    "predictedFreq" : 1719.7413575593787,
+    "cents" : -40.060588041734206
+  }, {
+    "note" : "high Bb",
+    "targetFreq" : 1864.6,
+    "predictedFreq" : 1861.607413013039,
+    "cents" : -2.780773599673723
+  }, {
+    "note" : "Bb x 3",
+    "predictedFreq" : 1385.0888385942262,
+    "cents" : 0.0
+  }, {
+    "note" : "C x 3",
+    "predictedFreq" : 1544.2933658409504,
+    "cents" : 0.0
+  }, {
+    "note" : "Bb x 4",
+    "predictedFreq" : 1849.8217087600085,
+    "cents" : 0.0
+  } ]
+}, {
+  "instrument" : "fife.xml",
+  "tuning" : "BellNoteTuning-6hole.xml",
+  "name" : "fife__BellNoteTuning-6hole",
+  "numFingerings" : 4,
+  "fingerings" : [ {
+    "note" : "1st",
+    "predictedFreq" : 463.46010418523883,
+    "cents" : 0.0
+  }, {
+    "note" : "2nd",
+    "predictedFreq" : 929.7118142210155,
+    "cents" : 0.0
+  }, {
+    "note" : "3rd",
+    "predictedFreq" : 1860.6623863413542,
+    "cents" : 0.0
+  }, {
+    "note" : "4th",
+    "predictedFreq" : 2312.0199903173852,
+    "cents" : 0.0
+  } ]
+} ]

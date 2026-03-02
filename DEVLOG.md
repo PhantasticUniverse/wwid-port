@@ -1,5 +1,152 @@
 # Development Log
 
+## 2026-03-02: M5.3 — Flute Evaluation Parity
+
+Flute (transverse) evaluation matches Java oracle within 0.058 cents across 110 fingerings (8 combos). This was the smallest evaluation milestone because Flute reuses virtually everything from Whistle — same tuner (LinearV), same termination (unflanged), same hole calculator, identical `CalculatorParams`.
+
+### Only real code change
+
+The `calc_z_window` function in `simple_fipple.rs` needed an `EmbouchureHole` match arm. Same Xw/Rw formulas, different parameter extraction:
+- Fipple: `eff_size = sqrt(windowLength * windowWidth)`, window_height with fallbacks
+- EmbouchureHole: `eff_size = sqrt(min(width, airstreamLength) * length)`, height directly
+
+Also added `EmbouchureHole` arm to `window_length()` in `linear_v.rs` (returns `airstreamLength` for flutes, `windowLength` for whistles — matching Java `Mouthpiece.getAirstreamLength()`).
+
+### Golden harness: CentDeviationEvaluator index-shift bug
+
+The fife-tuning XML has fingerings with only `frequencyMin`/`frequencyMax` (no `frequency`). Java's `CentDeviationEvaluator.calculateErrorVector()` has a subtle bug: when a fingering lacks `getFrequency()`, the `index` counter doesn't increment, shifting subsequent error values. The Flute golden harness computes cents per-fingering to avoid this.
+
+### Test results
+- Z-sample: 17 fingerings, max error = 0.000000 (exact match)
+- Bulk eval: 110 fingerings across 8 combos (2 instruments × 4 compatible tunings), max diff = 0.058 cents
+- Predicted freq: max relative error = 3.36e-5
+- Oracle scope: 2 instruments (SamplePVC-Flute, fife), 6 tunings (4 compatible with 6-hole instruments)
+- All existing 156+ tests pass (zero regressions)
+
+## 2026-03-02: M5.2 — Whistle Evaluation Parity
+
+Full Whistle evaluation pipeline: predicted frequencies and cent deviations match the Java oracle within 0.000002 cents across all 272 fingerings (16 instrument-tuning combos).
+
+### Three fundamental differences from NAF
+
+1. **Mouthpiece**: Simple fipple (empirical window impedance + headspace parallel combination) vs NAF's default fipple (transfer matrix with compliance headspace)
+2. **Predicted frequency**: LinearV tuner (Strouhal number / velocity interpolation) vs NAF's simple tuner (reactance zero)
+3. **Termination**: Unflanged end (already in M5.1) vs NAF's thick-flanged
+
+### New files
+- `wid-acoustics/src/simple_fipple.rs` — SimpleFippleMouthpieceCalculator port (window impedance Xw/Rw, headspace transmission model, parallel combination with bore SV)
+- `wid-eval/src/linear_v.rs` — LinearVInstrumentTuner port (Strouhal model, blowing level tables, velocity interpolation, z-ratio root-finding, gain-aware findFmin)
+- `golden-harness/.../WhistleBulkEvalDriver.java` — 2 instruments × 8 tunings = 16 combos
+- `golden-harness/.../WhistleZSampleDriver.java` — Z-sample for SamplePVC-Whistle
+
+### Key implementation details
+- `MouthpieceModel` enum dispatches between DefaultFipple (NAF) and SimpleFipple (Whistle) in `calc_z`
+- `gain_factor` computed at compile time from beta, windwayHeight, windowLength, windowWidth (Auvray, 2012)
+- `find_fmin` includes gain check: steps down while `gain >= 1.0 && ratio < minRatio`, then returns `max(freqGain, freqRatio)` — matching Java PlayingRange.findFmin() exactly
+- Brent minimization (golden-section + parabolic interpolation) added for finding Im(Z)/Re(Z) local minima
+- `CalculatorParams::WHISTLE` = hole_size_mult=1.0, finger_adjustment=0.010, unflanged_end=true, SimpleFipple, blowing_level=5
+
+### Test results
+- Z-sample parity: 17 fingerings, max err near machine precision
+- Bulk eval: 272 fingerings across 16 combos, max diff = 0.000002 cents
+- Predicted freq: max relative error = 9.50e-10
+- All existing NAF tests pass (zero regressions)
+- **Total: 148 tests** across core crates (139 existing + 9 new Whistle tests)
+
+---
+
+## 2026-03-02: M5.1 — Study Model Infrastructure Refactor
+
+Infrastructure-only refactor to parameterize NAF-specific code for multi-model support. No behavioral changes — NAF works identically before and after.
+
+### New types
+- Added `Whistle`, `Flute`, `Reed` variants to `StudyKind` enum
+- Created `CalculatorParams` struct in `wid-eval` with per-study-model acoustic constants (hole_size_mult, finger_adjustment, unflanged_end)
+- Added `TerminationType` enum (`ThickFlanged` / `Unflanged`) to `wid-acoustics`
+
+### Parameterization
+- Removed hardcoded `NAF_HOLE_SIZE_MULT` and `NAF_FINGER_ADJ` constants from `wid-eval`
+- Added `calc_params: &CalculatorParams` parameter to: `calc_z`, `calc_z_samples`, `predicted_frequency`, `find_x_zero`, `calculate_error_vector`
+- Propagated `calc_params` through `wid-optimize` (`calibrate_fipple`, `optimize_holes`, `optimize_holes_with_progress`)
+- Added `calc_params` field to `StudySession`, resolved from `study_kind` in constructor
+
+### Unflanged termination
+- `calc_termination_sv` now accepts `TerminationType` parameter
+- `Unflanged` path uses Silva 2008 Padé approximant (`tube::calc_z_load`) — already existed in codebase
+
+### Session dispatch
+- `available_optimizers()`, `can_optimize()`, `create_default_constraints()`, `create_blank_constraints()` now dispatch via `match self.study_kind`
+- Non-NAF models return empty optimizer list / error for constraints (not yet implemented)
+
+### WASM + Web UI
+- `WasmSession::new()` accepts "NAF", "Whistle", "Flute", "Reed"
+- Added `studyKind` signal and `switchStudyModel()` to session store
+- Added study model dropdown in App.tsx header (non-NAF options disabled)
+
+### Tests
+- All 187 tests pass (184 existing + 3 new termination tests)
+- New tests: `naf_params_match_old_constants`, `unflanged_produces_finite_result`, `unflanged_differs_from_thick_flanged`, `closed_end_ignores_termination_type`
+- Zero TypeScript errors, clean Vite build
+
+## 2026-03-02: Phase 4f — Bug Fixes + Polish
+
+All fixes are frontend-only (no Rust/WASM changes). 184 tests still pass.
+
+### Mouthpiece sync bug fix (CRITICAL)
+- **Root cause**: `<div onFocusOut={sync} />` at line 166 of InstrumentEditor was a **sibling** of the mouthpiece grid, not a parent. An empty div can never receive focus, so focusout events from NumberFields never bubbled through it. All mouthpiece/fipple field edits were silently lost.
+- **Fix**: Moved `onFocusOut={sync}` onto the `<section>` element wrapping the mouthpiece fields (matching how bore/hole tables use `<tbody onFocusOut={sync}>`). Deleted the dead `<div>`.
+
+### Editor refresh after fipple calibration (CRITICAL)
+- **Root cause**: `calibrate()` modifies the instrument in-place on the Rust side, but InstrumentEditor's `createEffect` only re-fetched when `props.docId` changed. After calibration, the editor showed stale fipple factor.
+- **Fix**: Added `calibrationCount` signal to session store, incremented after successful calibration. InstrumentEditor watches `[props.docId, calibrationCount()]` — either changing triggers a re-fetch.
+
+### refreshGating consistency
+- Added `await refreshGating()` to `selectOptimizer()` and `selectConstraints()` (matching `selectInstrument`/`selectTuning` which already had it).
+- Added `await refreshGating()` after hole optimization success to sync the Rust session's selection changes (new instrument_id) to the frontend.
+
+### Auto-select on file open
+- Opening an XML file now auto-selects the document in the sidebar via `selectInstrument`/`selectTuning`/`selectConstraints`. Previously users had to click the document after opening. Matches Java WIDesigner behavior.
+
+### Worker error resilience
+- Added `worker.onerror` handler in ComputeService. If the WASM module panics, all pending promises are rejected (instead of hanging forever) and state is cleaned up.
+
+### Generic save/export for all doc types
+- Replaced `saveInstrumentXml(docId)` with `saveDocXml(docId)` that looks up the document name from whichever doc list matches (instrument, tuning, or constraints).
+- Added save/download button (&#x2913;) to each tab in the tab bar, next to the close button.
+- Toolbar Save button now saves the active tab's document (any type) instead of only instruments.
+
+### Stale error clearing + Sketch stub
+- Added `setError(null)` at the start of all select functions so stale error banners clear on new selection.
+- Added `onClick` to the Sketch button that logs "Sketch is not yet implemented (M5)" to the console panel (user feedback instead of dead button).
+
+## 2026-03-02: Phase 4e — Optimization + Calibration UI
+
+### Session store changes (`web/src/stores/session.ts`)
+- Fixed `canOptimize` gating: fipple calibration no longer requires constraints
+- Added `isFippleSelected`, `canCreateConstraints` memos
+- Added `optimizing` / `optProgress` signals for live progress tracking
+- Implemented `runOptimize()`: routes to `calibrate` (fipple) or `optimize` (hole) based on selection
+  - Hole optimization: streams progress, adds new instrument to doc list, auto-selects + opens tab
+  - Fipple calibration: sync command, modifies instrument in-place, logs before/after
+  - Graceful cancellation handling (no error banner)
+- Implemented `cancelOptimize()`: sends cancel signal to worker
+- Implemented `createDefaultConstraints()` / `createBlankConstraints()`: creates constraints doc, auto-selects, opens editor tab
+
+### OptimizeDialog component (`web/src/components/tools/OptimizeDialog.tsx`)
+- Modal with two states: in-progress (spinner + live evaluations/norm) and result (before/after comparison)
+- Type guard distinguishes CalibResult (fipple) from OptimizeResult (hole)
+- Matches SettingsDialog overlay pattern
+
+### StudyPanel wiring (`web/src/components/layout/StudyPanel.tsx`)
+- Optimize button: dynamic label ("Calibrate" vs "Optimize"), disabled during active optimization
+- Constraint creation: "+ Default" / "+ Blank" buttons, gated by `canCreateConstraints`
+- Dialog lifecycle: opens on click, shows result on completion, closes on cancel
+
+### Parity verification (browser, NAF-OPT-01 golden scenario)
+- Initial norm: 1324815.0033 (golden: 1324815.0036) — within tolerance
+- Final norm: 975.1391 (golden: 975.1391) — exact match
+- Evaluations: 1750 vs golden 2018 — different BOBYQA path, same optimum
+
 ## 2026-03-02: M1 — Golden Harness + NAF Fixture Suite
 
 ### Gradle wrapper setup

@@ -21,7 +21,7 @@ Legend:
 | Open/save Tuning XML      |        ✅ | XML-RT-02 ¹       | M4        | Includes measured + min/max variants |
 | Open/save Constraints XML |        ✅ | CONSTRAINTS-01/02 | M3        | Constraints ordering ABI             |
 | Drag & drop open          |        ✅ | UX-01             | M4        | Web drop zone parity                 |
-| Calculate tuning (table)  |        ✅ | EVAL-*, NAF-BULK-EVAL | M2    | Whistle/Flute include min/max; NAF bulk: all 36 combos |
+| Calculate tuning (table)  |        ✅ | EVAL-*, NAF-BULK-EVAL, WHISTLE-BULK-EVAL, FLUTE-BULK-EVAL | M2/M5.2/M5.3 | NAF: 36 combos; Whistle: 16; Flute: 8 |
 | Graph tuning              |        ✅ | GRAPH-01          | M5        | Curve samples                        |
 | Note spectrum graph       |        ✅ | SPEC-01           | M5        | Curve samples + markers              |
 | Supplementary info table  |        ✅ | SUP-01            | M5        | Numeric outputs                      |
@@ -44,8 +44,9 @@ Legend:
 
 ## Whistle Study Model
 
-| Optimizer / Calibrator  | Baseline | Fixture(s)  | Milestone | Notes                       |
+| Feature / Optimizer     | Baseline | Fixture(s)  | Milestone | Notes                       |
 | ----------------------- | -------: | ----------- | --------- | --------------------------- |
+| Evaluation parity       |        ✅ | WHISTLE-BULK-EVAL, WH-ZSAMPLE | M5.2 | 2 instruments × 8 tunings = 16 combos, 272 fingerings |
 | Whistle calibrator      |        ✅ | WH-CAL-01   | M5        | min/max evaluator           |
 | Hole size               |        ✅ | WH-HS-01    | M5        |                             |
 | Hole spacing            |        ✅ | WH-SP-01    | M5        |                             |
@@ -56,11 +57,12 @@ Legend:
 
 ## Flute (Transverse)
 
-| Optimizer / Calibrator      | Baseline | Fixture(s) | Milestone | Notes                  |
-| --------------------------- | -------: | ---------- | --------- | ---------------------- |
-| Flute calibrator            |        ✅ | FL-CAL-01  | M5        |                        |
-| Stopper position optimizers |        ✅ | FL-STOP-01 | M5        | if present in baseline |
-| Other flute optimizers      |        ✅ | FL-OPT-*   | M5        |                        |
+| Feature / Optimizer         | Baseline | Fixture(s)  | Milestone | Notes                       |
+| --------------------------- | -------: | ----------- | --------- | --------------------------- |
+| Evaluation parity           |        ✅ | FLUTE-BULK-EVAL, FL-ZSAMPLE | M5.3 | 2 instruments × 4 tunings = 8 combos, 110 fingerings |
+| Flute calibrator            |        ✅ | FL-CAL-01   | M5        |                             |
+| Stopper position optimizers |        ✅ | FL-STOP-01  | M5        | if present in baseline      |
+| Other flute optimizers      |        ✅ | FL-OPT-*    | M5        |                             |
 
 ---
 
