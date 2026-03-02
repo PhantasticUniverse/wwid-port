@@ -559,4 +559,132 @@ mod tests {
     fn celsius_passthrough() {
         assert_abs_diff_eq!(to_celsius(22.5, TemperatureType::C), 22.5, epsilon = 1e-10);
     }
+
+    // ── 20°C golden values (Java app effective default) ──────────
+    //
+    // The Java app's OptimizationPreferences.DEFAULT_TEMPERATURE = 20
+    // overrides the PhysicalParameters constructor default of 72°F.
+    // These tests confirm our model matches at the temperature users
+    // actually see when running WIDesigner.
+
+    const GOLDEN_20C_SPEED_OF_SOUND: f64 = 343.786643259173161;
+    const GOLDEN_20C_RHO: f64 = 1.199836215699805;
+    const GOLDEN_20C_ETA: f64 = 1.809734419892756e-5;
+    const GOLDEN_20C_GAMMA: f64 = 1.399533676343388;
+    const GOLDEN_20C_ALPHA: f64 = 2.180438087240154e-4;
+    const GOLDEN_20C_EPSILON: f64 = 1.612866142128732e-3;
+
+    #[test]
+    fn params_at_20c_speed_of_sound() {
+        let p = PhysicalParameters::new(20.0, TemperatureType::C);
+        assert_abs_diff_eq!(p.speed_of_sound(), GOLDEN_20C_SPEED_OF_SOUND, epsilon = 1e-8);
+    }
+
+    #[test]
+    fn params_at_20c_density() {
+        let p = PhysicalParameters::new(20.0, TemperatureType::C);
+        assert_abs_diff_eq!(p.rho(), GOLDEN_20C_RHO, epsilon = 1e-10);
+    }
+
+    #[test]
+    fn params_at_20c_viscosity() {
+        let p = PhysicalParameters::new(20.0, TemperatureType::C);
+        assert_abs_diff_eq!(p.eta(), GOLDEN_20C_ETA, epsilon = 1e-16);
+    }
+
+    #[test]
+    fn params_at_20c_gamma() {
+        let p = PhysicalParameters::new(20.0, TemperatureType::C);
+        assert_abs_diff_eq!(p.gamma(), GOLDEN_20C_GAMMA, epsilon = 1e-10);
+    }
+
+    #[test]
+    fn params_at_20c_alpha_constant() {
+        let p = PhysicalParameters::new(20.0, TemperatureType::C);
+        assert_abs_diff_eq!(p.alpha_constant(), GOLDEN_20C_ALPHA, epsilon = 1e-14);
+    }
+
+    #[test]
+    fn params_at_20c_epsilon_constant() {
+        let p = PhysicalParameters::new(20.0, TemperatureType::C);
+        assert_abs_diff_eq!(p.epsilon_constant(), GOLDEN_20C_EPSILON, epsilon = 1e-14);
+    }
+
+    // ── Humidity variation tests (20°C, varying RH) ────────────
+    //
+    // Humidity affects vapour mole fraction, which shifts density,
+    // speed of sound, and viscosity. These tests verify the CIPM
+    // model responds correctly to humidity changes.
+
+    // 20°C, 101.325 kPa, 20% RH, 390 ppm CO2
+    const GOLDEN_RH20_SPEED: f64 = 3.434752507143849e2;
+    const GOLDEN_RH20_RHO: f64 = 1.202456663608775e0;
+    const GOLDEN_RH20_ETA: f64 = 1.815858103182552e-5;
+    const GOLDEN_RH20_EPSILON: f64 = 1.614887161433479e-3;
+
+    // 20°C, 101.325 kPa, 80% RH, 390 ppm CO2
+    const GOLDEN_RH80_SPEED: f64 = 3.442236679296437e2;
+    const GOLDEN_RH80_RHO: f64 = 1.196174645522774e0;
+    const GOLDEN_RH80_ETA: f64 = 1.801177031067394e-5;
+    const GOLDEN_RH80_EPSILON: f64 = 1.610038947624210e-3;
+
+    fn params_at_rh(rh: f64) -> PhysicalParameters {
+        PhysicalParameters::with_all(20.0, TemperatureType::C, 101.325, rh, 390e-6)
+    }
+
+    #[test]
+    fn humidity_20pct_speed_of_sound() {
+        assert_abs_diff_eq!(params_at_rh(20.0).speed_of_sound(), GOLDEN_RH20_SPEED, epsilon = 1e-8);
+    }
+
+    #[test]
+    fn humidity_20pct_density() {
+        assert_abs_diff_eq!(params_at_rh(20.0).rho(), GOLDEN_RH20_RHO, epsilon = 1e-10);
+    }
+
+    #[test]
+    fn humidity_20pct_viscosity() {
+        assert_abs_diff_eq!(params_at_rh(20.0).eta(), GOLDEN_RH20_ETA, epsilon = 1e-16);
+    }
+
+    #[test]
+    fn humidity_20pct_epsilon() {
+        assert_abs_diff_eq!(params_at_rh(20.0).epsilon_constant(), GOLDEN_RH20_EPSILON, epsilon = 1e-14);
+    }
+
+    #[test]
+    fn humidity_80pct_speed_of_sound() {
+        assert_abs_diff_eq!(params_at_rh(80.0).speed_of_sound(), GOLDEN_RH80_SPEED, epsilon = 1e-8);
+    }
+
+    #[test]
+    fn humidity_80pct_density() {
+        assert_abs_diff_eq!(params_at_rh(80.0).rho(), GOLDEN_RH80_RHO, epsilon = 1e-10);
+    }
+
+    #[test]
+    fn humidity_80pct_viscosity() {
+        assert_abs_diff_eq!(params_at_rh(80.0).eta(), GOLDEN_RH80_ETA, epsilon = 1e-16);
+    }
+
+    #[test]
+    fn humidity_80pct_epsilon() {
+        assert_abs_diff_eq!(params_at_rh(80.0).epsilon_constant(), GOLDEN_RH80_EPSILON, epsilon = 1e-14);
+    }
+
+    #[test]
+    fn higher_humidity_increases_speed_of_sound() {
+        // Water vapour is lighter than dry air → higher humidity → faster sound
+        let low = params_at_rh(20.0).speed_of_sound();
+        let high = params_at_rh(80.0).speed_of_sound();
+        assert!(high > low, "80% RH should give faster sound than 20% RH");
+    }
+
+    #[test]
+    fn higher_humidity_decreases_density() {
+        // Water vapour is lighter than dry air → higher humidity → lower density
+        let low = params_at_rh(20.0).rho();
+        let high = params_at_rh(80.0).rho();
+        assert!(high < low, "80% RH should give lower density than 20% RH");
+    }
 }

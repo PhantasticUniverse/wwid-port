@@ -162,3 +162,66 @@ Bracket search preference logic (`find_bracket`) needed to match Java's `Playing
   - wid-types: 17 (up from 14)
   - wid-math: 22
   - wid-physics: 20
+
+## 2026-03-02: M4 — Browser-Hosted MVP (NAF End-to-End)
+
+### Phase 4a: wid-session crate
+- Created `wid-session` crate with `StudySession` struct and JSON command dispatch
+- Added `Serialize` derives to all wid-types structs (InstrumentRaw, Tuning, Constraints)
+- Added `bobyqa_minimize_with_callback` to BOBYQA crate for progress/cancel support
+- Threaded progress callback through wid-optimize's `optimize_holes()`
+- Session API: open_xml, select_instrument/tuning/optimizer/constraints, evaluate_tuning,
+  calibrate, optimize, export_xml, available_optimizers, get_params, get_selection
+- Gating logic: canTune (instrument + tuning + hole count match), canOptimize (+ optimizer + constraints)
+- Integration tests replaying golden scenarios through session API
+
+### Phase 4b: WASM compilation + Web Worker + frontend
+
+#### WASM crate
+- Created `wid-wasm` crate (cdylib + rlib) with `WasmSession` struct
+- JSON command dispatch: `execute(command_json)` for sync commands, `optimize(callback)` for async
+- Pinned `wasm-bindgen="=0.2.100"` and `js-sys="=0.3.77"` to match installed wasm-bindgen-cli
+  (v0.2.114 requires Rust 1.88, we have 1.86)
+- Successful build: `cargo build --target wasm32-unknown-unknown --release -p wid-wasm`
+- Generated JS glue via `wasm-bindgen --target web` (690KB WASM binary)
+
+#### Web frontend
+- Stack: Vite 6 + SolidJS 1.9 + Tailwind CSS v4
+- `web/wasm` symlink (absolute path) → `wid/crates/wid-wasm/pkg/`
+- Vite `@wasm` alias for WASM imports in worker context
+- **compute-worker.ts**: Web Worker loading WASM, message-based command dispatch
+- **ComputeService.ts**: Promise-wrapped worker API (init, run, optimize, cancel)
+- **session.ts**: SolidJS reactive store synced from worker responses
+- **App.tsx**: Study panel (instruments/tunings/optimizers/constraints lists),
+  evaluation table with color-coded cents, console panel with physical parameters
+
+#### End-to-end verification
+- Opened instrument + tuning via drag-and-drop and file picker
+- Study panel shows loaded documents, selection highlighting works
+- Evaluation produces correct results matching golden fixtures
+- Console output matches Java app format:
+  `Properties of air at 20.00 C, 101.325 kPa, 45% humidity, 390 ppm CO2:`
+  `Speed of sound is 343.787 m/s. Density is 1.1998 kg/m^3. Epsilon factor is 1.613e-03.`
+- Color-coded cents: green (<5), amber (5-15), red (>15) — all working
+
+#### Temperature default discrepancy (documented, not yet resolved)
+The Java app's `OptimizationPreferences.DEFAULT_TEMPERATURE = 20` overrides the
+`PhysicalParameters(72°F)` constructor default. This means the Java GUI always
+starts at 20°C, while our golden harness (which bypasses preferences) uses 72°F.
+- Our WASM session defaults to 20°C (matching what Java users see)
+- Golden fixtures remain at 72°F (matching the core engine default)
+- Added 6 tests at 20°C to verify model correctness at the app-visible temperature
+- Added 8 humidity variation tests (20% and 80% RH at 20°C) with physical monotonicity checks
+- **TODO**: Make temperature configurable via settings UI (Phase 4d/4e)
+- See `parity-notes.md` for full analysis
+
+### Test count
+- **179 tests** total (up from 146)
+  - bobyqa: 32 + 1 doc test
+  - wid-optimize: 20
+  - wid-eval: 8 unit + 4 integration
+  - wid-compile: 22
+  - wid-types: 17
+  - wid-math: 22
+  - wid-physics: 36 (up from 20: +6 at 20°C, +8 humidity variation, +2 monotonicity)
+  - wid-session: 17
