@@ -30,6 +30,23 @@ cargo test                       # Run all port tests against golden fixtures
 cargo test <test_name>           # Run a single test
 ```
 
+### WASM build
+```bash
+cd wid
+cargo build --target wasm32-unknown-unknown --release -p wid-wasm
+wasm-bindgen target/wasm32-unknown-unknown/release/wid_wasm.wasm --out-dir ../web/wasm --target web
+```
+Requires wasm-bindgen-cli 0.2.100 (pinned; 0.2.114 needs Rust 1.88).
+
+### Web frontend
+```bash
+cd web
+npm install                      # Install dependencies (first time)
+npx vite                         # Dev server (default port 5173)
+npx vite build                   # Production build to web/dist/
+```
+Stack: Vite 6 + SolidJS 1.9 + Tailwind CSS v4. The `web/wasm` symlink points to `wid/crates/wid-wasm/pkg/`.
+
 ## Architecture
 
 ### Oracle + Golden Fixtures Workflow
@@ -48,6 +65,9 @@ The port lives in `wid/crates/` as a Rust workspace. Key architectural decisions
 - **`InstrumentCompiled`** = output of `compile(InstrumentRaw)` — component chain, termination, headspace, ordering
 - All acoustics operate on the compiled representation. This explicit compile step prevents the baseline's implicit "forgot to call updateComponents" bugs.
 - Heavy compute runs in a **Web Worker** (off main thread), with progress streaming and cancellation support.
+- **`wid-session`** = session orchestrator (StudySession struct). Owns docs, selection, physical params. JSON command dispatch.
+- **`wid-wasm`** = thin WASM bindings over wid-session. `execute(json)` for sync commands, `optimize(callback)` for async.
+- **Web frontend** (`web/`) = SolidJS + Vite + Tailwind. ComputeService wraps a Web Worker that loads WASM.
 
 ### Upstream Reference (`WWIDesigner-2.6.0-src/`)
 
@@ -91,8 +111,18 @@ Constraints XML lower/upper bound arrays must match baseline ordering exactly �
 - **M1**: Golden harness + fixture suite v0 (NAF + fipple protected) ✓
 - **M2**: NAF evaluation parity in Rust ✓
 - **M3**: NAF calibration + optimization parity ✓
-- **M4**: Browser-hosted MVP (NAF end-to-end)
+- **M4**: Browser-hosted MVP (NAF end-to-end) — **in progress**
+  - Phase 4a: wid-session crate ✓
+  - Phase 4b: WASM + Web Worker + frontend ✓
+  - Phase 4c: UI shell + settings + file handling ✓
+  - Phase 4d: Editors (instrument/tuning/constraints) — next
+  - Phase 4e: Optimization + calibration UI
+  - Phase 4f: Remaining tools + polish
 - **M5**: Full parity across all study models + tools
+
+## Temperature Default
+
+The Rust core and golden fixtures use 72°F (22.22°C). The Java GUI overrides this to 20°C via `OptimizationPreferences.DEFAULT_TEMPERATURE`. Our web app has a Settings dialog where users can change temperature (defaults show on first open as 22.22°C from the session). See `parity-notes.md` for full analysis.
 
 ## Key Spec Documents
 

@@ -227,3 +227,19 @@ The web app currently shows 22.22°C in the console instead of Java's 20°C.
   - wid-math: 22
   - wid-physics: 36 (up from 20: +6 at 20°C, +8 humidity variation, +2 monotonicity)
   - wid-session: 17
+
+### Phase 4c: UI Shell + Settings + File Handling
+
+- **Settings dialog** (gear icon in header): Temperature (°C) and Humidity (%)
+  fields with Apply/Cancel. Calls `set_params` WASM command to update physical
+  parameters. Applying 20°C produces values matching the Java app exactly.
+- **Save button**: exports selected instrument as XML file download
+- **Multi-file support**: both Open File button and drag-and-drop accept
+  multiple XML files at once
+- **Action buttons**: Sketch, Evaluate Tuning, Optimize — all gated by session
+  state with explanatory tooltips when disabled. Sketch and Optimize are wired
+  for gating but not yet functional (Phase 4e).
+- **WASM commands added**: `set_params` (temperature + humidity override)
+- **Re-exports**: `PhysicalParameters` and `TemperatureType` from wid-session
+  for use by wid-wasm
+- Removed unused `fileContent` signal from App.tsx
