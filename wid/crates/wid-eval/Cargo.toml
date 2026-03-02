@@ -1,0 +1,17 @@
+[package]
+name = "wid-eval"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+wid-math = { path = "../wid-math" }
+wid-physics = { path = "../wid-physics" }
+wid-types = { path = "../wid-types" }
+wid-compile = { path = "../wid-compile" }
+wid-acoustics = { path = "../wid-acoustics" }
+num-complex = { workspace = true }
+
+[dev-dependencies]
+approx = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
