@@ -135,3 +135,30 @@ Bracket search preference logic (`find_bracket`) needed to match Java's `Playing
   - wid-types: 14
   - wid-math: 22
   - wid-physics: 20
+
+## 2026-03-02: Expanded NAF Test Coverage (All Oracle XMLs)
+
+### Bulk evaluation parity
+- Created `NafBulkEvalDriver.java` to evaluate all 6 instruments × 6 tunings = 36 NAF combinations via the Java oracle
+- All 36 combos evaluated successfully (540 total fingerings)
+- Golden reference data committed to `golden/expected/NAF-BULK-EVAL/all_evals.json`
+
+### Rust integration tests (wid-eval)
+- 4 new integration tests in `wid/crates/wid-eval/tests/bulk_naf_eval.rs`
+- All 540 fingerings match golden within **0.000003 cents** (max diff)
+- Predicted frequency max relative error: **1.78e-9**
+- Correctly handles null predictions for mismatched bore/tuning combos (e.g., tiny 0.5" bore with low B3 tuning)
+
+### XML parsing coverage (wid-types)
+- 3 new tests verify parsing of all 6 NAF instruments, all 6 NAF tunings, and all 16 NAF constraint XMLs
+- Constraints tested across 8 objective function types: FippleFactor (0-hole, 6-hole), HoleFromTop (4 spacing variants), HoleGroupFromTop, NafHoleSize, SingleTaperHoleGroupFromTopHemiHead, SingleTaperHoleGroupFromTop, SingleTaperNoHoleGroupingFromTopHemiHead, SingleTaperNoHoleGroupingFromTop (5 spacing variants)
+
+### Test count
+- **150 tests** total (146 unit + 4 integration, up from 139)
+  - bobyqa: 32 + 1 doc test
+  - wid-optimize: 20
+  - wid-eval: 8 unit + 4 integration
+  - wid-compile: 22
+  - wid-types: 17 (up from 14)
+  - wid-math: 22
+  - wid-physics: 20
