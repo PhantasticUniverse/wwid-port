@@ -204,16 +204,18 @@ Bracket search preference logic (`find_bracket`) needed to match Java's `Playing
   `Speed of sound is 343.787 m/s. Density is 1.1998 kg/m^3. Epsilon factor is 1.613e-03.`
 - Color-coded cents: green (<5), amber (5-15), red (>15) — all working
 
-#### Temperature default discrepancy (documented, not yet resolved)
+#### Temperature default discrepancy (known, deferred)
 The Java app's `OptimizationPreferences.DEFAULT_TEMPERATURE = 20` overrides the
 `PhysicalParameters(72°F)` constructor default. This means the Java GUI always
 starts at 20°C, while our golden harness (which bypasses preferences) uses 72°F.
-- Our WASM session defaults to 20°C (matching what Java users see)
-- Golden fixtures remain at 72°F (matching the core engine default)
+
+Our session keeps 72°F to match golden fixtures and avoid test mismatches.
+The web app currently shows 22.22°C in the console instead of Java's 20°C.
 - Added 6 tests at 20°C to verify model correctness at the app-visible temperature
-- Added 8 humidity variation tests (20% and 80% RH at 20°C) with physical monotonicity checks
-- **TODO**: Make temperature configurable via settings UI (Phase 4d/4e)
-- See `parity-notes.md` for full analysis
+- Added 8 humidity variation tests (20% and 80% RH at 20°C) with monotonicity checks
+- Added `set_params()` to `StudySession` for future use
+- **TODO**: Add a preferences/settings layer (WASM or UI) that overrides to 20°C,
+  mirroring how Java's `OptimizationPreferences` overrides the core default
 
 ### Test count
 - **179 tests** total (up from 146)

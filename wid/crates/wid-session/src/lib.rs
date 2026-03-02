@@ -63,16 +63,17 @@ pub struct StudySession {
 impl StudySession {
     /// Create a new session for the given study kind.
     ///
-    /// Defaults to 20°C, matching the Java app's `OptimizationPreferences.DEFAULT_TEMPERATURE`.
-    /// The Java core constructor uses 72°F, but the GUI preferences system immediately
-    /// overrides it to 20°C before any user-visible computation. We match the
-    /// user-visible behavior.
+    /// Defaults to 72°F, matching the Java core's `PhysicalParameters(72.0, F)`
+    /// and all golden fixture data. Note: the Java GUI's preferences system
+    /// overrides this to 20°C (`OptimizationPreferences.DEFAULT_TEMPERATURE`),
+    /// so users of the Java app see 20°C. We'll add a similar override when
+    /// we implement the settings/preferences UI.
     pub fn new(study_kind: StudyKind) -> Self {
         StudySession {
             study_kind,
             docs: DocStore::new(),
             selection: Selection::default(),
-            params: PhysicalParameters::new(20.0, TemperatureType::C),
+            params: PhysicalParameters::new(72.0, TemperatureType::F),
             next_untitled: 1,
         }
     }
@@ -720,10 +721,6 @@ mod tests {
     #[test]
     fn evaluate_tuning_matches_golden() {
         let mut session = StudySession::new(StudyKind::NAF);
-        // Golden fixtures were generated at 72°F (the Java core default).
-        // The session now defaults to 20°C (Java GUI default), so we must
-        // override to match the golden data.
-        session.set_params(PhysicalParameters::new(72.0, TemperatureType::F));
         let inst = session.open_xml(NAF_6HOLE_XML).unwrap();
         let tuning = session.open_xml(TUNING_6HOLE_XML).unwrap();
         session.select_instrument(inst.doc_id);
