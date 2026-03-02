@@ -1,0 +1,252 @@
+# FIXTURE_PLAN.md
+
+## Purpose
+
+Define the golden fixture suite that makes parity measurable and prevents regressions, especially for load-bearing behaviors (NAF fipple factor).
+
+## Directory Layout
+
+```
+golden/
+  scenarios/
+    <scenario-id>.json
+  expected/
+    <scenario-id>/
+      eval_0.json
+      zsample_0.json
+      opt_0.json
+      instrument_after_opt_0.xml
+      ...
+```
+
+## Scenario Schema (conceptual)
+
+A scenario describes:
+
+* `studyKind`: NAF | WHISTLE | FLUTE | REED
+* `options`: units + physical params + blowing level + spectrum multiplier
+* `inputs`:
+
+  * instrument: xml path or programmatic template
+  * tuning: xml path or programmatic template
+  * constraints: xml path or programmatic template
+* `actions` (ordered):
+
+  * EVAL_TUNING
+  * ZSAMPLE (instrument + fingering + list of freqs)
+  * OPTIMIZE (objective + optional optimizer override)
+  * CALIBRATE (objective calibrator)
+  * GRAPH_TUNING (optional; stored as sampled curves)
+  * NOTE_SPECTRUM (optional; stored as sampled curves)
+  * SUPPLEMENTARY_INFO
+  * COMPARE (optional)
+  * SKETCH (optional; tested via numeric geometry export)
+
+## Assertion Types
+
+* Harness writes raw oracle outputs.
+* Port test runner applies tolerances.
+
+---
+
+## Fixture Suite v0 (Minimum, High-Leverage)
+
+### Constraints creation semantics (all study models)
+
+CONSTRAINTS-01: Create default constraints
+
+* Goal: lock baseline default-bounds generation and ordering.
+* Actions:
+
+  * CREATE_DEFAULT_CONSTRAINTS for a selected optimizer
+  * Export constraints XML + extracted lower/upper bound arrays
+
+CONSTRAINTS-02: Create blank constraints
+
+* Goal: lock baseline blank constraint semantics and ordering.
+* Actions:
+
+  * CREATE_BLANK_CONSTRAINTS for a selected optimizer
+  * Export constraints XML + extracted bounds arrays
+
+### NAF / Fipple Factor (load-bearing)
+
+NAF-FF-01: fipple scaling + null-handling
+
+* Goal: lock behavior when fippleFactor is null vs set; windwayHeight null vs set
+* Actions:
+
+  * ZSAMPLE on “all holes closed” fingering at fixed freqs
+  * EVAL_TUNING on a small tuning subset
+
+NAF-FF-02: fipple calibration on 0-hole blank
+
+* Goal: lock calibrator objective semantics (lowest note, 1D, compile after change)
+* Actions:
+
+  * EVAL_TUNING
+  * CALIBRATE(FippleFactorObjectiveFunction)
+  * EVAL_TUNING
+
+NAF-FF-03: fipple calibration with holes present
+
+* Goal: lock closed-hole influence vs blank influence
+* Actions:
+
+  * CALIBRATE(FippleFactorObjectiveFunction)
+  * EVAL_TUNING
+
+### NAF / Core optimization
+
+NAF-OPT-01: hole size + position optimization
+
+* Goal: lock parameterization + constraint ordering + weighted SSE behavior
+* Actions:
+
+  * EVAL_TUNING
+  * OPTIMIZE(HoleFromTopObjectiveFunction)
+  * EVAL_TUNING
+
+NAF-OPT-02: weights exclude a note
+
+* Goal: lock “weight=0 removes note from optimization and table”
+* Actions:
+
+  * OPTIMIZE with a tuning where one fingering weight is 0
+  * Compare objective/norm and final tuning vs oracle
+
+---
+
+## Fixture Suite v1 (Add other study models)
+
+### Whistle
+
+WH-01: evaluate tuning with min/max
+
+* Goal: lock multi-field tuning semantics
+* Actions:
+
+  * EVAL_TUNING with Frequency + Min/Max fields present
+
+WH-CAL-01: whistle calibrator
+
+* Actions:
+
+  * CALIBRATE(WhistleCalibrationObjectiveFunction)
+  * EVAL_TUNING
+
+### Flute (transverse)
+
+FL-CAL-01: flute calibrator
+
+* Actions:
+
+  * CALIBRATE(FluteCalibrationObjectiveFunction)
+  * EVAL_TUNING
+
+### Reed
+
+RD-CAL-01: reed calibrator
+
+* Actions:
+
+  * CALIBRATE(ReedCalibratorObjectiveFunction)
+  * EVAL_TUNING
+
+RD-VAL-01: reed semantic validation
+
+* Goal: lock mouthpiece-position rule
+* Actions:
+
+  * Validate an intentionally-invalid instrument and confirm baseline-equivalent failure mode
+
+---
+
+## Fixture Suite v2 (Full tool parity)
+
+### Graph tuning
+
+* Store sampled curve data (x=freq, y=reactance or ratio) for a few fingerings
+
+### Note spectrum
+
+* Store sampled spectrum data + resonance markers (numeric, not pixels)
+
+### Supplementary info
+
+* Store table numeric outputs for a subset of notes
+
+### Compare instruments
+
+* Store diff summary: key geometry deltas + tuning deltas
+
+### Sketch instrument (visually equivalent)
+
+* Do not test pixels
+* Test numeric geometry export used to draw:
+
+  * hole positions/diameters
+  * bore profile points
+  * termination position/diameter
+
+---
+
+## Multi-start / Two-stage optimization parity
+
+MS-01: Multi-start deterministic
+
+* Goal: lock multi-start behavior under a fixed seed
+* Actions:
+
+  * OPTIMIZE with multiStart enabled (starts=N, seed fixed)
+  * Capture final norm, residual ratio, instrument XML
+
+MS-02: Two-stage multi-start
+
+* Goal: lock two-stage flow
+* Actions:
+
+  * OPTIMIZE with twoStage enabled (seed fixed)
+  * Capture phase boundary events + final outputs
+
+---
+
+## Tuning Wizard component libraries parity
+
+WIZ-01: Wizard-produced tuning equivalence
+
+* Goal: lock that wizard-equivalent flow can reproduce baseline tuning XML outputs
+* Actions:
+
+  * Build a tuning using reusable components (symbols, temperament, scale, fingering pattern)
+  * Export resulting tuning XML
+
+WIZ-02: Component library round-trip
+
+* Goal: preserve reusable wizard components as standalone artifacts
+* Actions:
+
+  * Save/load a symbols list
+  * Save/load a temperament
+  * Save/load a fingering pattern
+  * Verify unchanged content when re-exported
+
+---
+
+## Tolerances (initial defaults)
+
+* Predicted note (cents): ≤ 0.5 cents per fingering
+* Z-samples: use per-component abs+rel tolerance on Re(Z) and Im(Z):
+
+  * `abs_err <= A + R * max(|expected|, |actual|)`
+  * avoid sampling at resonance roots where Im(Z)≈0
+* Optimization: objective norm ≤ oracle + epsilon; and/or per-note cents ≤ 1.0 cents for weighted notes
+
+---
+
+## Expansion Strategy
+
+Add fixtures when:
+
+* they protect a new subsystem (DIRECT-C, grouped holes, additional study models)
+* they codify a bugfix / edge case discovered during porting

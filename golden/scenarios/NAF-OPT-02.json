@@ -1,0 +1,13 @@
+{
+  "id": "NAF-OPT-02",
+  "studyKind": "NAF",
+  "inputs": {
+    "instrument": "../../oracle/v2.6.0/NafStudy/instruments/0.75-bore_6-hole_NAF_starter.xml",
+    "tuning": "support/NAF-OPT-02_tuning_weight0.xml",
+    "constraints": "../../oracle/v2.6.0/constraints/NafStudyModel/HoleFromTopObjectiveFunction/6/1.25_max_hole_spacing.xml"
+  },
+  "actions": [
+    {"type": "OPTIMIZE", "objectiveFunction": "HoleFromTopObjectiveFunction"},
+    {"type": "EVAL_TUNING"}
+  ]
+}

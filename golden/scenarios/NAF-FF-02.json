@@ -1,0 +1,13 @@
+{
+  "id": "NAF-FF-02",
+  "studyKind": "NAF",
+  "inputs": {
+    "instrument": "support/NAF-FF-02_instrument_0hole.xml",
+    "tuning": "support/NAF-FF-02_tuning_0hole.xml"
+  },
+  "actions": [
+    {"type": "EVAL_TUNING"},
+    {"type": "CALIBRATE", "objectiveFunction": "FippleFactorObjectiveFunction"},
+    {"type": "EVAL_TUNING"}
+  ]
+}

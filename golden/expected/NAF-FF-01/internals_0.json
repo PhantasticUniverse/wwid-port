@@ -1,0 +1,14 @@
+{
+  "speedOfSound" : 345.16416347142905,
+  "rho" : 1.190098732335034,
+  "eta" : 1.8187599550799636E-5,
+  "gamma" : 1.3993223735405296,
+  "specificHeat" : 1010.4534527147047,
+  "alphaConstant" : 2.1900771817689785E-4,
+  "temperature_C" : 22.22222222222222,
+  "waveNumber_440Hz" : 8.009526560795058,
+  "z0_boreRadius" : 1441210.5846022002,
+  "boreRadius_m" : 0.00952501543050833,
+  "componentCount" : 13,
+  "headspaceSections" : 1
+}

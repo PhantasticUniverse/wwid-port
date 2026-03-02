@@ -1,0 +1,47 @@
+# --- Oracle (downloaded binaries / third-party jars) ---
+oracle/
+
+# --- Upstream Java source snapshot (read-only reference, download separately) ---
+WWIDesigner-2.6.0-src/
+
+# --- OS / editor noise ---
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+
+# --- Logs ---
+*.log
+
+# --- Java / Gradle (golden harness) ---
+golden-harness/.gradle/
+golden-harness/build/
+**/out/
+**/*.class
+
+# --- Rust / Cargo (port) ---
+wid/target/
+**/*.rlib
+**/*.rmeta
+**/*.dSYM/
+
+# --- WASM artifacts (generated) ---
+**/*.wasm
+**/*.wat
+
+# --- Node / web build (if/when used) ---
+wid/web/node_modules/
+wid/web/dist/
+wid/web/.next/
+wid/web/.vite/
+wid/web/.turbo/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# --- Python (if any tooling appears later) ---
+__pycache__/
+*.pyc
+.venv/

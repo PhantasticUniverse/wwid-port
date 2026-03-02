@@ -1,0 +1,24 @@
+{
+  "id": "NAF-FF-01",
+  "studyKind": "NAF",
+  "inputs": {
+    "instrument": "../../oracle/v2.6.0/NafStudy/instruments/0.75-bore_6-hole_NAF_starter.xml",
+    "tuning": "../../oracle/v2.6.0/NafStudy/tunings/F#4_ET_6-hole_NAF_chromatic_tuning.xml"
+  },
+  "actions": [
+    {"type": "EVAL_TUNING"},
+    {"type": "ZSAMPLE", "fingeringAllClosed": true, "frequencies": [200, 250, 300, 350, 400, 450, 500, 600, 700, 800, 1000]},
+    {"type": "SET_FIPPLE_FACTOR", "value": null},
+    {"type": "EVAL_TUNING"},
+    {"type": "ZSAMPLE", "fingeringAllClosed": true, "frequencies": [200, 250, 300, 350, 400, 450, 500, 600, 700, 800, 1000]},
+    {"type": "RELOAD_INSTRUMENT"},
+    {"type": "SET_WINDWAY_HEIGHT", "value": null},
+    {"type": "EVAL_TUNING"},
+    {"type": "RELOAD_INSTRUMENT"},
+    {"type": "SET_FIPPLE_FACTOR", "value": null},
+    {"type": "SET_WINDWAY_HEIGHT", "value": null},
+    {"type": "EVAL_TUNING"},
+    {"type": "RELOAD_INSTRUMENT"},
+    {"type": "DUMP_INTERNALS"}
+  ]
+}

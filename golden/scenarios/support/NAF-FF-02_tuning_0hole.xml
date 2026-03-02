@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ns2:tuning xmlns:ns2="http://www.wwidesigner.com/Tuning">
+    <name>F#4 single-note 0-hole tuning (FF-02)</name>
+    <numberOfHoles>0</numberOfHoles>
+    <fingering>
+        <note>
+            <name>F#4</name>
+            <frequency>369.9944227116344</frequency>
+        </note>
+        <openEnd>true</openEnd>
+        <optimizationWeight>1</optimizationWeight>
+    </fingering>
+</ns2:tuning>

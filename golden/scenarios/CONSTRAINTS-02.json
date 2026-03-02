@@ -1,0 +1,11 @@
+{
+  "id": "CONSTRAINTS-02",
+  "studyKind": "NAF",
+  "inputs": {
+    "instrument": "../../oracle/v2.6.0/NafStudy/instruments/0.75-bore_6-hole_NAF_starter.xml",
+    "tuning": "../../oracle/v2.6.0/NafStudy/tunings/F#4_ET_6-hole_NAF_chromatic_tuning.xml"
+  },
+  "actions": [
+    {"type": "CREATE_BLANK_CONSTRAINTS", "objectiveFunction": "HoleFromTopObjectiveFunction"}
+  ]
+}
