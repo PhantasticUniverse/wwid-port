@@ -101,6 +101,7 @@ impl WasmSession {
                 Response::ok(self.session.list_docs(wid_session::DocKind::Constraints))
             }
             "get_params" => self.cmd_get_params(),
+            "set_params" => self.cmd_set_params(&cmd.args),
             _ => Response::err(format!("Unknown command: {}", cmd.cmd)),
         }
     }
@@ -249,5 +250,20 @@ impl WasmSession {
             "density": params.rho(),
             "epsilonConstant": params.epsilon_constant(),
         }))
+    }
+
+    fn cmd_set_params(&mut self, args: &serde_json::Value) -> String {
+        let temperature = args.get("temperature").and_then(|v| v.as_f64()).unwrap_or(20.0);
+        let humidity = args.get("humidity").and_then(|v| v.as_f64()).unwrap_or(45.0);
+        let params = wid_session::PhysicalParameters::with_all(
+            temperature,
+            wid_session::TemperatureType::C,
+            101.325,   // standard pressure
+            humidity,
+            390e-6,    // standard CO2
+        );
+        self.session.set_params(params);
+        // Return the updated params so the UI can refresh
+        self.cmd_get_params()
     }
 }

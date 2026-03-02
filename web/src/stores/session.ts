@@ -163,6 +163,22 @@ async function evaluateTuning(): Promise<TuningResult | null> {
   }
 }
 
+async function updateParams(temperature: number, humidity: number) {
+  try {
+    setError(null);
+    const p = await compute.run<PhysicalParams>("set_params", { temperature, humidity });
+    setParams(p);
+    log(
+      `Settings updated: ${p.temperature.toFixed(2)} C, ` +
+        `${p.humidity.toFixed(0)}% humidity`
+    );
+    log(`Speed of sound is ${p.speedOfSound.toFixed(3)} m/s.`);
+    log(`Density is ${p.density.toFixed(4)} kg/m^3.`);
+  } catch (e) {
+    setError(`Failed to update params: ${e}`);
+  }
+}
+
 async function exportXml(docId: DocId): Promise<string | null> {
   try {
     return await compute.run<string>("export_xml", { docId });
@@ -170,6 +186,22 @@ async function exportXml(docId: DocId): Promise<string | null> {
     setError(`Export failed: ${e}`);
     return null;
   }
+}
+
+async function saveInstrumentXml(docId: DocId) {
+  const xml = await exportXml(docId);
+  if (!xml) return;
+  // Find the instrument name for the filename
+  const inst = instruments.find((d) => d.doc_id === docId);
+  const name = inst?.name ?? "instrument";
+  const blob = new Blob([xml], { type: "application/xml" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `${name}.xml`;
+  a.click();
+  URL.revokeObjectURL(url);
+  log(`Saved ${name}.xml`);
 }
 
 // ── Exported store ───────────────────────────────────────────
@@ -201,6 +233,8 @@ export const sessionStore = {
   selectConstraints,
   evaluateTuning,
   exportXml,
+  saveInstrumentXml,
+  updateParams,
   log,
 
   // Raw compute access for advanced use

@@ -2,7 +2,9 @@ import { createSignal, onMount, Show, For } from "solid-js";
 import { sessionStore } from "./stores/session";
 
 export default function App() {
-  const [fileContent, setFileContent] = createSignal<string | null>(null);
+  const [showSettings, setShowSettings] = createSignal(false);
+  const [settingsTemp, setSettingsTemp] = createSignal(20.0);
+  const [settingsHumidity, setSettingsHumidity] = createSignal(45.0);
 
   onMount(() => {
     sessionStore.init();
@@ -10,21 +12,25 @@ export default function App() {
 
   async function handleFileOpen(event: Event) {
     const input = event.target as HTMLInputElement;
-    const file = input.files?.[0];
-    if (!file) return;
-    const xml = await file.text();
-    setFileContent(xml);
-    await sessionStore.openXml(xml);
+    const files = input.files;
+    if (!files) return;
+    for (const file of Array.from(files)) {
+      const xml = await file.text();
+      await sessionStore.openXml(xml);
+    }
     input.value = "";
   }
 
   async function handleDrop(event: DragEvent) {
     event.preventDefault();
-    const file = event.dataTransfer?.files[0];
-    if (!file) return;
-    const xml = await file.text();
-    setFileContent(xml);
-    await sessionStore.openXml(xml);
+    const files = event.dataTransfer?.files;
+    if (!files) return;
+    for (const file of Array.from(files)) {
+      if (file.name.endsWith(".xml")) {
+        const xml = await file.text();
+        await sessionStore.openXml(xml);
+      }
+    }
   }
 
   function handleDragOver(event: DragEvent) {
@@ -45,8 +51,39 @@ export default function App() {
           <label class="px-3 py-1.5 rounded text-sm font-medium cursor-pointer transition-colors"
             style={{ "background": "var(--color-accent)", "color": "white" }}>
             Open File
-            <input type="file" accept=".xml" class="hidden" onChange={handleFileOpen} />
+            <input type="file" accept=".xml" multiple class="hidden" onChange={handleFileOpen} />
           </label>
+          <button
+            class="px-3 py-1.5 rounded text-sm font-medium transition-colors disabled:opacity-40"
+            style={{ "background": "var(--color-accent)", "color": "white" }}
+            disabled={!sessionStore.selection()?.instrument_id}
+            onClick={() => {
+              const id = sessionStore.selection()?.instrument_id;
+              if (id != null) sessionStore.saveInstrumentXml(id);
+            }}
+            title={!sessionStore.selection()?.instrument_id ? "Select an instrument first" : "Save selected instrument as XML"}
+          >
+            Save
+          </button>
+          <button
+            class="px-2 py-1.5 rounded text-sm transition-colors"
+            style={{ "color": "var(--color-text-muted)" }}
+            onClick={() => {
+              // Sync settings fields with current params before opening
+              const p = sessionStore.params();
+              if (p) {
+                setSettingsTemp(p.temperature);
+                setSettingsHumidity(p.humidity);
+              }
+              setShowSettings(true);
+            }}
+            title="Settings"
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+              <path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492zM5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0z"/>
+              <path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52l-.094-.319zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693 1.115l.291-.16c.764-.415 1.6.42 1.184 1.185l-.159.292a1.873 1.873 0 0 0 1.116 2.692l.318.094c.835.246.835 1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.291c.415.764-.421 1.6-1.185 1.184l-.291-.159a1.873 1.873 0 0 0-2.693 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0 0-2.692-1.115l-.292.16c-.764.415-1.6-.421-1.184-1.185l.159-.291A1.873 1.873 0 0 0 1.945 8.93l-.319-.094c-.835-.246-.835-1.428 0-1.674l.319-.094A1.873 1.873 0 0 0 3.06 4.377l-.16-.292c-.415-.764.42-1.6 1.185-1.184l.292.159a1.873 1.873 0 0 0 2.692-1.116l.094-.318z"/>
+            </svg>
+          </button>
         </div>
       </header>
 
@@ -178,11 +215,27 @@ export default function App() {
               <button
                 class="px-3 py-1.5 rounded text-sm font-medium transition-colors disabled:opacity-40"
                 style={{ "background": "var(--color-accent)", "color": "white" }}
+                disabled={!sessionStore.canSketch()}
+                title={!sessionStore.canSketch() ? "Select an instrument first" : "Show instrument sketch"}
+              >
+                Sketch
+              </button>
+              <button
+                class="px-3 py-1.5 rounded text-sm font-medium transition-colors disabled:opacity-40"
+                style={{ "background": "var(--color-accent)", "color": "white" }}
                 disabled={!sessionStore.canTune()}
                 onClick={() => sessionStore.evaluateTuning()}
-                title={!sessionStore.canTune() ? "Select an instrument and matching tuning first" : ""}
+                title={!sessionStore.canTune() ? "Select an instrument and matching tuning first" : "Evaluate current tuning"}
               >
                 Evaluate Tuning
+              </button>
+              <button
+                class="px-3 py-1.5 rounded text-sm font-medium transition-colors disabled:opacity-40"
+                style={{ "background": "var(--color-accent)", "color": "white" }}
+                disabled={!sessionStore.canOptimize()}
+                title={!sessionStore.canOptimize() ? "Select instrument, tuning, optimizer, and constraints" : "Run optimization"}
+              >
+                Optimize
               </button>
             </div>
           </Show>
@@ -286,6 +339,81 @@ export default function App() {
           </For>
         </div>
       </div>
+
+      {/* Settings Dialog */}
+      <Show when={showSettings()}>
+        <div class="fixed inset-0 flex items-center justify-center"
+          style={{ "background": "rgba(0,0,0,0.4)", "z-index": "50" }}
+          onClick={(e) => { if (e.target === e.currentTarget) setShowSettings(false); }}>
+          <div class="rounded-lg shadow-lg p-6 w-96"
+            style={{ "background": "var(--color-surface)", "border": "1px solid var(--color-border)" }}>
+            <h2 class="text-lg font-semibold mb-4">Settings</h2>
+
+            <div class="flex flex-col gap-4">
+              {/* Temperature */}
+              <div class="flex items-center justify-between">
+                <label class="text-sm" style={{ "color": "var(--color-text)" }}>
+                  Temperature, C:
+                </label>
+                <input
+                  type="number"
+                  step="0.1"
+                  class="w-24 px-2 py-1 rounded text-sm text-right"
+                  style={{
+                    "background": "var(--color-surface-alt)",
+                    "border": "1px solid var(--color-border)",
+                    "color": "var(--color-text)",
+                  }}
+                  value={settingsTemp()}
+                  onInput={(e) => setSettingsTemp(parseFloat(e.currentTarget.value) || 0)}
+                />
+              </div>
+
+              {/* Humidity */}
+              <div class="flex items-center justify-between">
+                <label class="text-sm" style={{ "color": "var(--color-text)" }}>
+                  Relative Humidity, %:
+                </label>
+                <input
+                  type="number"
+                  step="1"
+                  min="0"
+                  max="100"
+                  class="w-24 px-2 py-1 rounded text-sm text-right"
+                  style={{
+                    "background": "var(--color-surface-alt)",
+                    "border": "1px solid var(--color-border)",
+                    "color": "var(--color-text)",
+                  }}
+                  value={settingsHumidity()}
+                  onInput={(e) => setSettingsHumidity(parseFloat(e.currentTarget.value) || 0)}
+                />
+              </div>
+            </div>
+
+            {/* Buttons */}
+            <div class="flex justify-end gap-2 mt-6">
+              <button
+                class="px-3 py-1.5 rounded text-sm"
+                style={{ "color": "var(--color-text-muted)" }}
+                onClick={() => setShowSettings(false)}
+              >
+                Cancel
+              </button>
+              <button
+                class="px-3 py-1.5 rounded text-sm font-medium"
+                style={{ "background": "var(--color-accent)", "color": "white" }}
+                onClick={async () => {
+                  await sessionStore.updateParams(settingsTemp(), settingsHumidity());
+                  setShowSettings(false);
+                }}
+              >
+                Apply
+              </button>
+            </div>
+          </div>
+        </div>
+      </Show>
     </div>
   );
 }

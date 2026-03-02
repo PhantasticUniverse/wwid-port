@@ -34,7 +34,7 @@ use doc_store::{DocContent, DocStore};
 use wid_compile::{compile, get_fipple_factor};
 use wid_eval::{cents, predicted_frequency};
 use wid_optimize::fingering_weights;
-use wid_physics::{PhysicalParameters, TemperatureType};
+pub use wid_physics::{PhysicalParameters, TemperatureType};
 use wid_types::{
     Constraints, InstrumentRaw, Tuning,
     parse_constraints_xml, parse_instrument_xml, parse_tuning_xml,
