@@ -5,6 +5,7 @@ members = [
     "crates/wid-physics",
     "crates/wid-types",
     "crates/wid-compile",
+    "crates/wid-acoustics",
 ]
 
 [workspace.dependencies]

@@ -1,0 +1,14 @@
+[package]
+name = "wid-acoustics"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+wid-math = { path = "../wid-math" }
+wid-physics = { path = "../wid-physics" }
+wid-compile = { path = "../wid-compile" }
+num-complex = { workspace = true }
+
+[dev-dependencies]
+approx = { workspace = true }
+wid-types = { path = "../wid-types" }
