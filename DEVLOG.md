@@ -41,3 +41,31 @@ All in `golden/scenarios/support/`, derived from oracle originals:
 ### Fixture generation status
 - NAF-FF-01: **generated and verified** — eval, zsample, and internals outputs all sane
 - NAF-FF-02 through CONSTRAINTS-02: pending
+
+## 2026-03-02: M2 — NAF Evaluation Parity in Rust
+
+### Workspace setup
+- Rust workspace at `wid/` with 6 crates, edition 2024
+- Shared deps: num-complex 0.4, quick-xml 0.37, serde 1, serde_json 1, approx 0.5
+
+### Crates built (bottom-up)
+
+**wid-math** (22 tests) — TransferMatrix (2x2 Complex64) + StateVector (P, U). Both `Copy`. Includes identity, multiply, impedance/admittance/reflectance, series/parallel, open/closed end constructors.
+
+**wid-physics** (20 tests) — PhysicalParameters with full CIPM-2007 moist air model (temperature, pressure, humidity, CO2 → speed of sound, density, viscosity). SimplePhysicalParameters for fipple mouthpiece. All values validated against golden `internals_0.json` to 12+ digits.
+
+**wid-types** (9 tests) — Serde structs for WIDesigner XML: InstrumentRaw, Tuning, Fingering, Note. XML namespace stripping (`ns2:` prefix). Parses oracle instrument and tuning files.
+
+**wid-compile** (17 tests) — `compile(InstrumentRaw) → InstrumentCompiled`. Sorts bore points, extracts headspace, interleaves bore sections with holes, interpolates bore diameters. Component count (13) and headspace sections (1) match golden values.
+
+**wid-acoustics** (0 unit tests, validated via wid-eval integration) — Tube (cylinder/cone TMs, radiation impedance), bore section TM, tonehole T-network (Lefebvre-Scavone 2012), thick-flanged termination, fipple mouthpiece (headspace ×4, scaled fipple factor, AIR_GAMMA=1.4018...).
+
+**wid-eval** (8 tests) — Full impedance pipeline: `calc_z` walks components in reverse, `predicted_frequency` uses bracket search + Brent-Dekker root finding for Im(Z)=0 crossings. `calculate_error_vector` produces cents deviations.
+
+### Parity results
+- **Z-sample**: All 11 frequencies match golden within `abs_err ≤ 1.0 + 1e-6 × max(|expected|, |actual|)`
+- **Evaluation**: All 15 fingerings within **0.5 cents** of golden oracle
+- **76 tests total** across all crates, all passing
+
+### Notable fix
+Bracket search preference logic (`find_bracket`) needed to match Java's `PlayingRange.findBracket()` exactly — when the primary-direction bracket is outside `PreferredSolutionRatio`, the fallback direction is preferred unconditionally (not by distance comparison). Also uses `nearFreq²/bracket` as the search limit for the fallback, not `SearchBoundRatio`. This fixed fingering 14 (A5) which was finding the wrong Im(Z)=0 crossing.
