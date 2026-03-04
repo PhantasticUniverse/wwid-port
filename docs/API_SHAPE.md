@@ -1,21 +1,21 @@
-# API_SHAPE.md
+# API_SHAPE.md — Session-Based Compute Contract
 
 ## Purpose
 
-> **Status**: Core API implemented across all four study models (NAF, Whistle, Flute, Reed). Session lifecycle, document I/O, selection, evaluation, optimization, calibration, and constraints creation are all working end-to-end in the browser. 240 tests passing. Graph/spectrum/sketch/compare tools and advanced optimization modes (DIRECT-C, multi-start) are remaining M5 work.
+> **Status**: Core API implemented across all four study models (NAF, Whistle, Flute, Reed). Session lifecycle, document I/O, selection, evaluation, optimization, calibration, and constraints creation are all working end-to-end in the browser. DIRECT-C global optimization and multi-start infrastructure complete. 280 tests passing. Remaining: spectrum/sketch/compare tools, NAF taper optimizers, bore optimizers.
 
-Define a stable “StudySession” API that mirrors baseline StudyModel behavior:
+Define a stable `StudySession` API that mirrors baseline StudyModel behavior:
 
-* selection-driven tools
-* gating rules
-* outputs as structured data + XML artifacts
-* cancellation + progress
+* Selection-driven tools
+* Gating rules (what's available depends on what's selected)
+* Outputs as structured data + XML artifacts
+* Cancellation + progress for long-running operations
 
 Used by:
 
-* browser worker host
-* tests (headless)
-* optional CLI
+* **Browser worker host** — WASM bindings dispatch JSON commands to `StudySession`
+* **Tests** — headless session driving golden fixture parity tests
+* **Optional CLI** — same API, different frontend
 
 ---
 
@@ -23,180 +23,223 @@ Used by:
 
 ```
 Session
-  docs: { Instrument[], Tuning[], Constraints[], WizardComponents[] }
+  study_kind: NAF | Whistle | Flute | Reed
+  docs: { Instrument[], Tuning[], Constraints[] }
   selection:
     instrumentId?
     tuningId?
     optimizerKey?
-    constraintsId? (optional; required for some NAF flows)
-  options:
-    units
-    physical params
-    blowing level
-    spectrum multiplier
-  multiStart:
-    enabled?
-    starts?
-    seed?
-    twoStage?
-    firstStageEvaluatorKey?
+    constraintsId?
+  params:
+    temperature (°F or °C)
+    humidity (%)
+  calc_params:
+    hole_size_mult, finger_adjustment
+    termination_type, mouthpiece_model
+    blowing_level (Whistle/Flute only)
+```
+
+### Document Lifecycle
+
+```
+1. Open       →  open_xml(xml_string) parses and stores a document
+2. Select     →  select_instrument/tuning/optimizer/constraints
+3. Evaluate   →  evaluate_tuning() returns per-fingering results
+4. Calibrate  →  calibrate() adjusts mouthpiece params in-place
+5. Optimize   →  optimize() produces new instrument with adjusted geometry
+6. Export     →  export_xml(doc_id) serializes back to WIDesigner XML
 ```
 
 ### Gating (enabled operations)
 
-* `canTune` = instrument && tuning && holeCountsMatch
-* `canOptimize` = canTune && optimizerKey && (constraints attached if required by the selected optimizer/study)
+| Predicate | Requirements |
+|-----------|-------------|
+| `can_tune()` | Instrument + Tuning selected, matching hole counts |
+| `can_calibrate()` | `can_tune()` + selected optimizer is a calibrator type |
+| `can_optimize()` | `can_tune()` + optimizer + constraints selected, constraint dimensions match optimizer |
 
 ---
 
-## Commands (High-level)
+## Commands
 
 ### Session lifecycle
 
-* `createSession(studyKind) -> sessionId`
-* `resetSession() -> void`
-* `getSessionState() -> snapshot (docs + selection + enabled tools)`
+| Command | Returns | Description |
+|---------|---------|-------------|
+| `createSession(studyKind)` | `sessionId` | Initialize session for a study model |
+| `resetSession()` | — | Clear all documents and selection |
+| `getSessionState()` | snapshot | Documents, selection, enabled tools, params |
 
 ### Document I/O
 
-* `openXml(xmlString) -> { docId, docKind, metadata }`
-* `exportXml(docId) -> xmlString`
-* `saveXml(docId, xmlString) -> validates and replaces doc`
-* `listDocs(docKind?) -> [{docId, name, metadata}]`
-* `deleteDoc(docId)`
+| Command | Returns | Description |
+|---------|---------|-------------|
+| `openXml(xmlString)` | `{ docId, docKind, metadata }` | Parse XML, auto-detect type, store |
+| `exportXml(docId)` | `xmlString` | Serialize document to WIDesigner XML |
+| `listDocs(docKind?)` | `[{docId, name, metadata}]` | List stored documents by type |
+| `deleteDoc(docId)` | — | Remove a document |
 
-### Additional doc kinds (wizard components)
+**Example — open and select an instrument:**
+```json
+// Request
+{"command": "open_xml", "xml": "<Instrument xmlns=\"http://...\">\n  ..."}
 
-Treat reusable tuning-wizard components as documents:
+// Response
+{"doc_id": 1, "doc_kind": "Instrument", "name": "SamplePVC-Whistle"}
 
-* `SymbolList`
-* `Temperament`
-* `ScaleIntervals` / `ScaleWithIntervals`
-* `ScaleWithFrequencies`
-* `FingeringPattern`
-* `Tuning` (final)
-
-`openXml/exportXml/saveXml` support these kinds.
+// Then select it
+{"command": "select_instrument", "doc_id": 1}
+```
 
 ### Selection
 
-* `selectInstrument(docId)`
-* `selectTuning(docId)`
-* `selectOptimizer(optimizerKey)`
-* `selectConstraints(docId)`  (for editing/viewing)
-* `attachConstraintsToOptimizer(optimizerKey, docId)`
-* `clearSelection(kind)`
+| Command | Description |
+|---------|-------------|
+| `selectInstrument(docId)` | Set active instrument |
+| `selectTuning(docId)` | Set active tuning |
+| `selectOptimizer(optimizerKey)` | Set active optimizer/calibrator |
+| `selectConstraints(docId)` | Set active constraints |
+| `clearSelection(kind)` | Clear one selection slot |
 
 ### Constraints creation
 
-* `createDefaultConstraints(optimizerKey) -> constraintsDocId`
-* `createBlankConstraints(optimizerKey) -> constraintsDocId`
-* `exportConstraintsBounds(constraintsDocId) -> { lower[], upper[], metadata }`
+| Command | Returns | Description |
+|---------|---------|-------------|
+| `createDefaultConstraints(optimizerKey)` | `constraintsDocId` | Generate template with default bounds |
+| `createBlankConstraints(optimizerKey)` | `constraintsDocId` | Generate template with wide bounds |
+
+**Constraints structure** (what the bounds arrays look like):
+
+For a 6-hole Whistle `HoleObjectiveFunction`, the constraints contain 13 entries:
+- 7 position constraints: bore end position + 6 inter-hole spacings (metres)
+- 6 size constraints: hole diameters (metres)
+
+```json
+{
+  "name": "Default",
+  "objective_function_name": "HoleObjectiveFunction",
+  "number_of_holes": 6,
+  "constraint_list": [
+    {"display_name": "Bore length", "lower_bound": 0.2, "upper_bound": 0.7},
+    {"display_name": "Hole 1 spacing", "lower_bound": 0.012, "upper_bound": 0.04},
+    ...
+    {"display_name": "Hole 1 diameter", "lower_bound": 0.004, "upper_bound": 0.0091},
+    ...
+  ]
+}
+```
+
+**Ordering is ABI**: the objective function reads lower/upper bound arrays positionally — position bounds first, then size bounds. Reordering breaks optimization.
 
 ### Options
 
-* `setUnits(lengthType)`
-* `setPhysicalParams(temp, humidity, pressure?, co2?)`
-* `setBlowingLevel(0..10)` (whistle/flute)
-* `setSpectrumMultiplier(mult)`
+| Command | Description |
+|---------|-------------|
+| `setPhysicalParams(temp, humidity)` | Override temperature and humidity |
 
 ---
 
-## Tool Endpoints (Outputs)
+## Tool Endpoints
 
-### Evaluate tuning (table)
+### Evaluate tuning
 
-* `calculateTuning() -> TuningTableResult`
+```json
+// Request
+{"command": "evaluate_tuning"}
 
-  * rows: `{ noteName, fingering, targetHz?, predictedHz?, cents?, minHz?, maxHz?, weight }`
-  * summary: `{ meanAbsCents, rmsCents, maxAbsCents, noteCountUsed }`
+// Response
+{
+  "rows": [
+    {"note": "F#4", "target_freq": 370.0, "predicted_freq": 369.8, "cents": -0.94, "weight": 1},
+    ...
+  ],
+  "net_error": 15900.0,
+  "mean_deviation": 42.3
+}
+```
 
-### Graph tuning (curve samples)
+### Calibrate
 
-* `graphTuning(fingeringIndices?, freqRange?) -> GraphCurves`
+```json
+// Request
+{"command": "calibrate"}
 
-  * curves: `{ fingeringId, points:[{freqHz, y}] }`
-  * metadata: axis labels, markers
+// Response (NAF fipple example)
+{
+  "initial_fipple_factor": 0.75,
+  "final_fipple_factor": 0.274,
+  "initial_norm": 90010.0,
+  "final_norm": 0.0009
+}
+```
 
-### Note spectrum
+### Optimize (async with progress)
 
-* `noteSpectrum(fingeringIndex, freqRange?) -> SpectrumResult`
+```json
+// Started via optimize() WASM call — not a JSON command
+// Progress callback receives:
+{"evaluations": 1500, "best_value": 975.14}
 
-  * points: `{freqHz, impedanceRatio?, gain?, ...}`
-  * resonance markers
+// Final result:
+{
+  "new_instrument_id": 3,
+  "initial_norm": 1324815.0,
+  "final_norm": 975.14,
+  "evaluations": 1750
+}
+```
 
-### Supplementary info
+### Available optimizers
 
-* `supplementaryInfo() -> SupplementaryTable`
+```json
+// Request
+{"command": "available_optimizers"}
 
-  * rows with derived quantities per note
-
-### Sketch instrument (numeric geometry export)
-
-* `sketchData() -> SketchGeometry`
-
-  * bore polyline points
-  * hole circles (pos, dia)
-  * mouthpiece marker
-  * termination marker
-
-### Compare instruments
-
-* `compareInstruments(instrumentA, instrumentB, tuningId?) -> CompareResult`
-
-  * geometry deltas
-  * tuning deltas
+// Response (Whistle example)
+[
+  {"key": "WindowHeightObjectiveFunction", "display_name": "Window height calibrator"},
+  {"key": "BetaObjectiveFunction", "display_name": "Beta calibrator"},
+  {"key": "WhistleCalibrationObjectiveFunction", "display_name": "Whistle calibration"},
+  {"key": "HoleSizeObjectiveFunction", "display_name": "Hole size only"},
+  {"key": "HolePositionObjectiveFunction", "display_name": "Hole position only"},
+  {"key": "HoleObjectiveFunction", "display_name": "Hole position & size"},
+  {"key": "GlobalHolePositionObjectiveFunction", "display_name": "Hole spacing (global)"},
+  {"key": "GlobalHoleObjectiveFunction", "display_name": "Hole size+spacing (global)"}
+]
+```
 
 ---
 
-## Optimization / Calibration API
+## Optimizer Strategies
 
-### Start optimization
+| Strategy | Optimizer Key Prefix | Algorithm | Budget |
+|----------|---------------------|-----------|--------|
+| Local | `Hole*`, `HoleSize*`, `HolePosition*` | BOBYQA | 20K + 5K per dim |
+| Global | `Global*` | DIRECT-C → BOBYQA | 2× budget (DIRECT) + 1× (BOBYQA) |
+| Calibrator | `*CalibrationObjectiveFunction`, `*ObjectiveFunction` (fipple/beta/etc) | 1D Brent or 2D BOBYQA | varies |
 
-* `optimizeStart({
-    objectiveKey?,
-    optimizerTypeOverride?,
-    seed?,
-    multiStart?: {
-      enabled: boolean,
-      starts?: number,
-      seed?: number,
-      twoStage?: boolean,
-      firstStageEvaluatorKey?: string
-    }
-  }) -> runId`
-
-### Progress events
-
-* `optimizeStatus(runId) -> { state, evaluationsDone, tuningsDone, bestNormSoFar, elapsedMs, phase? }`
-
-### Cancel
-
-* `optimizeCancel(runId) -> void`
-
-### Finish result
-
-* `optimizeResult(runId) -> OptimizeResult`
-
-  * status: `ok | cancelled_partial | cancelled | error`
-  * `{ initialNorm, finalNorm, residualRatio, evaluationsDone, tuningsDone, elapsedMs }`
-  * output: `{ newInstrumentDocId? , instrumentXml? }`
+Global optimizers use a two-stage pipeline:
+1. **DIRECT-C** global search (convergence 7e-8, target value 0.001) finds a good basin
+2. **BOBYQA** local refinement converges precisely from DIRECT-C's best point
+3. The better of the two results is kept
 
 ---
 
 ## Errors (structured)
 
-* HoleCountMismatch
-* InvalidXml(kind, details)
-* MissingSelection(kind)
-* UnsupportedObjectiveForStudy
-* OptimizationCancelled
-* NumericFailure(NoPlayingRange, RootNotFound, etc.)
+| Error | Cause |
+|-------|-------|
+| `HoleCountMismatch` | Instrument and tuning have different hole counts |
+| `InvalidXml(kind, details)` | XML parsing or validation failure |
+| `MissingSelection(kind)` | Required document not selected |
+| `UnsupportedObjectiveForStudy` | Optimizer not available for current study model |
+| `OptimizationCancelled` | User cancelled a running optimization |
+| `NumericFailure(...)` | Root-finding or impedance computation failure |
 
 ---
 
 ## Stability Rules
 
-* docId and runId are stable within a session
-* outputs are deterministic under fixed seed/options
-* constraints ordering is treated as ABI: objective parameterization must match constraints layout
+* `docId` values are stable within a session (monotonically increasing integers)
+* Outputs are deterministic under fixed params/selection
+* Constraints ordering is treated as ABI: the objective function parameterization depends on the positional layout of the lower/upper bound arrays

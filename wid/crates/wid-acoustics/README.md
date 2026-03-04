@@ -2,37 +2,57 @@
 
 Transfer matrix and state vector calculations for the acoustic elements of a compiled instrument: bore sections, toneholes, termination, and mouthpiece.
 
+## How It Fits In
+
+```
+wid-compile                    wid-acoustics                   wid-eval
+┌──────────────┐    ┌────────────────────────────────┐    ┌─────────────┐
+│ Component    │    │                                │    │             │
+│ chain:       │───▶│  tube    bore    hole          │───▶│  calc_z()   │
+│ [Bore, Hole, │    │    ↓       ↓       ↓           │    │  walks the  │
+│  Bore, Hole, │    │  Transfer matrices              │    │  chain to   │
+│  ..., Bore]  │    │                                │    │  compute    │
+│              │    │  termination   mouthpiece       │    │  impedance  │
+│ Mouthpiece   │───▶│    ↓              ↓            │───▶│             │
+│ Termination  │    │  Boundary conditions            │    │             │
+└──────────────┘    └────────────────────────────────┘    └─────────────┘
+```
+
+Each acoustic element produces a 2×2 complex transfer matrix. The evaluation pipeline in `wid-eval` multiplies these matrices in sequence (from termination to mouthpiece) to compute the input impedance at any frequency.
+
 ## Modules
 
-| Module | Model | Description |
-|--------|-------|-------------|
-| `tube` | Lossy cylinder/cone TMs | Viscothermal losses via complex propagation constant. Radiation impedance via Padé approximants (Silva et al. 2008). |
-| `bore` | Bore section TM | Delegates to `tube::calc_cone_matrix()` with section geometry |
-| `hole` | Tonehole T-network | Lefebvre & Scavone (2012): series impedance Za + shunt admittance Ys |
-| `termination` | ThickFlanged / Unflanged open end | Reflection coefficient model. ThickFlanged (NAF) with flange correction; Unflanged (Whistle/Flute) with Levine & Schwinger model. |
-| `mouthpiece` | Default fipple (NAF) | Headspace ×4, fipple factor scaling, window impedance |
+| Module | Physical Element | Model |
+|--------|-----------------|-------|
+| `tube` | Cylindrical/conical tube | Viscothermal losses via complex propagation constant. Radiation impedance via Padé approximants (Silva et al. 2008). |
+| `bore` | Bore section | Delegates to `tube::calc_cone_matrix()` with section geometry (left/right radius, length) |
+| `hole` | Tonehole | Lefebvre & Scavone (2012) T-network: series impedance Za + shunt admittance Ys. Open/closed controlled by fingering. |
+| `termination` | Open end | Radiation impedance. **ThickFlanged** (NAF): infinite flange correction. **Unflanged** (Whistle/Flute/Reed): Levine & Schwinger model. |
+| `mouthpiece` | Default fipple (NAF) | Headspace ×4 end correction, fipple factor scaling, window impedance |
 | `simple_fipple` | Simple fipple / embouchure hole | Empirical Xw/Rw model for Whistle (Fipple) and Flute (EmbouchureHole). Same formulas, different parameter extraction. |
-| `simple_reed` | Reed mouthpiece (single/double/lip) | Linear reactance `X = alpha × 1e-3 × freq + beta`. Pressure-node boundary: TM = `[[0+iX, z₀], [1, 0]]`. Lip reeds negate beta sign. Headspace is extracted but not used (matching Java parity). |
+| `simple_reed` | Reed mouthpiece | Linear reactance model for single/double/lip reeds |
 
-## Study model dispatch
+## Mouthpiece Models
 
-The mouthpiece model is selected by `CalculatorParams` in `wid-eval`:
+The mouthpiece model is the key differentiator between study models. Each uses a fundamentally different acoustic model:
 
-- **NAF**: `DefaultFipple` → `mouthpiece` module. Fipple factor scaling + headspace end correction.
-- **Whistle**: `SimpleFipple` → `simple_fipple` module. Parameter extraction from `Fipple` fields: `eff_size = sqrt(windowLength × windowWidth)`.
-- **Flute**: `SimpleFipple` → `simple_fipple` module. Parameter extraction from `EmbouchureHole` fields: `eff_size = sqrt(min(width, airstreamLength) × length)`.
-- **Reed**: `SimpleReed` → `simple_reed` module. Linear reactance model with pressure-node boundary condition. Uses `SimpleInstrumentTuner` (same as NAF), not LinearV.
+### DefaultFipple (NAF)
 
-## Dependencies
+Traditional fipple mouthpiece with explicit headspace. The headspace bore sections above the mouthpiece position are treated as resonating chambers — each contributes a transfer matrix, with an end correction scaled by a factor of 4. The fipple factor (typically 0.2–0.4) scales the window impedance, controlling the effective open area.
 
-- `wid-math` — TransferMatrix and StateVector types
-- `wid-physics` — PhysicalParameters for wave number, impedance, losses
-- `wid-compile` — compiled instrument component types
-- `num-complex` — Complex64 arithmetic
+### SimpleFipple (Whistle, Flute)
 
-## Study model parameters
+Empirical model using measured window impedance correlations. The effective size depends on the mouthpiece type:
+- **Fipple** (Whistle): `eff_size = √(windowLength × windowWidth)`
+- **EmbouchureHole** (Flute): `eff_size = √(min(width, airstreamLength) × length)`
 
-Constants used in `CalculatorParams` (defined in `wid-eval`):
+Same Xw/Rw formulas for both — only the parameter extraction differs.
+
+### SimpleReed (Reed instruments)
+
+Linear reactance model: `X = α × 10⁻³ × freq + β`. The transfer matrix uses a pressure-node boundary condition: `[[0+iX, z₀], [1, 0]]`. Lip reeds negate the beta sign. Headspace bore sections are extracted during compilation but are intentionally not used (matching Java `SimpleReedMouthpieceCalculator` parity).
+
+## Study Model Parameters
 
 | Constant | NAF | Whistle/Flute | Reed |
 |----------|-----|---------------|------|
@@ -42,7 +62,14 @@ Constants used in `CalculatorParams` (defined in `wid-eval`):
 | Mouthpiece | DefaultFipple | SimpleFipple | SimpleReed |
 | Blowing level | N/A | 5 | N/A |
 
-Additional NAF constants: `AIR_GAMMA = 1.4018...`, headspace ×4 end correction, `DEFAULT_WINDWAY_HEIGHT = 0.00078740 m`.
+NAF-specific constants: `AIR_GAMMA = 1.4018...`, headspace ×4 end correction, `DEFAULT_WINDWAY_HEIGHT = 0.00078740 m`.
+
+## Dependencies
+
+- `wid-math` — TransferMatrix and StateVector types
+- `wid-physics` — PhysicalParameters for wave number, impedance, losses
+- `wid-compile` — compiled instrument component types
+- `num-complex` — Complex64 arithmetic
 
 ## Tests
 

@@ -1,5 +1,38 @@
 # Development Log
 
+## Summary
+
+| Metric | Value |
+|--------|-------|
+| **Total tests** | 280 |
+| **Study models complete** | 4/4 (NAF, Whistle, Flute, Reed) |
+| **Milestones done** | M0–M4 complete, M5 in progress |
+| **Evaluation parity** | ≤ 0.058 cents across 994 fingerings |
+| **Crates** | 11 (math, physics, types, compile, acoustics, eval, optimize, session, wasm, bobyqa, direct) |
+| **Golden fixtures** | 14 scenarios |
+
+### Entries (newest first)
+
+- [DIRECT-C Stress Test + Golden Fixtures](#2026-03-04-cont-direct-c-global-optimizer--stress-test--golden-fixtures) — 6 bugs fixed, DIRECT-01 fixture
+- [DIRECT-C + Multi-Start Infrastructure](#2026-03-04-cont-direct-c-global-optimizer--multi-start-infrastructure) — direct crate, multi-start, two-stage pipeline
+- [M5.7 Reed Calibration + Optimization](#2026-03-04-cont-m57-reed-calibration--optimization) — reed calibrator, 3 hole optimizers
+- [M5.5/M5.6 Parity Tests + Docs](#2026-03-04-cont-m55m56-parity-tests--documentation-sweep) — flute parity tests, FminmaxEvaluator fix
+- [M5.6 Reed finger_adjustment Bug](#2026-03-04-cont-m56-reed-parity-bug-fix--finger_adjustment) — finger_adjustment=0.010 fix
+- [M5.5 + M5.6 Flute Calibration + Reed Eval](#2026-03-04-m55--m56--flute-calibration--reed-evaluation) — flute calibrators, reed mouthpiece model
+- [M5.4 Whistle Calibration + Optimization](#2026-03-04-m54--whistle-calibration--optimization) — 3 calibrators, 3 hole optimizers
+- [M5.3 Flute Evaluation Parity](#2026-03-02-m53--flute-evaluation-parity) — embouchure hole, 0.058 cents
+- [M5.2 Whistle Evaluation Parity](#2026-03-02-m52--whistle-evaluation-parity) — LinearV tuner, 0.000002 cents
+- [M5.1 Study Model Infrastructure](#2026-03-02-m51--study-model-infrastructure-refactor) — CalculatorParams, TerminationType
+- [Phase 4f Bug Fixes + Polish](#2026-03-02-phase-4f--bug-fixes--polish)
+- [Phase 4e Optimization UI](#2026-03-02-phase-4e--optimization--calibration-ui)
+- [M1 Golden Harness](#2026-03-02-m1--golden-harness--naf-fixture-suite)
+- [M2 NAF Evaluation Parity](#2026-03-02-m2--naf-evaluation-parity-in-rust) — 76 tests, 0.5 cents
+- [M3 NAF Calibration + Optimization](#2026-03-02-m3--naf-calibration--optimization-parity) — BOBYQA crate, 139 tests
+- [NAF Bulk Test Coverage](#2026-03-02-expanded-naf-test-coverage-all-oracle-xmls) — 36 combos, 540 fingerings
+- [M4 Browser MVP](#2026-03-02-m4--browser-hosted-mvp-naf-end-to-end)
+
+---
+
 ## 2026-03-04 (cont): DIRECT-C Global Optimizer — Stress Test + Golden Fixtures
 
 ### Stress test findings (6 bugs fixed)
