@@ -111,6 +111,11 @@ impl WasmSession {
             "set_instrument" => self.cmd_set_instrument(&cmd.args),
             "set_tuning" => self.cmd_set_tuning(&cmd.args),
             "set_constraints" => self.cmd_set_constraints(&cmd.args),
+            "sketch_instrument" => self.cmd_sketch_instrument(),
+            "compare_instruments" => self.cmd_compare_instruments(&cmd.args),
+            "supplementary_info" => self.cmd_supplementary_info(),
+            "graph_tuning" => self.cmd_graph_tuning(),
+            "note_spectrum" => self.cmd_note_spectrum(&cmd.args),
             _ => Response::err(format!("Unknown command: {}", cmd.cmd)),
         }
     }
@@ -362,6 +367,55 @@ impl WasmSession {
         };
         match self.session.set_constraints(doc_id, constraints) {
             Ok(()) => Response::ok(true),
+            Err(e) => Response::err(e),
+        }
+    }
+
+    // ── Analysis tool handlers ──────────────────────────────────────
+
+    fn cmd_sketch_instrument(&self) -> String {
+        match self.session.sketch_instrument() {
+            Ok(r) => Response::ok(r),
+            Err(e) => Response::err(e),
+        }
+    }
+
+    fn cmd_compare_instruments(&self, args: &serde_json::Value) -> String {
+        let old_id = match args.get("oldDocId").and_then(|v| v.as_u64()) {
+            Some(id) => wid_session::DocId(id as u32),
+            None => return Response::err("Missing 'oldDocId' argument"),
+        };
+        let new_id = match args.get("newDocId").and_then(|v| v.as_u64()) {
+            Some(id) => wid_session::DocId(id as u32),
+            None => return Response::err("Missing 'newDocId' argument"),
+        };
+        match self.session.compare_instruments(old_id, new_id) {
+            Ok(r) => Response::ok(r),
+            Err(e) => Response::err(e),
+        }
+    }
+
+    fn cmd_supplementary_info(&self) -> String {
+        match self.session.supplementary_info() {
+            Ok(r) => Response::ok(r),
+            Err(e) => Response::err(e),
+        }
+    }
+
+    fn cmd_graph_tuning(&self) -> String {
+        match self.session.graph_tuning() {
+            Ok(r) => Response::ok(r),
+            Err(e) => Response::err(e),
+        }
+    }
+
+    fn cmd_note_spectrum(&self, args: &serde_json::Value) -> String {
+        let index = match args.get("fingeringIndex").and_then(|v| v.as_u64()) {
+            Some(i) => i as usize,
+            None => return Response::err("Missing 'fingeringIndex' argument"),
+        };
+        match self.session.note_spectrum(index) {
+            Ok(r) => Response::ok(r),
             Err(e) => Response::err(e),
         }
     }

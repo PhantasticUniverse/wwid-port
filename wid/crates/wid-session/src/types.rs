@@ -118,6 +118,227 @@ pub struct Selection {
     pub constraints_id: Option<DocId>,
 }
 
+// ── Sketch types ────────────────────────────────────────────────
+
+/// Extracted geometry data for sketching an instrument.
+///
+/// Contains all the physical dimensions needed to draw a cross-section
+/// of the instrument: bore profile, hole locations, and mouthpiece.
+/// All dimensions are in the instrument's native length units.
+#[derive(Debug, Clone, Serialize)]
+pub struct SketchData {
+    /// Instrument name from the XML document.
+    pub name: String,
+    /// Length unit system ("Inches", "Millimetres", etc.).
+    pub length_type: String,
+    /// Total bore length (position of the last bore point).
+    pub bore_length: f64,
+    /// Bore profile as position/diameter pairs, sorted by position.
+    pub bore_points: Vec<SketchBorePoint>,
+    /// Tone holes with position, diameter, and height.
+    pub holes: Vec<SketchHole>,
+    /// Mouthpiece geometry (type-discriminated: Fipple, Embouchure, or Reed).
+    pub mouthpiece: SketchMouthpiece,
+    /// Termination flange diameter.
+    pub flange_diameter: f64,
+}
+
+/// A single bore profile point.
+#[derive(Debug, Clone, Serialize)]
+pub struct SketchBorePoint {
+    /// Distance from the head end of the instrument.
+    pub position: f64,
+    /// Internal bore diameter at this position.
+    pub diameter: f64,
+}
+
+/// A single tone hole.
+#[derive(Debug, Clone, Serialize)]
+pub struct SketchHole {
+    /// Optional hole name (e.g., "Thumb", "R1").
+    pub name: Option<String>,
+    /// Distance from the head end of the instrument.
+    pub position: f64,
+    /// Hole diameter.
+    pub diameter: f64,
+    /// Hole chimney height (wall thickness at hole location).
+    pub height: f64,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(tag = "type")]
+pub enum SketchMouthpiece {
+    Fipple {
+        position: f64,
+        window_length: f64,
+        window_width: f64,
+        fipple_factor: Option<f64>,
+        window_height: Option<f64>,
+        windway_height: Option<f64>,
+        windway_length: Option<f64>,
+    },
+    Embouchure {
+        position: f64,
+        length: f64,
+        width: f64,
+        height: f64,
+        airstream_length: f64,
+        airstream_height: f64,
+    },
+    SingleReed {
+        position: f64,
+        alpha: f64,
+    },
+    DoubleReed {
+        position: f64,
+        alpha: f64,
+        crow_freq: f64,
+    },
+    LipReed {
+        position: f64,
+        alpha: f64,
+    },
+}
+
+// ── Compare types ───────────────────────────────────────────────
+
+/// Result of comparing two instruments field by field.
+///
+/// Only dimensions that differ (above the precision threshold) are included.
+/// Java reference: `InstrumentComparisonTable.java`.
+#[derive(Debug, Clone, Serialize)]
+pub struct CompareResult {
+    /// Name of the baseline (old) instrument.
+    pub old_name: String,
+    /// Name of the modified (new) instrument.
+    pub new_name: String,
+    /// Rows for dimensions that differ between the two instruments.
+    pub rows: Vec<CompareRow>,
+}
+
+/// A single dimension comparison row.
+///
+/// Categories include: "Mouthpiece", "Hole 1", "Hole 2", ...,
+/// "Bore Point 1", ..., "Termination".
+#[derive(Debug, Clone, Serialize)]
+pub struct CompareRow {
+    /// Category grouping (e.g., "Mouthpiece", "Hole 3", "Bore Point 2").
+    pub category: String,
+    /// Dimension name (e.g., "Position", "Diameter", "Window Length").
+    pub field: String,
+    /// Old instrument value (None if dimension doesn't exist in old).
+    pub old_value: Option<f64>,
+    /// New instrument value (None if dimension doesn't exist in new).
+    pub new_value: Option<f64>,
+    /// Absolute difference (new - old).
+    pub difference: Option<f64>,
+    /// Percent change: `100 * (new - old) / old`.
+    pub percent_change: Option<f64>,
+}
+
+// ── Supplementary info types ────────────────────────────────────
+
+/// Supplementary acoustic info for the current tuning.
+///
+/// Java reference: `SupplementaryInfoTable.java`.
+#[derive(Debug, Clone, Serialize)]
+pub struct SupplementaryResult {
+    /// One row per fingering in the tuning.
+    pub rows: Vec<SupplementaryRow>,
+}
+
+/// Supplementary acoustic data for a single fingering.
+///
+/// All values are computed at the predicted playing frequency unless
+/// otherwise noted.
+#[derive(Debug, Clone, Serialize)]
+pub struct SupplementaryRow {
+    /// Note name from the tuning (e.g., "F#4").
+    pub note: String,
+    /// Target frequency (Hz) from the tuning.
+    pub freq: f64,
+    /// Im(Z) correction: `Im(Z(target)) - Im(Z(predicted))`.
+    /// Indicates how far the predicted frequency's reactance is from
+    /// the target frequency's reactance.
+    pub im_z_correction: f64,
+    /// Air jet velocity (m/s) from the Strouhal model.
+    /// Only available for Whistle (fipple) and Flute (embouchure) instruments.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub air_speed: Option<f64>,
+    /// Volumetric air flow rate (mm²·m/s = mm²/s × 1000).
+    /// Computed as velocity × windway_area. Only for fipple/embouchure.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub air_flow_rate: Option<f64>,
+    /// Loop gain at the predicted frequency.
+    /// G = gain_factor × f × ρ / |Z|. Values > 1.0 indicate the instrument
+    /// can sustain oscillation.
+    pub gain: f64,
+    /// Quality factor from Yaghjian & Best (2005):
+    /// `Q = 0.25 × (f + f') × (ratio' - ratio) / (f' - f)`,
+    /// where `f' = f × (1 + 0.0012)`.
+    pub q_factor: f64,
+}
+
+// ── Graph tuning types ──────────────────────────────────────────
+
+/// Playing range curves for all fingerings in a tuning.
+///
+/// Each curve shows the Im(Z)/Re(Z) impedance ratio across the fingering's
+/// playing range. Java reference: `PlotPlayingRanges.java`.
+#[derive(Debug, Clone, Serialize)]
+pub struct GraphTuningResult {
+    /// One curve per fingering in the tuning.
+    pub curves: Vec<TuningCurve>,
+}
+
+/// Playing range curve for a single fingering.
+///
+/// Contains 33 frequency-swept points showing how Im(Z)/Re(Z) varies
+/// across the playing range, plus the target and predicted frequencies.
+#[derive(Debug, Clone, Serialize)]
+pub struct TuningCurve {
+    /// Note name from the tuning (e.g., "F#4").
+    pub note_name: String,
+    /// Target frequency (Hz) from the tuning.
+    pub target_freq: f64,
+    /// Predicted playing frequency (Hz) from the acoustic model.
+    pub predicted_freq: f64,
+    /// Lower bound of the playing range (fmin). None if no range found.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub freq_min: Option<f64>,
+    /// Upper bound of the playing range (fmax = reactance zero). None if not found.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub freq_max: Option<f64>,
+    /// Frequency sweep points: `[frequency_hz, im_z_over_re_z]`.
+    pub points: Vec<[f64; 2]>,
+}
+
+/// Impedance and gain spectrum for a single fingering.
+///
+/// Contains 2000 points spanning [0.45×target, 3.17×target] frequency range.
+/// Java reference: `PlayingRangeSpectrum.java`.
+#[derive(Debug, Clone, Serialize)]
+pub struct NoteSpectrumResult {
+    /// Note name from the tuning (e.g., "F#4").
+    pub note_name: String,
+    /// Target frequency (Hz) from the tuning.
+    pub target_freq: f64,
+    /// Frequency-swept spectrum points.
+    pub points: Vec<SpectrumPoint>,
+}
+
+/// A single point in the note spectrum.
+#[derive(Debug, Clone, Serialize)]
+pub struct SpectrumPoint {
+    /// Frequency (Hz).
+    pub freq: f64,
+    /// Impedance ratio: Im(Z)/Re(Z) at this frequency.
+    pub impedance_ratio: f64,
+    /// Loop gain: G = gain_factor × f × ρ / |Z|.
+    /// Values > 1.0 indicate the instrument can sustain oscillation.
+    pub loop_gain: f64,
+}
+
 /// Session errors.
 #[derive(Debug, Clone)]
 pub enum SessionError {

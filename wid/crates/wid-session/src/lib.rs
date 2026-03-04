@@ -46,9 +46,11 @@ use wid_types::{
 
 // Re-export key types for convenience.
 pub use types::{
-    CalibResult, DocId, DocKind, EvalRow, OpenResult, OptProgress,
-    OptimizeResult, OptimizerInfo, Selection, SessionError, StudyKind,
-    TuningResult,
+    CalibResult, CompareResult, CompareRow, DocId, DocKind, EvalRow,
+    GraphTuningResult, NoteSpectrumResult, OpenResult, OptProgress,
+    OptimizeResult, OptimizerInfo, Selection, SessionError,
+    SketchData, SketchMouthpiece, StudyKind, SupplementaryResult,
+    TuningCurve, TuningResult,
 };
 
 /// The central session orchestrator.
@@ -517,10 +519,59 @@ impl StudySession {
 
         let result = match self.study_kind {
             StudyKind::NAF => {
-                wid_optimize::hole_from_top::optimize_holes_with_progress(
-                    &mut work_inst, &tuning, &constraints, &self.params,
-                    &self.calc_params, &mut progress_adapter,
-                )
+                match optimizer_key.as_str() {
+                    naf::NAF_HOLE_SIZE => {
+                        wid_optimize::hole_size::optimize_hole_size_with_progress(
+                            &mut work_inst, &tuning, &constraints, &self.params,
+                            &self.calc_params, &mut progress_adapter,
+                        )
+                    }
+                    naf::HOLE_GROUP_FROM_TOP => {
+                        wid_optimize::hole_group_from_top::optimize_hole_group_with_progress(
+                            &mut work_inst, &tuning, &constraints, &self.params,
+                            &self.calc_params, &mut progress_adapter,
+                        )
+                    }
+                    naf::TAPER_NO_GROUPING => {
+                        wid_optimize::single_taper::optimize_taper_with_progress(
+                            &mut work_inst, &tuning, &constraints, &self.params,
+                            &self.calc_params,
+                            wid_optimize::single_taper::TaperVariant::NoGrouping,
+                            &mut progress_adapter,
+                        )
+                    }
+                    naf::TAPER_NO_GROUPING_HEMI => {
+                        wid_optimize::single_taper::optimize_taper_with_progress(
+                            &mut work_inst, &tuning, &constraints, &self.params,
+                            &self.calc_params,
+                            wid_optimize::single_taper::TaperVariant::NoGroupingHemiHead,
+                            &mut progress_adapter,
+                        )
+                    }
+                    naf::TAPER_HOLE_GROUP => {
+                        wid_optimize::single_taper::optimize_taper_with_progress(
+                            &mut work_inst, &tuning, &constraints, &self.params,
+                            &self.calc_params,
+                            wid_optimize::single_taper::TaperVariant::HoleGroup,
+                            &mut progress_adapter,
+                        )
+                    }
+                    naf::TAPER_HOLE_GROUP_HEMI => {
+                        wid_optimize::single_taper::optimize_taper_with_progress(
+                            &mut work_inst, &tuning, &constraints, &self.params,
+                            &self.calc_params,
+                            wid_optimize::single_taper::TaperVariant::HoleGroupHemiHead,
+                            &mut progress_adapter,
+                        )
+                    }
+                    _ => {
+                        // Default: HoleFromTop (the original NAF optimizer)
+                        wid_optimize::hole_from_top::optimize_holes_with_progress(
+                            &mut work_inst, &tuning, &constraints, &self.params,
+                            &self.calc_params, &mut progress_adapter,
+                        )
+                    }
+                }
             }
             StudyKind::Whistle => {
                 match optimizer_key.as_str() {
@@ -552,6 +603,81 @@ impl StudySession {
                         wid_optimize::global_optimize::optimize_global_holes_position_with_progress(
                             &mut work_inst, &tuning, &constraints, &self.params,
                             &self.calc_params, &mut progress_adapter,
+                        )
+                    }
+                    whistle::BASIC_TAPER => {
+                        wid_optimize::bore::optimize_basic_taper_with_progress(
+                            &mut work_inst, &tuning, &constraints, &self.params,
+                            &self.calc_params, &mut progress_adapter,
+                        )
+                    }
+                    whistle::BORE_DIAMETER_FROM_TOP => {
+                        let n_changed = wid_compile::find_head_point(&work_inst, "Head");
+                        wid_optimize::bore::optimize_bore_diameter_from_top_with_progress(
+                            &mut work_inst, &tuning, &constraints, &self.params,
+                            &self.calc_params, n_changed, &mut progress_adapter,
+                        )
+                    }
+                    whistle::BORE_DIAMETER_FROM_BOTTOM => {
+                        // Java uses getTopOfBody()+1: body top point itself is unchanged
+                        let n_unchanged = wid_compile::find_body_top(&work_inst) + 1;
+                        wid_optimize::bore::optimize_bore_diameter_from_bottom_with_progress(
+                            &mut work_inst, &tuning, &constraints, &self.params,
+                            &self.calc_params, n_unchanged, &mut progress_adapter,
+                        )
+                    }
+                    whistle::BORE_SPACING_FROM_TOP => {
+                        let n_changed = wid_compile::find_head_point(&work_inst, "Head");
+                        wid_optimize::bore::optimize_bore_spacing_from_top_with_progress(
+                            &mut work_inst, &tuning, &constraints, &self.params,
+                            &self.calc_params, n_changed, &mut progress_adapter,
+                        )
+                    }
+                    whistle::HOLE_AND_TAPER => {
+                        wid_optimize::bore::optimize_hole_and_taper_with_progress(
+                            &mut work_inst, &tuning, &constraints, &self.params,
+                            &self.calc_params, &mut progress_adapter,
+                        )
+                    }
+                    whistle::HOLE_AND_BORE_DIAMETER_FROM_TOP => {
+                        let n_changed = wid_compile::find_head_point(&work_inst, "Head");
+                        wid_optimize::bore::optimize_hole_and_bore_diameter_from_top_with_progress(
+                            &mut work_inst, &tuning, &constraints, &self.params,
+                            &self.calc_params, n_changed, &mut progress_adapter,
+                        )
+                    }
+                    whistle::HOLE_AND_BORE_DIAMETER_FROM_BOTTOM => {
+                        let n_unchanged = wid_compile::find_body_top(&work_inst) + 1;
+                        wid_optimize::bore::optimize_hole_and_bore_diameter_from_bottom_with_progress(
+                            &mut work_inst, &tuning, &constraints, &self.params,
+                            &self.calc_params, n_unchanged, &mut progress_adapter,
+                        )
+                    }
+                    whistle::HOLE_AND_BORE_SPACING => {
+                        let n_changed = wid_compile::find_head_point(&work_inst, "Head");
+                        wid_optimize::bore::optimize_hole_and_bore_spacing_with_progress(
+                            &mut work_inst, &tuning, &constraints, &self.params,
+                            &self.calc_params, n_changed, &mut progress_adapter,
+                        )
+                    }
+                    whistle::HOLE_AND_HEADJOINT => {
+                        let n_changed = wid_compile::find_head_point(&work_inst, "Head");
+                        wid_optimize::bore::optimize_hole_and_headjoint_with_progress(
+                            &mut work_inst, &tuning, &constraints, &self.params,
+                            &self.calc_params, n_changed, &mut progress_adapter,
+                        )
+                    }
+                    whistle::GLOBAL_HOLE_AND_TAPER => {
+                        wid_optimize::bore::optimize_global_hole_and_taper_with_progress(
+                            &mut work_inst, &tuning, &constraints, &self.params,
+                            &self.calc_params, &mut progress_adapter,
+                        )
+                    }
+                    whistle::GLOBAL_HOLE_AND_BORE_DIAMETER_FROM_BOTTOM => {
+                        let n_unchanged = wid_compile::find_body_top(&work_inst) + 1;
+                        wid_optimize::bore::optimize_global_hole_and_bore_diameter_from_bottom_with_progress(
+                            &mut work_inst, &tuning, &constraints, &self.params,
+                            &self.calc_params, n_unchanged, &mut progress_adapter,
                         )
                     }
                     _ => return Err(SessionError::CannotOptimize(
@@ -591,6 +717,79 @@ impl StudySession {
                             &self.calc_params, &mut progress_adapter,
                         )
                     }
+                    flute::STOPPER_POSITION => {
+                        wid_optimize::bore::optimize_stopper_position(
+                            &mut work_inst, &tuning, &constraints, &self.params,
+                            &self.calc_params, true,
+                        )
+                    }
+                    flute::HEADJOINT => {
+                        let n_changed = wid_compile::find_head_point(&work_inst, "Head");
+                        wid_optimize::bore::optimize_headjoint_with_progress(
+                            &mut work_inst, &tuning, &constraints, &self.params,
+                            &self.calc_params, n_changed, &mut progress_adapter,
+                        )
+                    }
+                    flute::BASIC_TAPER => {
+                        wid_optimize::bore::optimize_basic_taper_with_progress(
+                            &mut work_inst, &tuning, &constraints, &self.params,
+                            &self.calc_params, &mut progress_adapter,
+                        )
+                    }
+                    flute::BORE_DIAMETER_FROM_BOTTOM => {
+                        let n_unchanged = wid_compile::find_body_top(&work_inst) + 1;
+                        wid_optimize::bore::optimize_bore_diameter_from_bottom_with_progress(
+                            &mut work_inst, &tuning, &constraints, &self.params,
+                            &self.calc_params, n_unchanged, &mut progress_adapter,
+                        )
+                    }
+                    flute::BORE_SPACING_FROM_TOP => {
+                        let n_changed = wid_compile::find_head_point(&work_inst, "Head");
+                        wid_optimize::bore::optimize_bore_spacing_from_top_with_progress(
+                            &mut work_inst, &tuning, &constraints, &self.params,
+                            &self.calc_params, n_changed, &mut progress_adapter,
+                        )
+                    }
+                    flute::HOLE_AND_TAPER => {
+                        wid_optimize::bore::optimize_hole_and_taper_with_progress(
+                            &mut work_inst, &tuning, &constraints, &self.params,
+                            &self.calc_params, &mut progress_adapter,
+                        )
+                    }
+                    flute::HOLE_AND_BORE_DIAMETER_FROM_BOTTOM => {
+                        let n_unchanged = wid_compile::find_body_top(&work_inst) + 1;
+                        wid_optimize::bore::optimize_hole_and_bore_diameter_from_bottom_with_progress(
+                            &mut work_inst, &tuning, &constraints, &self.params,
+                            &self.calc_params, n_unchanged, &mut progress_adapter,
+                        )
+                    }
+                    flute::HOLE_AND_BORE_SPACING => {
+                        let n_changed = wid_compile::find_head_point(&work_inst, "Head");
+                        wid_optimize::bore::optimize_hole_and_bore_spacing_with_progress(
+                            &mut work_inst, &tuning, &constraints, &self.params,
+                            &self.calc_params, n_changed, &mut progress_adapter,
+                        )
+                    }
+                    flute::HOLE_AND_HEADJOINT => {
+                        let n_changed = wid_compile::find_head_point(&work_inst, "Head");
+                        wid_optimize::bore::optimize_hole_and_headjoint_with_progress(
+                            &mut work_inst, &tuning, &constraints, &self.params,
+                            &self.calc_params, n_changed, &mut progress_adapter,
+                        )
+                    }
+                    flute::GLOBAL_HOLE_AND_TAPER => {
+                        wid_optimize::bore::optimize_global_hole_and_taper_with_progress(
+                            &mut work_inst, &tuning, &constraints, &self.params,
+                            &self.calc_params, &mut progress_adapter,
+                        )
+                    }
+                    flute::GLOBAL_HOLE_AND_BORE_DIAMETER_FROM_BOTTOM => {
+                        let n_unchanged = wid_compile::find_body_top(&work_inst) + 1;
+                        wid_optimize::bore::optimize_global_hole_and_bore_diameter_from_bottom_with_progress(
+                            &mut work_inst, &tuning, &constraints, &self.params,
+                            &self.calc_params, n_unchanged, &mut progress_adapter,
+                        )
+                    }
                     _ => return Err(SessionError::CannotOptimize(
                         format!("Unknown Flute optimizer: {}", optimizer_key),
                     )),
@@ -620,6 +819,59 @@ impl StudySession {
                         wid_optimize::global_optimize::optimize_global_holes_combined_with_progress(
                             &mut work_inst, &tuning, &constraints, &self.params,
                             &self.calc_params, &mut progress_adapter,
+                        )
+                    }
+                    reed::BORE_DIAMETER_FROM_BOTTOM => {
+                        let n_unchanged = wid_compile::find_body_top(&work_inst) + 1;
+                        wid_optimize::bore::optimize_bore_diameter_from_bottom_with_progress(
+                            &mut work_inst, &tuning, &constraints, &self.params,
+                            &self.calc_params, n_unchanged, &mut progress_adapter,
+                        )
+                    }
+                    reed::BORE_POSITION => {
+                        // Java: bottomPointUnchanged=false (first dim is absolute bottom pos)
+                        let n_unchanged = wid_compile::find_body_top(&work_inst) + 1;
+                        wid_optimize::bore::optimize_bore_position_with_progress(
+                            &mut work_inst, &tuning, &constraints, &self.params,
+                            &self.calc_params, n_unchanged, false, &mut progress_adapter,
+                        )
+                    }
+                    reed::BORE_FROM_BOTTOM => {
+                        // Java: bottomPointUnchanged=false for position component
+                        let n_unchanged = wid_compile::find_body_top(&work_inst) + 1;
+                        wid_optimize::bore::optimize_bore_from_bottom_with_progress(
+                            &mut work_inst, &tuning, &constraints, &self.params,
+                            &self.calc_params, n_unchanged, false, &mut progress_adapter,
+                        )
+                    }
+                    reed::HOLE_AND_BORE_DIAMETER_FROM_BOTTOM => {
+                        let n_unchanged = wid_compile::find_body_top(&work_inst) + 1;
+                        wid_optimize::bore::optimize_hole_and_bore_diameter_from_bottom_with_progress(
+                            &mut work_inst, &tuning, &constraints, &self.params,
+                            &self.calc_params, n_unchanged, &mut progress_adapter,
+                        )
+                    }
+                    reed::HOLE_AND_BORE_POSITION => {
+                        // Java: bottomPointUnchanged=true (holes handle bore length)
+                        let n_unchanged = wid_compile::find_body_top(&work_inst) + 1;
+                        wid_optimize::bore::optimize_hole_and_bore_position_with_progress(
+                            &mut work_inst, &tuning, &constraints, &self.params,
+                            &self.calc_params, n_unchanged, true, &mut progress_adapter,
+                        )
+                    }
+                    reed::HOLE_AND_BORE_FROM_BOTTOM => {
+                        // Java: bottomPointUnchanged=true for position component
+                        let n_unchanged = wid_compile::find_body_top(&work_inst) + 1;
+                        wid_optimize::bore::optimize_hole_and_bore_from_bottom_with_progress(
+                            &mut work_inst, &tuning, &constraints, &self.params,
+                            &self.calc_params, n_unchanged, true, &mut progress_adapter,
+                        )
+                    }
+                    reed::GLOBAL_HOLE_AND_BORE_DIAMETER_FROM_BOTTOM => {
+                        let n_unchanged = wid_compile::find_body_top(&work_inst) + 1;
+                        wid_optimize::bore::optimize_global_hole_and_bore_diameter_from_bottom_with_progress(
+                            &mut work_inst, &tuning, &constraints, &self.params,
+                            &self.calc_params, n_unchanged, &mut progress_adapter,
                         )
                     }
                     _ => return Err(SessionError::CannotOptimize(
@@ -662,11 +914,12 @@ impl StudySession {
         optimizer_key: &str,
     ) -> Result<OpenResult, SessionError> {
         let n_holes = self.instrument_hole_count()?;
+        let inst = self.selected_instrument().ok();
         let constraints = match self.study_kind {
-            StudyKind::NAF => naf::create_default_constraints(optimizer_key, n_holes),
-            StudyKind::Whistle => whistle::create_default_constraints(optimizer_key, n_holes),
-            StudyKind::Flute => flute::create_default_constraints(optimizer_key, n_holes),
-            StudyKind::Reed => reed::create_default_constraints(optimizer_key, n_holes),
+            StudyKind::NAF => naf::create_default_constraints(optimizer_key, n_holes, inst),
+            StudyKind::Whistle => whistle::create_default_constraints(optimizer_key, n_holes, inst),
+            StudyKind::Flute => flute::create_default_constraints(optimizer_key, n_holes, inst),
+            StudyKind::Reed => reed::create_default_constraints(optimizer_key, n_holes, inst),
         };
         let name = constraints.name.clone();
         let id = self.docs.insert(
@@ -687,11 +940,12 @@ impl StudySession {
         optimizer_key: &str,
     ) -> Result<OpenResult, SessionError> {
         let n_holes = self.instrument_hole_count()?;
+        let inst = self.selected_instrument().ok();
         let constraints = match self.study_kind {
-            StudyKind::NAF => naf::create_blank_constraints(optimizer_key, n_holes),
-            StudyKind::Whistle => whistle::create_blank_constraints(optimizer_key, n_holes),
-            StudyKind::Flute => flute::create_blank_constraints(optimizer_key, n_holes),
-            StudyKind::Reed => reed::create_blank_constraints(optimizer_key, n_holes),
+            StudyKind::NAF => naf::create_blank_constraints(optimizer_key, n_holes, inst),
+            StudyKind::Whistle => whistle::create_blank_constraints(optimizer_key, n_holes, inst),
+            StudyKind::Flute => flute::create_blank_constraints(optimizer_key, n_holes, inst),
+            StudyKind::Reed => reed::create_blank_constraints(optimizer_key, n_holes, inst),
         };
         let name = constraints.name.clone();
         let id = self.docs.insert(
@@ -791,6 +1045,564 @@ impl StudySession {
             .collect()
     }
 
+    // ── Sketch instrument ────────────────────────────────────────────
+
+    /// Extract geometry data for sketching the selected instrument.
+    ///
+    /// Returns bore profile points (position/diameter pairs), hole locations
+    /// with dimensions, mouthpiece type-specific geometry, and termination
+    /// flange diameter. This is pure geometry extraction from `InstrumentRaw`
+    /// — no acoustic calculation is performed.
+    ///
+    /// Java reference: `SketchInstrument.java` (data extraction only, not
+    /// the Swing drawing code).
+    ///
+    /// Requires: instrument selected (`can_sketch()`).
+    pub fn sketch_instrument(&self) -> Result<types::SketchData, SessionError> {
+        let inst_id = self.selection.instrument_id
+            .ok_or(SessionError::MissingSelection("instrument"))?;
+        let inst = self.docs.get_instrument(inst_id)
+            .ok_or(SessionError::DocNotFound(inst_id))?;
+
+        let bore_points: Vec<types::SketchBorePoint> = inst.bore_points.iter()
+            .map(|bp| types::SketchBorePoint {
+                position: bp.bore_position,
+                diameter: bp.bore_diameter,
+            })
+            .collect();
+
+        let bore_length = inst.bore_points.iter()
+            .map(|bp| bp.bore_position)
+            .fold(0.0_f64, f64::max);
+
+        let holes: Vec<types::SketchHole> = inst.holes.iter()
+            .map(|h| types::SketchHole {
+                name: h.name.clone(),
+                position: h.bore_position,
+                diameter: h.diameter,
+                height: h.height,
+            })
+            .collect();
+
+        let mouthpiece = extract_mouthpiece_sketch(&inst.mouthpiece);
+
+        let length_type = format!("{:?}", inst.length_type);
+
+        Ok(types::SketchData {
+            name: inst.name.clone(),
+            length_type,
+            bore_length,
+            bore_points,
+            holes,
+            mouthpiece,
+            flange_diameter: inst.termination.flange_diameter,
+        })
+    }
+
+    // ── Compare instruments ─────────────────────────────────────────
+
+    /// Compare two instrument documents field by field.
+    ///
+    /// Produces a row for each dimension that differs between the two
+    /// instruments, including: mouthpiece fields (type-specific), per-hole
+    /// fields (position, diameter, height, name), per-bore-point fields,
+    /// and termination flange diameter.
+    ///
+    /// Rows are only included when `|old - new| >= 10^(-precision)`,
+    /// where precision depends on the old instrument's `LengthType`
+    /// (from Java `Constants.LengthType.getDecimalPrecision()`):
+    /// - MM: 2 (threshold = 0.01)
+    /// - CM: 3 (threshold = 0.001)
+    /// - IN: 3 (threshold = 0.001)
+    /// - FT: 4 (threshold = 0.0001)
+    /// - M (default): 5 (threshold = 0.00001)
+    ///
+    /// Percent change is computed as `100 * (new - old) / old`.
+    ///
+    /// Java reference: `InstrumentComparisonTable.java`.
+    ///
+    /// Requires: both doc IDs refer to valid instruments.
+    pub fn compare_instruments(
+        &self,
+        old_id: DocId,
+        new_id: DocId,
+    ) -> Result<types::CompareResult, SessionError> {
+        let old = self.docs.get_instrument(old_id)
+            .ok_or(SessionError::DocNotFound(old_id))?;
+        let new = self.docs.get_instrument(new_id)
+            .ok_or(SessionError::DocNotFound(new_id))?;
+
+        // Java: Constants.LengthType.getDecimalPrecision()
+        let precision = match old.length_type {
+            wid_types::LengthType::Millimeters => 2,
+            wid_types::LengthType::Centimeters => 3,
+            wid_types::LengthType::Inches => 3,
+            wid_types::LengthType::Feet => 4,
+            wid_types::LengthType::Metres => 5,
+        };
+        let min_diff = 10.0_f64.powi(-(precision as i32));
+
+        let mut rows = Vec::new();
+        let mut push = |cat: &str, field: &str, old_v: Option<f64>, new_v: Option<f64>| {
+            match (old_v, new_v) {
+                (Some(o), Some(n)) => {
+                    let diff = n - o;
+                    if diff.abs() >= min_diff {
+                        let pct = if o.abs() > f64::EPSILON { Some(100.0 * diff / o) } else { None };
+                        rows.push(types::CompareRow {
+                            category: cat.to_string(),
+                            field: field.to_string(),
+                            old_value: Some(o),
+                            new_value: Some(n),
+                            difference: Some(diff),
+                            percent_change: pct,
+                        });
+                    }
+                }
+                (Some(o), None) | (None, Some(o)) => {
+                    rows.push(types::CompareRow {
+                        category: cat.to_string(),
+                        field: field.to_string(),
+                        old_value: old_v,
+                        new_value: new_v,
+                        difference: None,
+                        percent_change: None,
+                    });
+                    let _ = o; // suppress warning
+                }
+                (None, None) => {}
+            }
+        };
+
+        // Mouthpiece position + beta
+        push("Mouthpiece", "Position", Some(old.mouthpiece.position), Some(new.mouthpiece.position));
+        push("Mouthpiece", "Beta Factor", old.mouthpiece.beta, new.mouthpiece.beta);
+
+        // Fipple-specific
+        if let (Some(of), Some(nf)) = (&old.mouthpiece.fipple, &new.mouthpiece.fipple) {
+            push("Mouthpiece", "Window Length", Some(of.window_length), Some(nf.window_length));
+            push("Mouthpiece", "Window Width", Some(of.window_width), Some(nf.window_width));
+            push("Mouthpiece", "Window Height", of.window_height, nf.window_height);
+            push("Mouthpiece", "Windway Height", of.windway_height, nf.windway_height);
+            push("Mouthpiece", "Windway Length", of.windway_length, nf.windway_length);
+            push("Mouthpiece", "Fipple Factor", of.fipple_factor, nf.fipple_factor);
+        }
+
+        // Embouchure-specific
+        if let (Some(oe), Some(ne)) = (&old.mouthpiece.embouchure_hole, &new.mouthpiece.embouchure_hole) {
+            push("Mouthpiece", "Emb Hole Length", Some(oe.length), Some(ne.length));
+            push("Mouthpiece", "Emb Hole Width", Some(oe.width), Some(ne.width));
+            push("Mouthpiece", "Emb Hole Height", Some(oe.height), Some(ne.height));
+            push("Mouthpiece", "Airstream Length", Some(oe.airstream_length), Some(ne.airstream_length));
+            push("Mouthpiece", "Airstream Height", Some(oe.airstream_height), Some(ne.airstream_height));
+        }
+
+        // Reed-specific
+        if let (Some(or), Some(nr)) = (&old.mouthpiece.single_reed, &new.mouthpiece.single_reed) {
+            push("Mouthpiece", "Alpha", Some(or.alpha), Some(nr.alpha));
+        }
+        if let (Some(or), Some(nr)) = (&old.mouthpiece.double_reed, &new.mouthpiece.double_reed) {
+            push("Mouthpiece", "Alpha", Some(or.alpha), Some(nr.alpha));
+            push("Mouthpiece", "Crow Freq", Some(or.crow_freq), Some(nr.crow_freq));
+        }
+        if let (Some(or), Some(nr)) = (&old.mouthpiece.lip_reed, &new.mouthpiece.lip_reed) {
+            push("Mouthpiece", "Alpha", Some(or.alpha), Some(nr.alpha));
+        }
+
+        // Holes
+        let max_holes = old.holes.len().max(new.holes.len());
+        for i in 0..max_holes {
+            let label = format!("Hole {}", i + 1);
+            let oh = old.holes.get(i);
+            let nh = new.holes.get(i);
+            push(&label, "Position", oh.map(|h| h.bore_position), nh.map(|h| h.bore_position));
+            push(&label, "Diameter", oh.map(|h| h.diameter), nh.map(|h| h.diameter));
+            push(&label, "Height", oh.map(|h| h.height), nh.map(|h| h.height));
+        }
+
+        // Bore points
+        let max_bore = old.bore_points.len().max(new.bore_points.len());
+        for i in 0..max_bore {
+            let label = format!("Bore Point {}", i + 1);
+            let ob = old.bore_points.get(i);
+            let nb = new.bore_points.get(i);
+            push(&label, "Position", ob.map(|b| b.bore_position), nb.map(|b| b.bore_position));
+            push(&label, "Diameter", ob.map(|b| b.bore_diameter), nb.map(|b| b.bore_diameter));
+        }
+
+        // Termination
+        push("Termination", "Flange Diameter",
+            Some(old.termination.flange_diameter),
+            Some(new.termination.flange_diameter));
+
+        Ok(types::CompareResult {
+            old_name: old.name.clone(),
+            new_name: new.name.clone(),
+            rows,
+        })
+    }
+
+    // ── Supplementary info ────────────────────────────────────────
+
+    /// Compute supplementary information for the current tuning.
+    ///
+    /// Returns per-fingering data: Im(Z) correction, air speed/flow (for
+    /// fipple/embouchure instruments), loop gain, and Q factor.
+    ///
+    /// # Q Factor computation
+    ///
+    /// Uses the Yaghjian & Best (2005) impedance derivative approximation:
+    /// ```text
+    /// Q ≈ 0.25 * (f + f') * (Im(Z')/Re(Z') - Im(Z)/Re(Z)) / (f' - f)
+    /// ```
+    /// where `f' = f * (1 + DELTA_F)` and `DELTA_F = 0.0012` (~2 cents).
+    ///
+    /// # Air speed/flow
+    ///
+    /// Only available for fipple (Whistle) and embouchure (Flute) instruments.
+    /// Uses the Strouhal number model from `LinearVInstrumentTuner.velocity()`.
+    /// Air flow rate = velocity × windway area (mm²).
+    ///
+    /// Requires: `can_tune()`.
+    pub fn supplementary_info(&self) -> Result<types::SupplementaryResult, SessionError> {
+        use wid_eval::linear_v;
+
+        let inst_id = self.selection.instrument_id
+            .ok_or(SessionError::MissingSelection("instrument"))?;
+        let tun_id = self.selection.tuning_id
+            .ok_or(SessionError::MissingSelection("tuning"))?;
+
+        let inst = self.docs.get_instrument(inst_id)
+            .ok_or(SessionError::DocNotFound(inst_id))?;
+        let tuning = self.docs.get_tuning(tun_id)
+            .ok_or(SessionError::DocNotFound(tun_id))?;
+
+        if inst.holes.len() as u32 != tuning.number_of_holes {
+            return Err(SessionError::HoleCountMismatch {
+                instrument: inst.holes.len() as u32,
+                tuning: tuning.number_of_holes,
+            });
+        }
+
+        let compiled = compile(inst)
+            .map_err(|e| SessionError::CompileError(e.to_string()))?;
+
+        // Extract windway info for air speed/flow calculations
+        let (opt_window_length, opt_windway_area) = extract_windway_info(inst);
+
+        // Build LinearV tuner for Whistle instruments (needed for predicted freq)
+        let linear_v_tuner = match self.calc_params.mouthpiece_model {
+            MouthpieceModel::SimpleFipple => Some(LinearVTuner::new(
+                &compiled,
+                &tuning.fingerings,
+                &self.params,
+                &self.calc_params,
+                self.calc_params.blowing_level,
+            )),
+            _ => None,
+        };
+
+        let rho = self.params.rho();
+        let gain_factor = compiled.mouthpiece.gain_factor;
+
+        const DELTA_F: f64 = 0.0012; // ~2 cents for Q factor derivative
+
+        // Java: NafStudyModel calls buildTable(tuner, usePredicted=true)
+        //       All others call buildTable(tuner, usePredicted=false)
+        // NAF/Reed use SimpleInstrumentTuner, Whistle/Flute use LinearVInstrumentTuner
+        let use_predicted = linear_v_tuner.is_none();
+
+        let mut rows = Vec::with_capacity(tuning.fingerings.len());
+
+        for fingering in &tuning.fingerings {
+            // Java: targetFreq = note.getFrequency() (plain frequency, NOT frequencyMax)
+            let note_freq = fingering.note.frequency;
+
+            // Predicted frequency: findXZero for Simple, findZRatio for LinearV
+            let predicted_freq = match &linear_v_tuner {
+                Some(tuner) => linear_v::predicted_frequency_linear_v(
+                    tuner, &compiled, fingering, &self.params, &self.calc_params,
+                ),
+                None => predicted_frequency(&compiled, fingering, &self.params, &self.calc_params),
+            };
+
+            // For LinearV tuners, predicted fmax = findXZero(target) (different from predicted freq)
+            let predicted_fmax = if linear_v_tuner.is_some() {
+                note_freq.and_then(|nf| {
+                    linear_v::find_x_zero_for_fingering(
+                        &compiled, fingering, &self.params, &self.calc_params, nf,
+                    )
+                })
+            } else {
+                None
+            };
+
+            // Java: if (usePredicted && predictedFreq != null) targetFreq = predictedFreq;
+            let target_freq = if use_predicted {
+                predicted_freq.or(note_freq)
+            } else {
+                note_freq
+            };
+
+            // Im(Z) correction — Java priority: frequencyMax first, then frequency
+            // For LinearV: Im(Z(note.frequencyMax)) - Im(Z(predicted.frequencyMax))
+            // For Simple: Im(Z(note.frequency)) - Im(Z(predicted.frequency))
+            let im_z_correction = if let (Some(note_fmax), Some(pred_fmax)) =
+                (fingering.note.frequency_max, predicted_fmax)
+            {
+                // Both note and predicted have frequencyMax
+                let z_note = wid_eval::calc_z(&compiled, note_fmax, fingering, &self.params, &self.calc_params);
+                let z_pred = wid_eval::calc_z(&compiled, pred_fmax, fingering, &self.params, &self.calc_params);
+                z_note.im - z_pred.im
+            } else if let (Some(note_f), Some(pred_f)) =
+                (note_freq, predicted_freq)
+            {
+                // Fall back to plain frequency
+                let z_note = wid_eval::calc_z(&compiled, note_f, fingering, &self.params, &self.calc_params);
+                let z_pred = wid_eval::calc_z(&compiled, pred_f, fingering, &self.params, &self.calc_params);
+                z_note.im - z_pred.im
+            } else {
+                0.0
+            };
+
+            // Air speed + flow (only for fipple/embouchure instruments)
+            // Java uses targetFreq (which may be predicted for NAF)
+            let (air_speed, air_flow_rate) = if let Some(tf) = target_freq {
+                let z_target = wid_eval::calc_z(&compiled, tf, fingering, &self.params, &self.calc_params);
+                let speed = opt_window_length.map(|wl| {
+                    linear_v::velocity(tf, wl, z_target)
+                });
+                let flow = match (speed, opt_windway_area) {
+                    (Some(s), Some(area)) => Some(s * area),
+                    _ => None,
+                };
+                (speed, flow)
+            } else {
+                (None, None)
+            };
+
+            // Gain at predicted frequency (Java: predictedFreq = predicted.getFrequency())
+            let gain = if let Some(pred_f) = predicted_freq {
+                let z_pred = wid_eval::calc_z(&compiled, pred_f, fingering, &self.params, &self.calc_params);
+                linear_v::calc_gain(gain_factor, pred_f, z_pred, rho)
+            } else {
+                0.0
+            };
+
+            // Q factor from impedance derivative
+            let q_factor = if let Some(pred_f) = predicted_freq {
+                let freq_plus = pred_f * (1.0 + DELTA_F);
+                let z = wid_eval::calc_z(&compiled, pred_f, fingering, &self.params, &self.calc_params);
+                let z_plus = wid_eval::calc_z(&compiled, freq_plus, fingering, &self.params, &self.calc_params);
+
+                if z.re.abs() > f64::EPSILON && z_plus.re.abs() > f64::EPSILON {
+                    let ratio = z.im / z.re;
+                    let ratio_plus = z_plus.im / z_plus.re;
+                    0.25 * (pred_f + freq_plus) * (ratio_plus - ratio) / (freq_plus - pred_f)
+                } else {
+                    0.0
+                }
+            } else {
+                0.0
+            };
+
+            rows.push(types::SupplementaryRow {
+                note: fingering.note.name.clone(),
+                freq: target_freq.unwrap_or(0.0),
+                im_z_correction,
+                air_speed,
+                air_flow_rate,
+                gain,
+                q_factor,
+            });
+        }
+
+        Ok(types::SupplementaryResult { rows })
+    }
+
+    // ── Graph tuning ────────────────────────────────────────────────
+
+    /// Compute playing range curves for each fingering in the tuning.
+    ///
+    /// For each fingering:
+    /// 1. Finds fmax (reactance zero) and fmin (playing range lower bound)
+    /// 2. Computes predicted frequency (LinearV for Whistle, reactance-zero
+    ///    for NAF/Reed)
+    /// 3. Sweeps 32 frequency points across [0.95×fmin, 1.05×fmax] and
+    ///    computes Im(Z)/Re(Z) at each point
+    ///
+    /// The resulting curves show the impedance ratio landscape that
+    /// determines the instrument's playing behavior at each fingering.
+    ///
+    /// Java reference: `PlotPlayingRanges.java` — `buildGraph()` and
+    /// `yValue()` methods.
+    ///
+    /// Requires: `can_tune()`.
+    pub fn graph_tuning(&self) -> Result<types::GraphTuningResult, SessionError> {
+        use wid_eval::linear_v;
+
+        let inst_id = self.selection.instrument_id
+            .ok_or(SessionError::MissingSelection("instrument"))?;
+        let tun_id = self.selection.tuning_id
+            .ok_or(SessionError::MissingSelection("tuning"))?;
+
+        let inst = self.docs.get_instrument(inst_id)
+            .ok_or(SessionError::DocNotFound(inst_id))?;
+        let tuning = self.docs.get_tuning(tun_id)
+            .ok_or(SessionError::DocNotFound(tun_id))?;
+
+        if inst.holes.len() as u32 != tuning.number_of_holes {
+            return Err(SessionError::HoleCountMismatch {
+                instrument: inst.holes.len() as u32,
+                tuning: tuning.number_of_holes,
+            });
+        }
+
+        let compiled = compile(inst)
+            .map_err(|e| SessionError::CompileError(e.to_string()))?;
+
+        // Build LinearV tuner for Whistle instruments
+        let linear_v_tuner = match self.calc_params.mouthpiece_model {
+            MouthpieceModel::SimpleFipple => Some(LinearVTuner::new(
+                &compiled,
+                &tuning.fingerings,
+                &self.params,
+                &self.calc_params,
+                self.calc_params.blowing_level,
+            )),
+            _ => None,
+        };
+
+        // Java: step = (fmax - fmin) / 32, loop i = 0..=32 → 33 points
+        const N_POINTS: usize = 33;
+
+        let mut curves = Vec::with_capacity(tuning.fingerings.len());
+
+        for fingering in &tuning.fingerings {
+            let target_freq = fingering.note.frequency.unwrap_or(0.0);
+
+            // Find predicted frequency
+            let predicted_freq = match &linear_v_tuner {
+                Some(tuner) => linear_v::predicted_frequency_linear_v(
+                    tuner, &compiled, fingering, &self.params, &self.calc_params,
+                ).unwrap_or(target_freq),
+                None => predicted_frequency(&compiled, fingering, &self.params, &self.calc_params)
+                    .unwrap_or(target_freq),
+            };
+
+            // Find fmax (reactance zero) and fmin (playing range lower bound)
+            let fmax = linear_v::find_x_zero_for_fingering(
+                &compiled, fingering, &self.params, &self.calc_params, target_freq,
+            );
+            let fmin = fmax.and_then(|fm| {
+                linear_v::find_fmin(&compiled, fingering, &self.params, &self.calc_params, fm)
+            });
+
+            // Sweep frequency range
+            let (sweep_lo, sweep_hi) = match (fmin, fmax) {
+                (Some(lo), Some(hi)) => (lo * 0.95, hi * 1.05),
+                _ => (target_freq * 0.8, target_freq * 1.2),
+            };
+
+            let step = (sweep_hi - sweep_lo) / (N_POINTS as f64 - 1.0);
+            let mut points = Vec::with_capacity(N_POINTS);
+            for i in 0..N_POINTS {
+                let f = sweep_lo + step * i as f64;
+                let z = wid_eval::calc_z(&compiled, f, fingering, &self.params, &self.calc_params);
+                let x_over_r = if z.re.abs() > f64::EPSILON { z.im / z.re } else { 0.0 };
+                points.push([f, x_over_r]);
+            }
+
+            curves.push(types::TuningCurve {
+                note_name: fingering.note.name.clone(),
+                target_freq,
+                predicted_freq,
+                freq_min: fmin,
+                freq_max: fmax,
+                points,
+            });
+        }
+
+        Ok(types::GraphTuningResult { curves })
+    }
+
+    // ── Note spectrum ───────────────────────────────────────────────
+
+    /// Compute the impedance and gain spectrum for a single fingering.
+    ///
+    /// Sweeps 2000 frequency points across [0.45×target, 3.17×target] and
+    /// computes at each point:
+    /// - **Impedance ratio**: Im(Z)/Re(Z), which determines the Strouhal
+    ///   number coupling and thus the playing frequency
+    /// - **Loop gain**: G = gain_factor × f × ρ / |Z|, which determines
+    ///   whether the instrument can sustain oscillation at that frequency
+    ///
+    /// The resulting spectrum shows the acoustic landscape: impedance
+    /// peaks/zeros identify potential playing frequencies, and the gain
+    /// curve shows which resonances are strong enough to sound.
+    ///
+    /// Java reference: `PlayingRangeSpectrum.java` — `calcImpedance()`
+    /// method.
+    ///
+    /// Requires: `can_tune()`.
+    pub fn note_spectrum(
+        &self,
+        fingering_index: usize,
+    ) -> Result<types::NoteSpectrumResult, SessionError> {
+        use wid_eval::linear_v;
+
+        let inst_id = self.selection.instrument_id
+            .ok_or(SessionError::MissingSelection("instrument"))?;
+        let tun_id = self.selection.tuning_id
+            .ok_or(SessionError::MissingSelection("tuning"))?;
+
+        let inst = self.docs.get_instrument(inst_id)
+            .ok_or(SessionError::DocNotFound(inst_id))?;
+        let tuning = self.docs.get_tuning(tun_id)
+            .ok_or(SessionError::DocNotFound(tun_id))?;
+
+        if fingering_index >= tuning.fingerings.len() {
+            return Err(SessionError::EvalError(
+                format!("Fingering index {} out of range (0..{})", fingering_index, tuning.fingerings.len()),
+            ));
+        }
+
+        let compiled = compile(inst)
+            .map_err(|e| SessionError::CompileError(e.to_string()))?;
+
+        let fingering = &tuning.fingerings[fingering_index];
+        let target_freq = fingering.note.frequency.unwrap_or(440.0);
+        let rho = self.params.rho();
+        let gain_factor = compiled.mouthpiece.gain_factor;
+
+        const N_POINTS: usize = 2000;
+        // Java: SPECTRUM_FREQUENCY_BELOW = 0.45, DEFAULT_NOTE_FREQ_MULT = 3.17
+        // Range covers up to the 3rd harmonic (a major 9th below to just above 3f)
+        let freq_lo = 0.45 * target_freq;
+        let freq_hi = 3.17 * target_freq;
+        let step = (freq_hi - freq_lo) / (N_POINTS as f64 - 1.0);
+
+        let mut points = Vec::with_capacity(N_POINTS);
+        for i in 0..N_POINTS {
+            let f = freq_lo + step * i as f64;
+            let z = wid_eval::calc_z(&compiled, f, fingering, &self.params, &self.calc_params);
+            let impedance_ratio = if z.re.abs() > f64::EPSILON { z.im / z.re } else { 0.0 };
+            let loop_gain = linear_v::calc_gain(gain_factor, f, z, rho);
+
+            points.push(types::SpectrumPoint {
+                freq: f,
+                impedance_ratio,
+                loop_gain,
+            });
+        }
+
+        Ok(types::NoteSpectrumResult {
+            note_name: fingering.note.name.clone(),
+            target_freq,
+            points,
+        })
+    }
+
     // ── Private helpers ─────────────────────────────────────────────
 
     fn instrument_hole_count(&self) -> Result<u32, SessionError> {
@@ -799,6 +1611,14 @@ impl StudySession {
         let inst = self.docs.get_instrument(inst_id)
             .ok_or(SessionError::DocNotFound(inst_id))?;
         Ok(inst.holes.len() as u32)
+    }
+
+    /// Get a reference to the selected instrument (for bore dimension computation).
+    fn selected_instrument(&self) -> Result<&InstrumentRaw, SessionError> {
+        let inst_id = self.selection.instrument_id
+            .ok_or(SessionError::MissingSelection("instrument"))?;
+        self.docs.get_instrument(inst_id)
+            .ok_or(SessionError::DocNotFound(inst_id))
     }
 }
 
@@ -1010,6 +1830,85 @@ fn serialize_constraints_xml(constraints: &Constraints) -> Result<String, quick_
     Ok(xml)
 }
 
+/// Extract windway info from a raw instrument for supplementary calculations.
+///
+/// Returns `(window_length, windway_area)` in metres and mm² respectively.
+/// Both are None for reed instruments (no air jet model).
+///
+/// # Windway area
+///
+/// For fipple instruments: `window_width × windway_height × 1e6` (m² → mm²).
+/// For embouchure instruments: no windway area (only air speed, not flow).
+fn extract_windway_info(inst: &InstrumentRaw) -> (Option<f64>, Option<f64>) {
+    let scale = inst.length_type.to_metres();
+
+    if let Some(f) = &inst.mouthpiece.fipple {
+        let wl = f.window_length * scale;
+        let area = f.windway_height.map(|wh| {
+            let a = f.window_width * scale * wh * scale * 1.0e6;
+            if a == 0.0 { return 0.0; }
+            a
+        }).filter(|&a| a > 0.0);
+        (Some(wl), area)
+    } else if let Some(e) = &inst.mouthpiece.embouchure_hole {
+        let wl = e.airstream_length * scale;
+        (Some(wl), None)
+    } else {
+        (None, None)
+    }
+}
+
+/// Extract mouthpiece data for sketch display.
+fn extract_mouthpiece_sketch(mp: &wid_types::MouthpieceRaw) -> types::SketchMouthpiece {
+    if let Some(f) = &mp.fipple {
+        types::SketchMouthpiece::Fipple {
+            position: mp.position,
+            window_length: f.window_length,
+            window_width: f.window_width,
+            fipple_factor: f.fipple_factor,
+            window_height: f.window_height,
+            windway_height: f.windway_height,
+            windway_length: f.windway_length,
+        }
+    } else if let Some(e) = &mp.embouchure_hole {
+        types::SketchMouthpiece::Embouchure {
+            position: mp.position,
+            length: e.length,
+            width: e.width,
+            height: e.height,
+            airstream_length: e.airstream_length,
+            airstream_height: e.airstream_height,
+        }
+    } else if let Some(r) = &mp.single_reed {
+        types::SketchMouthpiece::SingleReed {
+            position: mp.position,
+            alpha: r.alpha,
+        }
+    } else if let Some(r) = &mp.double_reed {
+        types::SketchMouthpiece::DoubleReed {
+            position: mp.position,
+            alpha: r.alpha,
+            crow_freq: r.crow_freq,
+        }
+    } else if let Some(r) = &mp.lip_reed {
+        types::SketchMouthpiece::LipReed {
+            position: mp.position,
+            alpha: r.alpha,
+        }
+    } else {
+        // Fallback — shouldn't happen with valid instruments
+        types::SketchMouthpiece::Fipple {
+            position: mp.position,
+            window_length: 0.0,
+            window_width: 0.0,
+            fipple_factor: None,
+            window_height: None,
+            windway_height: None,
+            windway_length: None,
+        }
+    }
+}
+
 /// Add WIDesigner namespace prefix to the root element.
 fn add_namespace(xml: &str, root_tag: &str, namespace: &str) -> String {
     let open = format!("<{root_tag}");
@@ -1134,15 +2033,19 @@ mod tests {
     // ── Available optimizers ────────────────────────────────────────
 
     #[test]
-    fn naf_has_four_optimizers() {
+    fn naf_has_eight_optimizers() {
         let session = StudySession::new(StudyKind::NAF);
         let opts = session.available_optimizers();
-        assert_eq!(opts.len(), 4);
+        assert_eq!(opts.len(), 8);
         let keys: Vec<&str> = opts.iter().map(|o| o.key.as_str()).collect();
         assert!(keys.contains(&naf::FIPPLE_FACTOR));
         assert!(keys.contains(&naf::HOLE_FROM_TOP));
         assert!(keys.contains(&naf::NAF_HOLE_SIZE));
         assert!(keys.contains(&naf::HOLE_GROUP_FROM_TOP));
+        assert!(keys.contains(&naf::TAPER_NO_GROUPING));
+        assert!(keys.contains(&naf::TAPER_NO_GROUPING_HEMI));
+        assert!(keys.contains(&naf::TAPER_HOLE_GROUP));
+        assert!(keys.contains(&naf::TAPER_HOLE_GROUP_HEMI));
     }
 
     // ── Evaluate tuning ─────────────────────────────────────────────
@@ -1353,5 +2256,696 @@ mod tests {
         let fake_id = DocId(999);
         let inst = parse_instrument_xml(NAF_6HOLE_XML).unwrap();
         assert!(session.set_instrument(fake_id, inst).is_err());
+    }
+
+    // ══════════════════════════════════════════════════════════════════
+    // Sketch Instrument tests
+    // ══════════════════════════════════════════════════════════════════
+
+    #[test]
+    fn sketch_instrument_requires_instrument() {
+        let session = StudySession::new(StudyKind::NAF);
+        assert!(session.sketch_instrument().is_err());
+    }
+
+    #[test]
+    fn sketch_naf_instrument_extracts_geometry() {
+        let mut session = StudySession::new(StudyKind::NAF);
+        let inst = session.open_xml(NAF_6HOLE_XML).unwrap();
+        session.select_instrument(inst.doc_id);
+
+        let sketch = session.sketch_instrument().unwrap();
+
+        assert_eq!(sketch.name, "3/4\" bore, 6-hole NAF start");
+        assert_eq!(sketch.bore_points.len(), 2);
+        assert_eq!(sketch.holes.len(), 6);
+
+        // Bore points ordered by position
+        assert!(sketch.bore_points[0].position <= sketch.bore_points[1].position);
+
+        // Bore length = max position
+        assert!(sketch.bore_length > 12.0); // ~12.79 inches for this NAF
+
+        // Flange diameter
+        assert!(sketch.flange_diameter > 0.0);
+
+        // Mouthpiece is Fipple type
+        match &sketch.mouthpiece {
+            types::SketchMouthpiece::Fipple { window_length, window_width, fipple_factor, .. } => {
+                assert!(*window_length > 0.0);
+                assert!(*window_width > 0.0);
+                assert!(fipple_factor.is_some());
+            }
+            _ => panic!("Expected Fipple mouthpiece"),
+        }
+    }
+
+    #[test]
+    fn sketch_returns_all_hole_fields() {
+        let mut session = StudySession::new(StudyKind::NAF);
+        let inst = session.open_xml(NAF_6HOLE_XML).unwrap();
+        session.select_instrument(inst.doc_id);
+
+        let sketch = session.sketch_instrument().unwrap();
+
+        for hole in &sketch.holes {
+            assert!(hole.position > 0.0, "Hole position must be positive");
+            assert!(hole.diameter > 0.0, "Hole diameter must be positive");
+            assert!(hole.height > 0.0, "Hole height must be positive");
+        }
+
+        // First hole should have a name
+        assert!(sketch.holes[0].name.is_some());
+    }
+
+    #[test]
+    fn sketch_serializes_to_json() {
+        let mut session = StudySession::new(StudyKind::NAF);
+        let inst = session.open_xml(NAF_6HOLE_XML).unwrap();
+        session.select_instrument(inst.doc_id);
+
+        let sketch = session.sketch_instrument().unwrap();
+        let json = serde_json::to_string(&sketch).unwrap();
+
+        // Round-trip: verify key fields survive serialization
+        // serde uses snake_case for field names by default
+        let v: serde_json::Value = serde_json::from_str(&json).unwrap();
+        assert_eq!(v["name"], "3/4\" bore, 6-hole NAF start");
+        assert_eq!(v["bore_points"].as_array().unwrap().len(), 2);
+        assert_eq!(v["holes"].as_array().unwrap().len(), 6);
+        assert_eq!(v["mouthpiece"]["type"], "Fipple");
+    }
+
+    // Whistle sketch test (embouchure instruments covered by flute)
+    const WHISTLE_INST_XML: &str = include_str!(
+        "../../../../oracle/v2.6.0/WhistleStudy/instruments/SamplePVC-Whistle.xml"
+    );
+
+    #[test]
+    fn sketch_whistle_instrument() {
+        let mut session = StudySession::new(StudyKind::Whistle);
+        let inst = session.open_xml(WHISTLE_INST_XML).unwrap();
+        session.select_instrument(inst.doc_id);
+
+        let sketch = session.sketch_instrument().unwrap();
+        assert_eq!(sketch.holes.len(), 6);
+        match &sketch.mouthpiece {
+            types::SketchMouthpiece::Fipple { .. } => {} // Whistle has fipple
+            _ => panic!("Expected Fipple mouthpiece for Whistle"),
+        }
+    }
+
+    // ══════════════════════════════════════════════════════════════════
+    // Compare Instruments tests
+    // ══════════════════════════════════════════════════════════════════
+
+    #[test]
+    fn compare_identical_instruments_empty_diff() {
+        let mut session = StudySession::new(StudyKind::NAF);
+        let inst1 = session.open_xml(NAF_6HOLE_XML).unwrap();
+        let inst2 = session.open_xml(NAF_6HOLE_XML).unwrap();
+
+        let result = session.compare_instruments(inst1.doc_id, inst2.doc_id).unwrap();
+        assert!(result.rows.is_empty(), "Identical instruments should have no differences");
+    }
+
+    #[test]
+    fn compare_instruments_detects_bore_change() {
+        let mut session = StudySession::new(StudyKind::NAF);
+        let inst1 = session.open_xml(NAF_6HOLE_XML).unwrap();
+        let inst2 = session.open_xml(NAF_6HOLE_XML).unwrap();
+
+        // Modify bore diameter on the second instrument
+        let mut inst_data = session.get_instrument(inst2.doc_id).unwrap().clone();
+        inst_data.bore_points[0].bore_diameter += 0.1; // +0.1"
+        session.set_instrument(inst2.doc_id, inst_data).unwrap();
+
+        let result = session.compare_instruments(inst1.doc_id, inst2.doc_id).unwrap();
+        assert!(!result.rows.is_empty(), "Should detect bore diameter change");
+
+        let bore_row = result.rows.iter()
+            .find(|r| r.category == "Bore Point 1" && r.field == "Diameter")
+            .expect("Should have Bore Point 1 Diameter row");
+        assert!((bore_row.difference.unwrap() - 0.1).abs() < 1e-10);
+        assert!(bore_row.percent_change.is_some());
+    }
+
+    #[test]
+    fn compare_instruments_detects_hole_change() {
+        let mut session = StudySession::new(StudyKind::NAF);
+        let inst1 = session.open_xml(NAF_6HOLE_XML).unwrap();
+        let inst2 = session.open_xml(NAF_6HOLE_XML).unwrap();
+
+        // Modify hole 1 diameter
+        let mut inst_data = session.get_instrument(inst2.doc_id).unwrap().clone();
+        inst_data.holes[0].diameter += 0.05;
+        session.set_instrument(inst2.doc_id, inst_data).unwrap();
+
+        let result = session.compare_instruments(inst1.doc_id, inst2.doc_id).unwrap();
+        let hole_row = result.rows.iter()
+            .find(|r| r.category == "Hole 1" && r.field == "Diameter")
+            .expect("Should have Hole 1 Diameter row");
+        assert!((hole_row.difference.unwrap() - 0.05).abs() < 1e-10);
+    }
+
+    #[test]
+    fn compare_instruments_respects_precision_threshold() {
+        let mut session = StudySession::new(StudyKind::NAF);
+        let inst1 = session.open_xml(NAF_6HOLE_XML).unwrap();
+        let inst2 = session.open_xml(NAF_6HOLE_XML).unwrap();
+
+        // Inches precision = 4 decimal places → minDiff = 0.0001
+        // Change by less than threshold
+        let mut inst_data = session.get_instrument(inst2.doc_id).unwrap().clone();
+        inst_data.bore_points[0].bore_diameter += 0.00001; // below threshold
+        session.set_instrument(inst2.doc_id, inst_data).unwrap();
+
+        let result = session.compare_instruments(inst1.doc_id, inst2.doc_id).unwrap();
+        // Change is below precision threshold — should not appear
+        let bore_change = result.rows.iter()
+            .find(|r| r.category == "Bore Point 1" && r.field == "Diameter");
+        assert!(bore_change.is_none(), "Change below precision threshold should be filtered");
+    }
+
+    #[test]
+    fn compare_instruments_shows_percent_change() {
+        let mut session = StudySession::new(StudyKind::NAF);
+        let inst1 = session.open_xml(NAF_6HOLE_XML).unwrap();
+        let inst2 = session.open_xml(NAF_6HOLE_XML).unwrap();
+
+        let mut inst_data = session.get_instrument(inst2.doc_id).unwrap().clone();
+        let old_val = inst_data.bore_points[1].bore_position;
+        inst_data.bore_points[1].bore_position *= 1.10; // +10%
+        session.set_instrument(inst2.doc_id, inst_data).unwrap();
+
+        let result = session.compare_instruments(inst1.doc_id, inst2.doc_id).unwrap();
+        let bore_row = result.rows.iter()
+            .find(|r| r.category == "Bore Point 2" && r.field == "Position")
+            .expect("Should detect position change");
+        let pct = bore_row.percent_change.unwrap();
+        assert!((pct - 10.0).abs() < 0.1, "Expected ~10% change, got {pct}");
+        let _ = old_val;
+    }
+
+    #[test]
+    fn compare_nonexistent_doc_fails() {
+        let mut session = StudySession::new(StudyKind::NAF);
+        let inst1 = session.open_xml(NAF_6HOLE_XML).unwrap();
+        assert!(session.compare_instruments(inst1.doc_id, DocId(999)).is_err());
+    }
+
+    #[test]
+    fn compare_result_serializes_to_json() {
+        let mut session = StudySession::new(StudyKind::NAF);
+        let inst1 = session.open_xml(NAF_6HOLE_XML).unwrap();
+        let inst2 = session.open_xml(NAF_6HOLE_XML).unwrap();
+
+        let mut inst_data = session.get_instrument(inst2.doc_id).unwrap().clone();
+        inst_data.termination.flange_diameter += 0.5;
+        session.set_instrument(inst2.doc_id, inst_data).unwrap();
+
+        let result = session.compare_instruments(inst1.doc_id, inst2.doc_id).unwrap();
+        let json = serde_json::to_string(&result).unwrap();
+        let v: serde_json::Value = serde_json::from_str(&json).unwrap();
+        assert!(v["rows"].as_array().unwrap().len() > 0);
+    }
+
+    // ══════════════════════════════════════════════════════════════════
+    // Supplementary Info tests
+    // ══════════════════════════════════════════════════════════════════
+
+    const WHISTLE_TUNING_XML: &str = include_str!(
+        "../../../../oracle/v2.6.0/WhistleStudy/tunings/A4-Equal.xml"
+    );
+
+    #[test]
+    fn supplementary_info_requires_can_tune() {
+        let session = StudySession::new(StudyKind::NAF);
+        assert!(session.supplementary_info().is_err());
+    }
+
+    #[test]
+    fn supplementary_info_naf_returns_all_fingerings() {
+        let mut session = StudySession::new(StudyKind::NAF);
+        let inst = session.open_xml(NAF_6HOLE_XML).unwrap();
+        let tuning = session.open_xml(TUNING_6HOLE_XML).unwrap();
+        session.select_instrument(inst.doc_id);
+        session.select_tuning(tuning.doc_id);
+
+        let result = session.supplementary_info().unwrap();
+        assert_eq!(result.rows.len(), 15);
+
+        // NAF has fipple → air_speed should be Some
+        for row in &result.rows {
+            assert!(!row.note.is_empty());
+            assert!(row.freq > 0.0);
+            assert!(row.air_speed.is_some(), "NAF should have air speed");
+        }
+    }
+
+    #[test]
+    fn supplementary_info_naf_gain_and_q_are_reasonable() {
+        let mut session = StudySession::new(StudyKind::NAF);
+        let inst = session.open_xml(NAF_6HOLE_XML).unwrap();
+        let tuning = session.open_xml(TUNING_6HOLE_XML).unwrap();
+        session.select_instrument(inst.doc_id);
+        session.select_tuning(tuning.doc_id);
+
+        let result = session.supplementary_info().unwrap();
+
+        // NAF with windway_height has a gain model (Auvray 2012):
+        //   G = gain_factor * freq * rho / |Z|
+        // Gain should be positive and finite for all fingerings
+        for row in &result.rows {
+            assert!(
+                row.gain > 0.0 && row.gain.is_finite(),
+                "NAF gain should be positive finite, got {} for {}",
+                row.gain, row.note
+            );
+        }
+
+        // Q factor should be non-zero for most fingerings
+        let nonzero_q = result.rows.iter().filter(|r| r.q_factor.abs() > 0.1).count();
+        assert!(
+            nonzero_q > 10,
+            "Most fingerings should have non-zero Q factor, got {} of {}",
+            nonzero_q, result.rows.len()
+        );
+    }
+
+    #[test]
+    fn supplementary_info_whistle_has_air_speed_and_flow() {
+        let mut session = StudySession::new(StudyKind::Whistle);
+        let inst = session.open_xml(WHISTLE_INST_XML).unwrap();
+        let tuning = session.open_xml(WHISTLE_TUNING_XML).unwrap();
+        session.select_instrument(inst.doc_id);
+        session.select_tuning(tuning.doc_id);
+
+        let result = session.supplementary_info().unwrap();
+
+        for row in &result.rows {
+            assert!(row.air_speed.is_some(), "Whistle should have air speed for {}", row.note);
+            // Whistle with windway → should have flow rate
+            if row.air_flow_rate.is_some() {
+                assert!(row.air_flow_rate.unwrap() > 0.0);
+            }
+        }
+
+        // Whistle has gain model → gain should vary
+        let gains: Vec<f64> = result.rows.iter().map(|r| r.gain).collect();
+        let min_gain = gains.iter().cloned().fold(f64::INFINITY, f64::min);
+        let max_gain = gains.iter().cloned().fold(f64::NEG_INFINITY, f64::max);
+        assert!(
+            max_gain - min_gain > 0.01,
+            "Whistle gain should vary across fingerings: min={min_gain}, max={max_gain}"
+        );
+    }
+
+    #[test]
+    fn supplementary_info_serializes_to_json() {
+        let mut session = StudySession::new(StudyKind::NAF);
+        let inst = session.open_xml(NAF_6HOLE_XML).unwrap();
+        let tuning = session.open_xml(TUNING_6HOLE_XML).unwrap();
+        session.select_instrument(inst.doc_id);
+        session.select_tuning(tuning.doc_id);
+
+        let result = session.supplementary_info().unwrap();
+        let json = serde_json::to_string(&result).unwrap();
+        let v: serde_json::Value = serde_json::from_str(&json).unwrap();
+        assert_eq!(v["rows"].as_array().unwrap().len(), 15);
+    }
+
+    // ══════════════════════════════════════════════════════════════════
+    // Graph Tuning tests
+    // ══════════════════════════════════════════════════════════════════
+
+    #[test]
+    fn graph_tuning_requires_can_tune() {
+        let session = StudySession::new(StudyKind::NAF);
+        assert!(session.graph_tuning().is_err());
+    }
+
+    #[test]
+    fn graph_tuning_returns_curve_per_fingering() {
+        let mut session = StudySession::new(StudyKind::NAF);
+        let inst = session.open_xml(NAF_6HOLE_XML).unwrap();
+        let tuning = session.open_xml(TUNING_6HOLE_XML).unwrap();
+        session.select_instrument(inst.doc_id);
+        session.select_tuning(tuning.doc_id);
+
+        let result = session.graph_tuning().unwrap();
+        assert_eq!(result.curves.len(), 15, "One curve per fingering");
+    }
+
+    #[test]
+    fn graph_tuning_curves_have_33_points() {
+        // Java: step = (fmax - fmin) / 32, loop i = 0..=32 → 33 points
+        let mut session = StudySession::new(StudyKind::NAF);
+        let inst = session.open_xml(NAF_6HOLE_XML).unwrap();
+        let tuning = session.open_xml(TUNING_6HOLE_XML).unwrap();
+        session.select_instrument(inst.doc_id);
+        session.select_tuning(tuning.doc_id);
+
+        let result = session.graph_tuning().unwrap();
+        for curve in &result.curves {
+            assert_eq!(curve.points.len(), 33, "Java uses 33 sweep points (0..=32)");
+        }
+    }
+
+    #[test]
+    fn graph_tuning_frequencies_are_monotonic() {
+        let mut session = StudySession::new(StudyKind::NAF);
+        let inst = session.open_xml(NAF_6HOLE_XML).unwrap();
+        let tuning = session.open_xml(TUNING_6HOLE_XML).unwrap();
+        session.select_instrument(inst.doc_id);
+        session.select_tuning(tuning.doc_id);
+
+        let result = session.graph_tuning().unwrap();
+        for curve in &result.curves {
+            for window in curve.points.windows(2) {
+                assert!(
+                    window[1][0] > window[0][0],
+                    "Frequencies should be strictly increasing in curve {}",
+                    curve.note_name
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn graph_tuning_predicted_freq_matches_tuning_evaluation() {
+        // The "starter" instrument is ~300 cents sharp — predicted ≠ target.
+        // Verify graph_tuning predictions match the tuning evaluation exactly.
+        let mut session = StudySession::new(StudyKind::NAF);
+        let inst_result = session.open_xml(NAF_6HOLE_XML).unwrap();
+        let tun_result = session.open_xml(TUNING_6HOLE_XML).unwrap();
+        session.select_instrument(inst_result.doc_id);
+        session.select_tuning(tun_result.doc_id);
+
+        let tuning_result = session.evaluate_tuning().unwrap();
+        let graph_result = session.graph_tuning().unwrap();
+
+        assert_eq!(tuning_result.rows.len(), graph_result.curves.len());
+
+        for (row, curve) in tuning_result.rows.iter().zip(graph_result.curves.iter()) {
+            assert_eq!(row.note, curve.note_name);
+            assert!(
+                (row.target_freq - curve.target_freq).abs() < 1e-6,
+                "{}: target mismatch: tuning {:.2} vs graph {:.2}",
+                row.note, row.target_freq, curve.target_freq
+            );
+            assert!(
+                (row.predicted_freq - curve.predicted_freq).abs() < 0.01,
+                "{}: predicted mismatch: tuning {:.4} vs graph {:.4}",
+                row.note, row.predicted_freq, curve.predicted_freq
+            );
+        }
+    }
+
+    #[test]
+    fn graph_tuning_finds_playing_range_for_most_fingerings() {
+        let mut session = StudySession::new(StudyKind::NAF);
+        let inst = session.open_xml(NAF_6HOLE_XML).unwrap();
+        let tuning = session.open_xml(TUNING_6HOLE_XML).unwrap();
+        session.select_instrument(inst.doc_id);
+        session.select_tuning(tuning.doc_id);
+
+        let result = session.graph_tuning().unwrap();
+        let with_range = result.curves.iter()
+            .filter(|c| c.freq_max.is_some() && c.freq_min.is_some())
+            .count();
+        assert!(
+            with_range > 10,
+            "Most fingerings should have a playing range, got {with_range} of {}",
+            result.curves.len()
+        );
+    }
+
+    #[test]
+    fn graph_tuning_serializes_to_json() {
+        let mut session = StudySession::new(StudyKind::NAF);
+        let inst = session.open_xml(NAF_6HOLE_XML).unwrap();
+        let tuning = session.open_xml(TUNING_6HOLE_XML).unwrap();
+        session.select_instrument(inst.doc_id);
+        session.select_tuning(tuning.doc_id);
+
+        let result = session.graph_tuning().unwrap();
+        let json = serde_json::to_string(&result).unwrap();
+        let v: serde_json::Value = serde_json::from_str(&json).unwrap();
+        assert_eq!(v["curves"].as_array().unwrap().len(), 15);
+    }
+
+    // ══════════════════════════════════════════════════════════════════
+    // Note Spectrum tests
+    // ══════════════════════════════════════════════════════════════════
+
+    #[test]
+    fn note_spectrum_requires_can_tune() {
+        let session = StudySession::new(StudyKind::NAF);
+        assert!(session.note_spectrum(0).is_err());
+    }
+
+    #[test]
+    fn note_spectrum_out_of_range_fails() {
+        let mut session = StudySession::new(StudyKind::NAF);
+        let inst = session.open_xml(NAF_6HOLE_XML).unwrap();
+        let tuning = session.open_xml(TUNING_6HOLE_XML).unwrap();
+        session.select_instrument(inst.doc_id);
+        session.select_tuning(tuning.doc_id);
+
+        assert!(session.note_spectrum(100).is_err());
+    }
+
+    #[test]
+    fn note_spectrum_returns_2000_points() {
+        let mut session = StudySession::new(StudyKind::NAF);
+        let inst = session.open_xml(NAF_6HOLE_XML).unwrap();
+        let tuning = session.open_xml(TUNING_6HOLE_XML).unwrap();
+        session.select_instrument(inst.doc_id);
+        session.select_tuning(tuning.doc_id);
+
+        let result = session.note_spectrum(0).unwrap();
+        assert_eq!(result.points.len(), 2000);
+        assert_eq!(result.note_name, "F#4");
+    }
+
+    #[test]
+    fn note_spectrum_frequency_range_matches_java() {
+        // Java: SPECTRUM_FREQUENCY_BELOW = 0.45, DEFAULT_NOTE_FREQ_MULT = 3.17
+        let mut session = StudySession::new(StudyKind::NAF);
+        let inst = session.open_xml(NAF_6HOLE_XML).unwrap();
+        let tuning = session.open_xml(TUNING_6HOLE_XML).unwrap();
+        session.select_instrument(inst.doc_id);
+        session.select_tuning(tuning.doc_id);
+
+        let result = session.note_spectrum(0).unwrap();
+        let target = result.target_freq;
+
+        // First point ≈ 0.45 × target
+        assert!(
+            (result.points[0].freq - 0.45 * target).abs() / target < 0.01,
+            "First point {:.1} should be near {:.1}",
+            result.points[0].freq, 0.45 * target
+        );
+
+        // Last point ≈ 3.17 × target (covers up to 3rd harmonic)
+        assert!(
+            (result.points.last().unwrap().freq - 3.17 * target).abs() / target < 0.01,
+            "Last point {:.1} should be near {:.1}",
+            result.points.last().unwrap().freq, 3.17 * target
+        );
+    }
+
+    #[test]
+    fn note_spectrum_frequencies_monotonically_increasing() {
+        let mut session = StudySession::new(StudyKind::NAF);
+        let inst = session.open_xml(NAF_6HOLE_XML).unwrap();
+        let tuning = session.open_xml(TUNING_6HOLE_XML).unwrap();
+        session.select_instrument(inst.doc_id);
+        session.select_tuning(tuning.doc_id);
+
+        let result = session.note_spectrum(0).unwrap();
+        for w in result.points.windows(2) {
+            assert!(w[1].freq > w[0].freq, "Frequencies should increase");
+        }
+    }
+
+    #[test]
+    fn note_spectrum_naf_gain_varies_with_frequency() {
+        let mut session = StudySession::new(StudyKind::NAF);
+        let inst = session.open_xml(NAF_6HOLE_XML).unwrap();
+        let tuning = session.open_xml(TUNING_6HOLE_XML).unwrap();
+        session.select_instrument(inst.doc_id);
+        session.select_tuning(tuning.doc_id);
+
+        let result = session.note_spectrum(0).unwrap();
+        // NAF with windway_height has a gain model (G = g0 * f * rho / |Z|).
+        // Gain should be positive and vary across the frequency sweep.
+        for pt in &result.points {
+            assert!(pt.loop_gain > 0.0 && pt.loop_gain.is_finite(),
+                "Gain should be positive finite, got {}", pt.loop_gain);
+        }
+        let gains: Vec<f64> = result.points.iter().map(|p| p.loop_gain).collect();
+        let min = gains.iter().cloned().fold(f64::INFINITY, f64::min);
+        let max = gains.iter().cloned().fold(f64::NEG_INFINITY, f64::max);
+        assert!(max - min > 0.01, "Gain should vary: min={min}, max={max}");
+    }
+
+    #[test]
+    fn note_spectrum_whistle_has_varying_gain() {
+        let mut session = StudySession::new(StudyKind::Whistle);
+        let inst = session.open_xml(WHISTLE_INST_XML).unwrap();
+        let tuning = session.open_xml(WHISTLE_TUNING_XML).unwrap();
+        session.select_instrument(inst.doc_id);
+        session.select_tuning(tuning.doc_id);
+
+        let result = session.note_spectrum(0).unwrap();
+        let gains: Vec<f64> = result.points.iter().map(|p| p.loop_gain).collect();
+        let min = gains.iter().cloned().fold(f64::INFINITY, f64::min);
+        let max = gains.iter().cloned().fold(f64::NEG_INFINITY, f64::max);
+        assert!(
+            max - min > 0.1,
+            "Whistle gain should vary across spectrum: min={min}, max={max}"
+        );
+    }
+
+    #[test]
+    fn note_spectrum_impedance_ratio_crosses_zero() {
+        let mut session = StudySession::new(StudyKind::NAF);
+        let inst = session.open_xml(NAF_6HOLE_XML).unwrap();
+        let tuning = session.open_xml(TUNING_6HOLE_XML).unwrap();
+        session.select_instrument(inst.doc_id);
+        session.select_tuning(tuning.doc_id);
+
+        let result = session.note_spectrum(0).unwrap();
+        // Im(Z)/Re(Z) should cross zero near the playing frequency
+        let has_positive = result.points.iter().any(|p| p.impedance_ratio > 0.0);
+        let has_negative = result.points.iter().any(|p| p.impedance_ratio < 0.0);
+        assert!(has_positive && has_negative,
+            "Im(Z)/Re(Z) should cross zero in the spectrum range");
+    }
+
+    #[test]
+    fn note_spectrum_serializes_to_json() {
+        let mut session = StudySession::new(StudyKind::NAF);
+        let inst = session.open_xml(NAF_6HOLE_XML).unwrap();
+        let tuning = session.open_xml(TUNING_6HOLE_XML).unwrap();
+        session.select_instrument(inst.doc_id);
+        session.select_tuning(tuning.doc_id);
+
+        let result = session.note_spectrum(0).unwrap();
+        let json = serde_json::to_string(&result).unwrap();
+        let v: serde_json::Value = serde_json::from_str(&json).unwrap();
+        // serde uses snake_case: note_name, target_freq
+        assert_eq!(v["note_name"], "F#4");
+        assert_eq!(v["points"].as_array().unwrap().len(), 2000);
+    }
+
+    // ══════════════════════════════════════════════════════════════════
+    // Mutation tests — verify computations change when inputs change
+    // ══════════════════════════════════════════════════════════════════
+
+    #[test]
+    fn supplementary_q_factor_changes_with_bore() {
+        // Mutating the bore should change Q factor values
+        let mut session = StudySession::new(StudyKind::NAF);
+        let inst = session.open_xml(NAF_6HOLE_XML).unwrap();
+        let tuning = session.open_xml(TUNING_6HOLE_XML).unwrap();
+        session.select_instrument(inst.doc_id);
+        session.select_tuning(tuning.doc_id);
+
+        let result1 = session.supplementary_info().unwrap();
+
+        // Modify bore diameter and re-evaluate
+        let mut inst_data = session.get_instrument(inst.doc_id).unwrap().clone();
+        inst_data.bore_points[0].bore_diameter *= 1.5;
+        session.set_instrument(inst.doc_id, inst_data).unwrap();
+
+        let result2 = session.supplementary_info().unwrap();
+
+        // At least some Q factors should differ
+        let changed = result1.rows.iter().zip(result2.rows.iter())
+            .filter(|(a, b)| (a.q_factor - b.q_factor).abs() > 0.1)
+            .count();
+        assert!(changed > 0, "Q factor should change when bore diameter changes");
+    }
+
+    #[test]
+    fn graph_tuning_changes_with_instrument() {
+        let mut session = StudySession::new(StudyKind::NAF);
+        let inst = session.open_xml(NAF_6HOLE_XML).unwrap();
+        let tuning = session.open_xml(TUNING_6HOLE_XML).unwrap();
+        session.select_instrument(inst.doc_id);
+        session.select_tuning(tuning.doc_id);
+
+        let result1 = session.graph_tuning().unwrap();
+
+        // Modify bore length
+        let mut inst_data = session.get_instrument(inst.doc_id).unwrap().clone();
+        inst_data.bore_points[1].bore_position *= 0.8;
+        session.set_instrument(inst.doc_id, inst_data).unwrap();
+
+        let result2 = session.graph_tuning().unwrap();
+
+        // Predicted frequencies should differ
+        let changed = result1.curves.iter().zip(result2.curves.iter())
+            .filter(|(a, b)| (a.predicted_freq - b.predicted_freq).abs() > 1.0)
+            .count();
+        assert!(changed > 5, "Predicted freq should change when bore length changes, {changed} differ");
+    }
+
+    #[test]
+    fn note_spectrum_changes_with_fingering_index() {
+        let mut session = StudySession::new(StudyKind::NAF);
+        let inst = session.open_xml(NAF_6HOLE_XML).unwrap();
+        let tuning = session.open_xml(TUNING_6HOLE_XML).unwrap();
+        session.select_instrument(inst.doc_id);
+        session.select_tuning(tuning.doc_id);
+
+        let spec0 = session.note_spectrum(0).unwrap();
+        let spec1 = session.note_spectrum(1).unwrap();
+
+        assert_ne!(spec0.note_name, spec1.note_name);
+        assert_ne!(spec0.target_freq, spec1.target_freq);
+
+        // Impedance ratios at the same index should differ
+        let diff = (spec0.points[1000].impedance_ratio - spec1.points[1000].impedance_ratio).abs();
+        assert!(diff > 0.001, "Different fingerings should produce different spectra");
+    }
+
+    #[test]
+    fn compare_instruments_detects_mouthpiece_position_change() {
+        let mut session = StudySession::new(StudyKind::NAF);
+        let inst1 = session.open_xml(NAF_6HOLE_XML).unwrap();
+        let inst2 = session.open_xml(NAF_6HOLE_XML).unwrap();
+
+        let mut inst_data = session.get_instrument(inst2.doc_id).unwrap().clone();
+        inst_data.mouthpiece.position += 1.0;
+        session.set_instrument(inst2.doc_id, inst_data).unwrap();
+
+        let result = session.compare_instruments(inst1.doc_id, inst2.doc_id).unwrap();
+        let mp_row = result.rows.iter()
+            .find(|r| r.category == "Mouthpiece" && r.field == "Position")
+            .expect("Should detect mouthpiece position change");
+        assert!((mp_row.difference.unwrap() - 1.0).abs() < 1e-10);
+    }
+
+    #[test]
+    fn compare_instruments_detects_fipple_factor_change() {
+        let mut session = StudySession::new(StudyKind::NAF);
+        let inst1 = session.open_xml(NAF_6HOLE_XML).unwrap();
+        let inst2 = session.open_xml(NAF_6HOLE_XML).unwrap();
+
+        let mut inst_data = session.get_instrument(inst2.doc_id).unwrap().clone();
+        if let Some(ref mut fipple) = inst_data.mouthpiece.fipple {
+            fipple.fipple_factor = Some(1.0); // changed from 0.75
+        }
+        session.set_instrument(inst2.doc_id, inst_data).unwrap();
+
+        let result = session.compare_instruments(inst1.doc_id, inst2.doc_id).unwrap();
+        let ff_row = result.rows.iter()
+            .find(|r| r.field == "Fipple Factor")
+            .expect("Should detect fipple factor change");
+        assert!((ff_row.difference.unwrap() - 0.25).abs() < 1e-10);
     }
 }

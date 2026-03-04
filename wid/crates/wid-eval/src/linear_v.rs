@@ -62,9 +62,14 @@ const TOP_FRACTIONS: [f64; 11] = [
 
 /// Estimate air velocity from frequency, window length, and impedance.
 ///
-/// Uses the Strouhal number relationship. Clamps to [0.13, 0.75] to
-/// stay within reasonable physical bounds (matching LinearVInstrumentTuner.velocity).
-fn velocity(freq: f64, window_length: f64, z: Complex64) -> f64 {
+/// Uses the Strouhal number relationship:
+/// ```text
+/// St = f * windowLength / velocity
+/// St = St_zero - |St_slope| * Im(Z)/Re(Z)
+/// ```
+/// Clamps St to [0.13, 0.75] to stay within reasonable physical bounds
+/// (matching `LinearVInstrumentTuner.velocity`).
+pub fn velocity(freq: f64, window_length: f64, z: Complex64) -> f64 {
     if z.re == 0.0 {
         return 0.0;
     }
@@ -83,7 +88,8 @@ fn z_ratio(freq: f64, window_length: f64, vel: f64) -> f64 {
 /// Matches Java `Mouthpiece.getAirstreamLength()`:
 /// - Fipple: returns `windowLength`
 /// - EmbouchureHole: returns `airstreamLength`
-fn window_length(instrument: &InstrumentCompiled) -> f64 {
+/// - SimpleReed: panics (LinearV not used with reed)
+pub fn window_length(instrument: &InstrumentCompiled) -> f64 {
     match &instrument.mouthpiece.mouthpiece_type {
         MouthpieceType::Fipple { window_length, .. } => *window_length,
         MouthpieceType::EmbouchureHole { airstream_length, .. } => *airstream_length,
@@ -262,7 +268,7 @@ pub fn find_x_zero_for_fingering(
 
 /// Compute loop gain: G = gain_factor * freq * rho / |Z|.
 /// Returns 1.0 if gain_factor is None (no gain model).
-fn calc_gain(gain_factor: Option<f64>, freq: f64, z: Complex64, rho: f64) -> f64 {
+pub fn calc_gain(gain_factor: Option<f64>, freq: f64, z: Complex64, rho: f64) -> f64 {
     match gain_factor {
         Some(g0) => g0 * freq * rho / z.norm(),
         None => 1.0,
