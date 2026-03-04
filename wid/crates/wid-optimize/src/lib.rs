@@ -7,13 +7,16 @@
 //! - Hole geometry optimization (`hole_from_top`)
 //! - Weighted norm calculation (`calc_norm`)
 
+pub mod airstream_length;
 pub mod beta;
 pub mod brent_min;
 pub mod fipple;
+pub mod flute_calib;
 pub mod hole_combined;
 pub mod hole_from_top;
 pub mod hole_position;
 pub mod hole_size;
+pub mod reed_calib;
 pub mod whistle_calib;
 pub mod window_height;
 
@@ -55,6 +58,28 @@ pub struct CalibrationResult {
 pub struct WhistleCalibrationResult {
     pub initial_window_height: Option<f64>,
     pub final_window_height: Option<f64>,
+    pub initial_beta: Option<f64>,
+    pub final_beta: Option<f64>,
+    pub initial_norm: f64,
+    pub final_norm: f64,
+}
+
+/// Result of a flute mouthpiece calibration (airstream length, beta, or both).
+#[derive(Debug, Clone)]
+pub struct FluteCalibrationResult {
+    pub initial_airstream_length: Option<f64>,
+    pub final_airstream_length: Option<f64>,
+    pub initial_beta: Option<f64>,
+    pub final_beta: Option<f64>,
+    pub initial_norm: f64,
+    pub final_norm: f64,
+}
+
+/// Result of a reed mouthpiece calibration (alpha + beta jointly).
+#[derive(Debug, Clone)]
+pub struct ReedCalibrationResult {
+    pub initial_alpha: Option<f64>,
+    pub final_alpha: Option<f64>,
     pub initial_beta: Option<f64>,
     pub final_beta: Option<f64>,
     pub initial_norm: f64,

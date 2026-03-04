@@ -1,5 +1,161 @@
 # Development Log
 
+## 2026-03-04 (cont): M5.7 Reed Calibration + Optimization
+
+### Reed calibration (alpha + beta)
+
+Implemented `ReedCalibratorObjectiveFunction` port — 2D BOBYQA optimizing `[alpha, beta]` jointly using CentDeviationEvaluator (NOT FminmaxEvaluator like Whistle/Flute).
+
+**Key difference from Whistle/Flute calibrators**: Reed uses `calculate_error_vector()` (cent deviation) while Whistle/Flute joint calibrators use `calculate_fminmax_error_vector()` (fmin+fmax combined).
+
+**New files**:
+- `wid-compile`: `get_alpha()`, `set_alpha()` — type-agnostic alpha dispatch (single_reed → double_reed → lip_reed)
+- `wid-optimize/reed_calib.rs` — 2D BOBYQA calibrator with default bounds [0, 10] × [0, 10]
+- `wid-session/reed.rs` — Reed optimizer registry (4 optimizers: calibrator + 3 hole optimizers)
+- `golden-harness/ReedCalibDriver.java` — golden fixture generator
+
+**Session dispatch**: 8 points in `wid-session/src/lib.rs` updated for `StudyKind::Reed`:
+- `mod reed`, `available_optimizers()`, `can_optimize()`, `calibrate()`, `optimize()` (calibrator check + hole dispatch), `create_default_constraints()`, `create_blank_constraints()`
+
+**CalibResult**: Added `initial_alpha`/`final_alpha` fields (all 7 existing constructors updated with `None`).
+
+**Golden fixture**: SampleChanter.xml + A3-ClosedFingering.xml
+- Initial: alpha=1.8, beta=0.09, norm=54.76
+- Final: alpha=1.777, beta=0.095, norm=26.49
+
+**Parity tests** (2 new, 242 total):
+- `initial_norm_matches_golden` — within 1% of 54.76
+- `reed_calibration_matches_golden` — final norm < 26.49 × 1.1, alpha/beta within 10%
+
+---
+
+## 2026-03-04 (cont): M5.5/M5.6 Parity Tests + Documentation Sweep
+
+### Flute parity tests (14 new tests, 240 total)
+
+Added golden-fixture-backed parity tests for all Flute calibrators and hole optimizers:
+
+**Calibrator tests** (6 new):
+- `airstream_length.rs`: 5 tests — initial AL extraction, roundtrip, fmax norm is zero for frequency-only tuning, calibration preserves zero norm, fife smoke test
+- `flute_calib.rs`: 3 tests — initial fminmax norm matches golden (2649.61), joint calibration matches golden (norm < 1313 × 1.1, beta within 10%), fife smoke test
+- `beta.rs`: 1 test — fmin norm is zero for frequency-only tuning (D4-Equal has no `<frequencyMin>` targets)
+
+**Hole optimizer tests** (9 new, in `mod flute_tests`):
+- `hole_size.rs`: 3 tests — initial norm, optimization golden (norm < 1081 × 2.0), fife smoke
+- `hole_position.rs`: 3 tests — initial norm, optimization golden (norm < 1594 × 2.0), fife smoke
+- `hole_combined.rs`: 3 tests — initial norm, optimization golden (norm < 1202 × 2.0), fife smoke
+
+### Evaluator bug fix: FminmaxEvaluator frequency-only branch
+
+**Root cause**: `calculate_fminmax_error_vector()` used `predicted_fmax` (resonance frequency from Im(Z)=0 crossing) for the frequency-only fallback, but Java's `FminmaxEvaluator` uses `predicted.getFrequency()` — the actual playing frequency from the LinearV tuner.
+
+**Fix**: Changed frequency-only branch to use `predicted_frequency_linear_v()`, matching Java. Added `FPLAYING_WEIGHT = 1.0` constant. The fmax/fmin evaluators correctly return 0.0 for fingerings without explicit `frequencyMax`/`frequencyMin` targets (no fallback needed — matches golden norms of 0.0).
+
+### Documentation sweep
+
+Updated all project documentation to reflect M5.5/M5.6 completion:
+- Created `wid-session/README.md` (new)
+- Rewrote `wid-optimize/README.md` to cover all study models
+- Updated `ARCHITECTURE.md` with Reed, updated test counts
+- Updated `wid-eval/README.md`, `wid-acoustics/README.md`, `wid-compile/README.md`
+- Updated `PORT_SPEC.md` milestones (M4 + M5.1–M5.6 marked complete)
+- Updated `API_SHAPE.md` status, `FEATURE_MATRIX.md` Reed row
+
+---
+
+## 2026-03-04 (cont): M5.6 Reed Parity Bug Fix — finger_adjustment
+
+**Root cause**: `CalculatorParams::REED` had `finger_adjustment: 0.0` but Java's `SimpleReedCalculator` uses `new DefaultHoleCalculator()` (default no-arg constructor) which sets `fingerAdjustment = DEFAULT_FINGER_ADJ = 0.010`.
+
+The subtlety: Java's `DefaultHoleCalculator` has overloaded constructors with different defaults:
+- `DefaultHoleCalculator()` → fingerAdjustment = **0.010**
+- `DefaultHoleCalculator(holeSizeMult)` → fingerAdjustment = **0.0**
+
+NAF uses the 1-arg constructor `DefaultHoleCalculator(0.9605)`, so fingerAdjustment = 0.0. We assumed Reed was similar, but Reed uses the no-arg constructor.
+
+**Impact**: Each closed hole's shunt admittance was slightly wrong (`tf = r²/fingerAdj` was missing). Through 8 closed holes on SampleChanter, the cumulative error shifted the Im(Z)=0 crossing by ~0.3 Hz, producing ~2.8 cents error on the first fingering.
+
+**Fix**: Changed `finger_adjustment` from `0.0` to `0.010` in `CalculatorParams::REED`. All 7 reed combos now within 0.012 cents. 226 tests passing.
+
+**Debugging approach**: Wrote Java `ReedSVTraceDriver` to dump state vectors at each component, compared with Rust trace. First divergence appeared at the first closed hole (B4), confirming the hole TM calculation was the source.
+
+**Lesson documented in `parity-notes.md`**: Always trace the exact Java constructor call for each calculator component — don't infer defaults from class name or documentation.
+
+### Compilation fix: zero-length bore section at mouthpiece position
+
+Fixed `process_position` in `wid-compile/src/lib.rs` to match Java's `addSection()` behavior: when a bore section has zero length (mouthpiece position coincides with a bore point), bump `right_bore_position` and the new bore point's position by `MINIMUM_CONE_LENGTH`. Without this, the stub section was incorrectly extracted to headspace, changing the component chain from 21 to 20 elements and producing a 0.012 cents residual error.
+
+After fix: max Reed error dropped from 0.012 cents to **0.000011 cents** (~1e-5). Z-sample error dropped from ~1e-6 to **~1e-14** (machine epsilon). 226 tests all passing.
+
+---
+
+## 2026-03-04: M5.5 + M5.6 — Flute Calibration + Reed Evaluation
+
+### M5.5: Flute Calibration + Optimization
+
+Flute calibration and optimization pipeline complete. Two new calibrators and session dispatch for 6 total Flute optimizers (3 calibrators + 3 hole optimizers).
+
+#### Calibrators
+
+1. **AirstreamLengthObjectiveFunction** (1D Brent) — calibrates embouchure hole airstream length using FmaxEvaluator.
+2. **FluteCalibrationObjectiveFunction** (2D BOBYQA) — jointly optimizes airstream length and beta using FminmaxEvaluator.
+3. **BetaObjectiveFunction** (1D Brent) — reused from Whistle, calibrates beta using FminEvaluator.
+
+#### Hole Optimizers
+
+4. **HoleSizeObjectiveFunction** — N-dim BOBYQA for hole diameters (reused from Whistle)
+5. **HolePositionObjectiveFunction** — (N+1)-dim BOBYQA for bore length + spacings (reused from Whistle)
+6. **HoleObjectiveFunction** — (2N+1)-dim merged BOBYQA (reused from Whistle)
+
+#### New files
+
+- `wid-optimize/src/airstream_length.rs` — 1D Brent airstream length calibrator
+- `wid-optimize/src/flute_calib.rs` — 2D BOBYQA joint calibrator (airstream + beta)
+- `wid-session/src/flute.rs` — optimizer registry + constraint templates
+- `wid-compile/src/lib.rs` — added `get_airstream_length()` / `set_airstream_length()`
+- `CalibResult` extended with `initial_airstream_length` / `final_airstream_length` fields
+
+#### Java golden harness (pending fixture generation — requires Java 17+)
+
+- `FluteCalibDriver.java` — generates FL-CAL fixtures (3 calibrators)
+- `FluteOptDriver.java` — generates FL-OPT fixtures (3 hole optimizers)
+
+### M5.6: Reed Evaluation
+
+Reed mouthpiece model and evaluation dispatch implemented. Reed instruments (single reed, double reed, lip reed) now compile and evaluate.
+
+#### Reed mouthpiece model
+
+Simple linear reactance model matching Java `SimpleReedMouthpieceCalculator`:
+- `X = alpha × 1e-3 × freq + beta`
+- Transfer matrix: `[[0+iX, z₀], [1, 0]]` (pressure-node boundary condition)
+- Lip reeds negate beta sign
+- Uses `SimpleInstrumentTuner` (standard reactance-zero search, NOT LinearV)
+
+#### New/modified files
+
+- `wid-acoustics/src/simple_reed.rs` — reed transfer matrix calculation
+- `wid-compile/src/lib.rs` — added `MouthpieceType::SimpleReed { alpha, is_lip_reed }`, reed compilation for single/double/lip reed, `beta` field on `CompiledMouthpiece`
+- `wid-eval/src/calculator_params.rs` — added `MouthpieceModel::SimpleReed`, `CalculatorParams::REED`
+- `wid-eval/src/lib.rs` — reed dispatch in `calc_z()` and `calculate_error_vector()`
+- `wid-eval/src/linear_v.rs` — added `SimpleReed` arm (unreachable — reed doesn't use LinearV)
+- `wid-acoustics/src/simple_fipple.rs` — added `SimpleReed` arm to `calc_z_window()` (unreachable)
+
+#### Reed headspace behavior (parity note)
+
+Reed instruments (e.g., SampleChanter) can have headspace bore sections (bore points above mouthpiece position). In Java, the `SimpleReedMouthpieceCalculator` inherits the default `calcStateVector()` which just multiplies `calcTransferMatrix() * boreState` — headspace is extracted from the component chain during `updateComponents()` but is **never used** by the reed mouthpiece calculator. Our Rust code matches this behavior: headspace is extracted during compile and stored on `mouthpiece.headspace`, but the `SimpleReed` arm in `calc_z()` applies the reed TM directly without walking headspace. This is intentional parity.
+
+#### Java golden harness (pending fixture generation)
+
+- `ReedBulkEvalDriver.java` — 7 compatible reed combos (4 SampleChanter + 1 ReiswigChanter + 2 Didgeridoo)
+- `ReedZSampleDriver.java` — Z-sample for SampleChanter + A3-ClosedFingering
+
+### Test results
+
+- 217 tests, all passing (no new test files yet — golden fixtures need Java 17+ to generate)
+- All existing NAF, Whistle, and Flute tests pass with zero regressions
+- Flute calibrator unit tests: airstream length extraction, roundtrip, norm reduction, joint calibration
+
 ## 2026-03-04: M5.4 — Whistle Calibration + Optimization
 
 Complete Whistle calibration and optimization pipeline. All three calibrators (WindowHeight, Beta, joint) and all three hole optimizers (HoleSize, HolePosition, HoleCombined) match Java oracle golden fixtures.

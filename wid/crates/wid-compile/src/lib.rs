@@ -68,6 +68,10 @@ pub struct CompiledMouthpiece {
     /// Computed from beta, windway_height, window_length, window_width.
     /// None when beta or windway_height is absent.
     pub gain_factor: Option<f64>,
+    /// Mouthpiece beta parameter (dimensionless).
+    /// Used by reed instruments in the reactance calculation.
+    /// Defaults to 0.0 if not set in the instrument XML.
+    pub beta: f64,
 }
 
 /// The kind of mouthpiece, with its specific parameters (in metres).
@@ -87,6 +91,17 @@ pub enum MouthpieceType {
         height: f64,
         airstream_length: f64,
         airstream_height: f64,
+    },
+    /// Reed mouthpiece (single, double, or lip reed).
+    ///
+    /// Uses a linear reactance model: `X = alpha * 1e-3 * freq + beta`.
+    /// For lip reeds, beta sign is negated in the impedance calculation.
+    /// Matches Java `SimpleReedMouthpieceCalculator`.
+    SimpleReed {
+        /// Reed-specific reactance coefficient (from XML alpha parameter).
+        alpha: f64,
+        /// Whether this is a lip reed (negates beta in impedance calc).
+        is_lip_reed: bool,
     },
 }
 
@@ -211,6 +226,8 @@ pub fn compile(raw: &InstrumentRaw) -> Result<InstrumentCompiled, CompileError> 
 
     let gain_factor = compute_gain_factor(&raw.mouthpiece, &mouthpiece_type);
 
+    let beta = raw.mouthpiece.beta.unwrap_or(0.0);
+
     Ok(InstrumentCompiled {
         name: raw.name.clone(),
         mouthpiece: CompiledMouthpiece {
@@ -219,6 +236,7 @@ pub fn compile(raw: &InstrumentRaw) -> Result<InstrumentCompiled, CompileError> 
             headspace,
             mouthpiece_type,
             gain_factor,
+            beta,
         },
         components,
         termination: CompiledTermination {
@@ -271,6 +289,39 @@ pub fn set_window_height(raw: &mut InstrumentRaw, value_metres: f64) {
     }
 }
 
+/// Read the airstream length from a raw instrument (in metres).
+///
+/// For embouchure hole instruments: returns `embouchure_hole.airstream_length * length_unit`.
+/// For fipple instruments: returns `fipple.window_length * length_unit`
+/// (airstream length is analogous to window length for fipple mouthpieces).
+///
+/// Matches Java `AirstreamLengthObjectiveFunction.getGeometryPoint()`.
+pub fn get_airstream_length(raw: &InstrumentRaw) -> Option<f64> {
+    let m = raw.length_type.to_metres();
+    if let Some(ref emb) = raw.mouthpiece.embouchure_hole {
+        return Some(emb.airstream_length * m);
+    }
+    if let Some(ref fipple) = raw.mouthpiece.fipple {
+        return Some(fipple.window_length * m);
+    }
+    None
+}
+
+/// Set the airstream length on a raw instrument (value in metres).
+///
+/// For embouchure hole instruments: sets `embouchure_hole.airstream_length`.
+/// For fipple instruments: sets `fipple.window_length`.
+///
+/// Matches Java `AirstreamLengthObjectiveFunction.setGeometryPoint()`.
+pub fn set_airstream_length(raw: &mut InstrumentRaw, value_metres: f64) {
+    let m = raw.length_type.to_metres();
+    if let Some(ref mut emb) = raw.mouthpiece.embouchure_hole {
+        emb.airstream_length = value_metres / m;
+    } else if let Some(ref mut fipple) = raw.mouthpiece.fipple {
+        fipple.window_length = value_metres / m;
+    }
+}
+
 /// Read the mouthpiece beta factor from a raw instrument.
 pub fn get_beta(raw: &InstrumentRaw) -> Option<f64> {
     raw.mouthpiece.beta
@@ -279,6 +330,28 @@ pub fn get_beta(raw: &InstrumentRaw) -> Option<f64> {
 /// Set the mouthpiece beta factor on a raw instrument.
 pub fn set_beta(raw: &mut InstrumentRaw, value: f64) {
     raw.mouthpiece.beta = Some(value);
+}
+
+/// Read the reed alpha factor from a raw instrument.
+///
+/// Matches Java `ReedCalibratorObjectiveFunction.getGeometryPoint()`:
+/// checks single_reed, then double_reed, then lip_reed.
+pub fn get_alpha(raw: &InstrumentRaw) -> Option<f64> {
+    let mp = &raw.mouthpiece;
+    mp.single_reed.as_ref().map(|r| r.alpha)
+        .or_else(|| mp.double_reed.as_ref().map(|r| r.alpha))
+        .or_else(|| mp.lip_reed.as_ref().map(|r| r.alpha))
+}
+
+/// Set the reed alpha factor on a raw instrument.
+///
+/// Matches Java `ReedCalibratorObjectiveFunction.setGeometryPoint()`:
+/// sets on single_reed, else double_reed, else lip_reed.
+pub fn set_alpha(raw: &mut InstrumentRaw, value: f64) {
+    let mp = &mut raw.mouthpiece;
+    if let Some(ref mut r) = mp.single_reed { r.alpha = value; }
+    else if let Some(ref mut r) = mp.double_reed { r.alpha = value; }
+    else if let Some(ref mut r) = mp.lip_reed { r.alpha = value; }
 }
 
 /// Extract hole diameters sorted by bore position ascending (in metres).
@@ -656,21 +729,29 @@ fn process_position(
 
     // If position falls between bore points, insert a new bore point
     if right_pos > position {
-        let new_point = BorePointM {
-            position,
-            diameter: bore_diameter,
-        };
-        // Create section from left to the new point
+        // Create section from left to the new point.
+        // Matches Java Instrument.addSection(): when length is zero,
+        // bump both the section's right_bore_position and the new bore
+        // point's position by MINIMUM_CONE_LENGTH.
         let left = bore_points[0].clone();
-        // We need a temporary reference that won't conflict with the borrow of bore_points
+        let raw_length = position - left.position;
+        let (length, new_pos) = if raw_length <= 0.0 {
+            (MINIMUM_CONE_LENGTH, position + MINIMUM_CONE_LENGTH)
+        } else {
+            (raw_length, position)
+        };
         let section = BoreSection {
-            length: (position - left.position).max(MINIMUM_CONE_LENGTH),
+            length,
             left_radius: left.diameter / 2.0,
             right_radius: bore_diameter / 2.0,
-            right_bore_position: position,
+            right_bore_position: new_pos,
         };
         components.push(Component::Bore(section));
         // Remove the left point and insert the new point at the front
+        let new_point = BorePointM {
+            position: new_pos,
+            diameter: bore_diameter,
+        };
         bore_points.remove(0);
         bore_points.insert(0, new_point);
     } else {
@@ -716,9 +797,13 @@ fn build_mouthpiece_type(
             airstream_length: e.airstream_length * m,
             airstream_height: e.airstream_height * m,
         }
+    } else if let Some(ref sr) = mp.single_reed {
+        MouthpieceType::SimpleReed { alpha: sr.alpha, is_lip_reed: false }
+    } else if let Some(ref dr) = mp.double_reed {
+        MouthpieceType::SimpleReed { alpha: dr.alpha, is_lip_reed: false }
+    } else if let Some(ref lr) = mp.lip_reed {
+        MouthpieceType::SimpleReed { alpha: lr.alpha, is_lip_reed: true }
     } else {
-        // For now, only NAF (fipple) and flute (embouchure) are supported.
-        // Reed types will be added in M5.
         panic!("Unsupported mouthpiece type");
     }
 }
@@ -764,6 +849,7 @@ fn compute_gain_factor(
                     / (length * airstream_length),
             )
         }
+        // SimpleReed: no gain model (pressure-node boundary condition)
         _ => None,
     }
 }

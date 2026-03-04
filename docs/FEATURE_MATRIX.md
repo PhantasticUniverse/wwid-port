@@ -62,17 +62,27 @@ Legend:
 | Feature / Optimizer         | Baseline | Fixture(s)  | Milestone | Notes                       |
 | --------------------------- | -------: | ----------- | --------- | --------------------------- |
 | Evaluation parity           |        ✅ | FLUTE-BULK-EVAL, FL-ZSAMPLE | M5.3 | 2 instruments × 4 tunings = 8 combos, 110 fingerings |
-| Flute calibrator            |        ✅ | FL-CAL-01   | M5        |                             |
+| Airstream length calibrator |        ✅ | FL-CAL/calib_airstream_length | M5.5 | 1D Brent, FmaxEvaluator |
+| Beta calibrator             |        ✅ | FL-CAL/calib_beta | M5.5 | 1D Brent, FminEvaluator (reused from Whistle) |
+| Joint calibrator            |        ✅ | FL-CAL/calib_joint | M5.5 | 2D BOBYQA, FminmaxEvaluator |
+| Hole size                   |        ✅ | FL-OPT/opt_hole_size | M5.5 | N-dim BOBYQA (reused from Whistle) |
+| Hole position               |        ✅ | FL-OPT/opt_hole_position | M5.5 | (N+1)-dim BOBYQA (reused from Whistle) |
+| Hole size + position        |        ✅ | FL-OPT/opt_hole | M5.5 | (2N+1)-dim merged BOBYQA (reused from Whistle) |
 | Stopper position optimizers |        ✅ | FL-STOP-01  | M5        | if present in baseline      |
-| Other flute optimizers      |        ✅ | FL-OPT-*    | M5        |                             |
 
 ---
 
 ## Reed
 
-| Optimizer / Calibrator       | Baseline | Fixture(s) | Milestone | Notes                    |
+| Feature / Optimizer          | Baseline | Fixture(s) | Milestone | Notes                    |
 | ---------------------------- | -------: | ---------- | --------- | ------------------------ |
-| Reed calibrator (alpha/beta) |        ✅ | RD-CAL-01  | M5        |                          |
+| Evaluation parity            |        ✅ | RD-BULK-EVAL, RD-ZSAMPLE | M5.6 | 7 combos, 72 fingerings, 0.000011 cents |
+| Reed mouthpiece model        |        ✅ | — | M5.6 | SimpleReed: X = alpha × 1e-3 × freq + beta |
+| Reed calibrator (alpha/beta) |        ✅ | RD-CAL/calib_joint | M5.7 | 2D BOBYQA, CentDeviationEvaluator |
+| Hole size                    |        ✅ | — | M5.7 | N-dim BOBYQA (reused from Whistle) |
+| Hole position                |        ✅ | — | M5.7 | (N+1)-dim BOBYQA (reused from Whistle) |
+| Hole size + position         |        ✅ | — | M5.7 | (2N+1)-dim merged BOBYQA (reused from Whistle) |
+| Bore optimizers (5)          |        ✅ | — | M5        | Deferred |
 | Reed validity rule           |        ✅ | RD-VAL-01  | M5        | mouthpiece position rule |
 
 ---

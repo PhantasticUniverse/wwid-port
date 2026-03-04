@@ -26,7 +26,9 @@
 //! ```
 
 pub mod doc_store;
+pub mod flute;
 pub mod naf;
+pub mod reed;
 pub mod types;
 pub mod whistle;
 
@@ -76,13 +78,7 @@ impl StudySession {
             StudyKind::NAF => CalculatorParams::NAF,
             StudyKind::Whistle => CalculatorParams::WHISTLE,
             StudyKind::Flute => CalculatorParams::FLUTE,
-            _ => CalculatorParams {
-                hole_size_mult: 1.0,
-                finger_adjustment: 0.0,
-                unflanged_end: true,
-                mouthpiece_model: wid_eval::calculator_params::MouthpieceModel::DefaultFipple,
-                blowing_level: 5,
-            },
+            StudyKind::Reed => CalculatorParams::REED,
         };
         StudySession {
             study_kind,
@@ -266,7 +262,24 @@ impl StudySession {
                 }
                 self.selection.constraints_id.is_some()
             }
-            _ => false, // Other study models not yet implemented
+            StudyKind::Flute => {
+                if !flute::is_valid_optimizer(key) {
+                    return false;
+                }
+                if flute::is_calibrator(key) {
+                    return true;
+                }
+                self.selection.constraints_id.is_some()
+            }
+            StudyKind::Reed => {
+                if !reed::is_valid_optimizer(key) {
+                    return false;
+                }
+                if reed::is_calibrator(key) {
+                    return true;
+                }
+                self.selection.constraints_id.is_some()
+            }
         }
     }
 
@@ -285,7 +298,8 @@ impl StudySession {
         match self.study_kind {
             StudyKind::NAF => naf::available_optimizers(),
             StudyKind::Whistle => whistle::available_optimizers(),
-            _ => Vec::new(),
+            StudyKind::Flute => flute::available_optimizers(),
+            StudyKind::Reed => reed::available_optimizers(),
         }
     }
 
@@ -427,6 +441,10 @@ impl StudySession {
                     final_fipple_factor: Some(result.final_fipple_factor),
                     initial_window_height: None,
                     final_window_height: None,
+                    initial_airstream_length: None,
+                    final_airstream_length: None,
+                    initial_alpha: None,
+                    final_alpha: None,
                     initial_beta: None,
                     final_beta: None,
                     initial_norm: result.initial_norm,
@@ -436,9 +454,12 @@ impl StudySession {
             StudyKind::Whistle => {
                 calibrate_whistle_impl(inst, &tuning, &self.params, &self.calc_params, &optimizer_key, &constraint_bounds)
             }
-            _ => Err(SessionError::CannotOptimize(
-                format!("Calibration not implemented for {:?}", self.study_kind),
-            )),
+            StudyKind::Flute => {
+                calibrate_flute_impl(inst, &tuning, &self.params, &self.calc_params, &optimizer_key, &constraint_bounds)
+            }
+            StudyKind::Reed => {
+                calibrate_reed_impl(inst, &tuning, &self.params, &self.calc_params, &constraint_bounds)
+            }
         }
     }
 
@@ -465,7 +486,8 @@ impl StudySession {
         let is_calibrator = match self.study_kind {
             StudyKind::NAF => naf::is_fipple_optimizer(&optimizer_key),
             StudyKind::Whistle => whistle::is_calibrator(&optimizer_key),
-            _ => false,
+            StudyKind::Flute => flute::is_calibrator(&optimizer_key),
+            StudyKind::Reed => reed::is_calibrator(&optimizer_key),
         };
         if is_calibrator {
             return Err(SessionError::CannotOptimize(
@@ -525,9 +547,56 @@ impl StudySession {
                     )),
                 }
             }
-            _ => return Err(SessionError::CannotOptimize(
-                format!("Optimization not implemented for {:?}", self.study_kind),
-            )),
+            StudyKind::Flute => {
+                match optimizer_key.as_str() {
+                    flute::HOLE_SIZE => {
+                        wid_optimize::hole_size::optimize_hole_size_with_progress(
+                            &mut work_inst, &tuning, &constraints, &self.params,
+                            &self.calc_params, &mut progress_adapter,
+                        )
+                    }
+                    flute::HOLE_POSITION => {
+                        wid_optimize::hole_position::optimize_hole_position_with_progress(
+                            &mut work_inst, &tuning, &constraints, &self.params,
+                            &self.calc_params, &mut progress_adapter,
+                        )
+                    }
+                    flute::HOLE => {
+                        wid_optimize::hole_combined::optimize_holes_combined_with_progress(
+                            &mut work_inst, &tuning, &constraints, &self.params,
+                            &self.calc_params, &mut progress_adapter,
+                        )
+                    }
+                    _ => return Err(SessionError::CannotOptimize(
+                        format!("Unknown Flute optimizer: {}", optimizer_key),
+                    )),
+                }
+            }
+            StudyKind::Reed => {
+                match optimizer_key.as_str() {
+                    reed::HOLE_SIZE => {
+                        wid_optimize::hole_size::optimize_hole_size_with_progress(
+                            &mut work_inst, &tuning, &constraints, &self.params,
+                            &self.calc_params, &mut progress_adapter,
+                        )
+                    }
+                    reed::HOLE_POSITION => {
+                        wid_optimize::hole_position::optimize_hole_position_with_progress(
+                            &mut work_inst, &tuning, &constraints, &self.params,
+                            &self.calc_params, &mut progress_adapter,
+                        )
+                    }
+                    reed::HOLE => {
+                        wid_optimize::hole_combined::optimize_holes_combined_with_progress(
+                            &mut work_inst, &tuning, &constraints, &self.params,
+                            &self.calc_params, &mut progress_adapter,
+                        )
+                    }
+                    _ => return Err(SessionError::CannotOptimize(
+                        format!("Unknown Reed optimizer: {}", optimizer_key),
+                    )),
+                }
+            }
         };
 
         // Store optimized instrument as a new document
@@ -566,9 +635,8 @@ impl StudySession {
         let constraints = match self.study_kind {
             StudyKind::NAF => naf::create_default_constraints(optimizer_key, n_holes),
             StudyKind::Whistle => whistle::create_default_constraints(optimizer_key, n_holes),
-            _ => return Err(SessionError::CannotOptimize(
-                format!("Constraints not yet implemented for {:?}", self.study_kind),
-            )),
+            StudyKind::Flute => flute::create_default_constraints(optimizer_key, n_holes),
+            StudyKind::Reed => reed::create_default_constraints(optimizer_key, n_holes),
         };
         let name = constraints.name.clone();
         let id = self.docs.insert(
@@ -592,9 +660,8 @@ impl StudySession {
         let constraints = match self.study_kind {
             StudyKind::NAF => naf::create_blank_constraints(optimizer_key, n_holes),
             StudyKind::Whistle => whistle::create_blank_constraints(optimizer_key, n_holes),
-            _ => return Err(SessionError::CannotOptimize(
-                format!("Constraints not yet implemented for {:?}", self.study_kind),
-            )),
+            StudyKind::Flute => flute::create_blank_constraints(optimizer_key, n_holes),
+            StudyKind::Reed => reed::create_blank_constraints(optimizer_key, n_holes),
         };
         let name = constraints.name.clone();
         let id = self.docs.insert(
@@ -728,6 +795,8 @@ fn calibrate_whistle_impl(
                 initial_fipple_factor: None, final_fipple_factor: None,
                 initial_window_height: result.initial_window_height,
                 final_window_height: result.final_window_height,
+                initial_airstream_length: None, final_airstream_length: None,
+                initial_alpha: None, final_alpha: None,
                 initial_beta: None, final_beta: None,
                 initial_norm: result.initial_norm, final_norm: result.final_norm,
             })
@@ -743,6 +812,8 @@ fn calibrate_whistle_impl(
             Ok(CalibResult {
                 initial_fipple_factor: None, final_fipple_factor: None,
                 initial_window_height: None, final_window_height: None,
+                initial_airstream_length: None, final_airstream_length: None,
+                initial_alpha: None, final_alpha: None,
                 initial_beta: result.initial_beta, final_beta: result.final_beta,
                 initial_norm: result.initial_norm, final_norm: result.final_norm,
             })
@@ -763,6 +834,8 @@ fn calibrate_whistle_impl(
                 initial_fipple_factor: None, final_fipple_factor: None,
                 initial_window_height: result.initial_window_height,
                 final_window_height: result.final_window_height,
+                initial_airstream_length: None, final_airstream_length: None,
+                initial_alpha: None, final_alpha: None,
                 initial_beta: result.initial_beta, final_beta: result.final_beta,
                 initial_norm: result.initial_norm, final_norm: result.final_norm,
             })
@@ -771,6 +844,110 @@ fn calibrate_whistle_impl(
             format!("Unknown Whistle calibrator: {}", optimizer_key),
         )),
     }
+}
+
+// ── Flute calibration dispatch ─────────────────────────────────────
+
+fn calibrate_flute_impl(
+    inst: &mut InstrumentRaw,
+    tuning: &Tuning,
+    params: &PhysicalParameters,
+    calc_params: &CalculatorParams,
+    optimizer_key: &str,
+    constraint_bounds: &Option<(Vec<f64>, Vec<f64>)>,
+) -> Result<CalibResult, SessionError> {
+    match optimizer_key {
+        flute::AIRSTREAM_LENGTH => {
+            let (lower, upper) = match constraint_bounds {
+                Some((lb, ub)) if !lb.is_empty() && lb[0] > 0.0 => (lb[0], ub[0]),
+                _ => (wid_optimize::airstream_length::DEFAULT_AL_LOWER, wid_optimize::airstream_length::DEFAULT_AL_UPPER),
+            };
+            let result = wid_optimize::airstream_length::calibrate_airstream_length(
+                inst, tuning, params, lower, upper, calc_params,
+            );
+            Ok(CalibResult {
+                initial_fipple_factor: None, final_fipple_factor: None,
+                initial_window_height: None, final_window_height: None,
+                initial_airstream_length: result.initial_airstream_length,
+                final_airstream_length: result.final_airstream_length,
+                initial_alpha: None, final_alpha: None,
+                initial_beta: None, final_beta: None,
+                initial_norm: result.initial_norm, final_norm: result.final_norm,
+            })
+        }
+        flute::BETA => {
+            let (lower, upper) = match constraint_bounds {
+                Some((lb, ub)) if !lb.is_empty() && lb[0] > 0.0 => (lb[0], ub[0]),
+                _ => (wid_optimize::beta::DEFAULT_BETA_LOWER, wid_optimize::beta::DEFAULT_BETA_UPPER),
+            };
+            let result = wid_optimize::beta::calibrate_beta(
+                inst, tuning, params, lower, upper, calc_params,
+            );
+            Ok(CalibResult {
+                initial_fipple_factor: None, final_fipple_factor: None,
+                initial_window_height: None, final_window_height: None,
+                initial_airstream_length: None, final_airstream_length: None,
+                initial_alpha: None, final_alpha: None,
+                initial_beta: result.initial_beta, final_beta: result.final_beta,
+                initial_norm: result.initial_norm, final_norm: result.final_norm,
+            })
+        }
+        flute::FLUTE_CALIB => {
+            let al_bounds = match constraint_bounds {
+                Some((lb, ub)) if !lb.is_empty() && lb[0] > 0.0 => (lb[0], ub[0]),
+                _ => (wid_optimize::airstream_length::DEFAULT_AL_LOWER, wid_optimize::airstream_length::DEFAULT_AL_UPPER),
+            };
+            let beta_bounds = match constraint_bounds {
+                Some((lb, ub)) if lb.len() > 1 && lb[1] > 0.0 => (lb[1], ub[1]),
+                _ => (wid_optimize::beta::DEFAULT_BETA_LOWER, wid_optimize::beta::DEFAULT_BETA_UPPER),
+            };
+            let result = wid_optimize::flute_calib::calibrate_flute(
+                inst, tuning, params, al_bounds, beta_bounds, calc_params,
+            );
+            Ok(CalibResult {
+                initial_fipple_factor: None, final_fipple_factor: None,
+                initial_window_height: None, final_window_height: None,
+                initial_airstream_length: result.initial_airstream_length,
+                final_airstream_length: result.final_airstream_length,
+                initial_alpha: None, final_alpha: None,
+                initial_beta: result.initial_beta, final_beta: result.final_beta,
+                initial_norm: result.initial_norm, final_norm: result.final_norm,
+            })
+        }
+        _ => Err(SessionError::CannotOptimize(
+            format!("Unknown Flute calibrator: {}", optimizer_key),
+        )),
+    }
+}
+
+// ── Reed calibration dispatch ──────────────────────────────────────
+
+fn calibrate_reed_impl(
+    inst: &mut InstrumentRaw,
+    tuning: &Tuning,
+    params: &PhysicalParameters,
+    calc_params: &CalculatorParams,
+    constraint_bounds: &Option<(Vec<f64>, Vec<f64>)>,
+) -> Result<CalibResult, SessionError> {
+    let alpha_bounds = match constraint_bounds {
+        Some((lb, ub)) if !lb.is_empty() => (lb[0], ub[0]),
+        _ => (wid_optimize::reed_calib::DEFAULT_ALPHA_LOWER, wid_optimize::reed_calib::DEFAULT_ALPHA_UPPER),
+    };
+    let beta_bounds = match constraint_bounds {
+        Some((lb, ub)) if lb.len() > 1 => (lb[1], ub[1]),
+        _ => (wid_optimize::reed_calib::DEFAULT_BETA_LOWER, wid_optimize::reed_calib::DEFAULT_BETA_UPPER),
+    };
+    let result = wid_optimize::reed_calib::calibrate_reed(
+        inst, tuning, params, alpha_bounds, beta_bounds, calc_params,
+    );
+    Ok(CalibResult {
+        initial_fipple_factor: None, final_fipple_factor: None,
+        initial_window_height: None, final_window_height: None,
+        initial_airstream_length: None, final_airstream_length: None,
+        initial_alpha: result.initial_alpha, final_alpha: result.final_alpha,
+        initial_beta: result.initial_beta, final_beta: result.final_beta,
+        initial_norm: result.initial_norm, final_norm: result.final_norm,
+    })
 }
 
 // ── XML serialization helpers ───────────────────────────────────────

@@ -1,0 +1,9 @@
+{
+  "optimizer" : "ReedCalibratorObjectiveFunction",
+  "initial_alpha" : 1.8,
+  "final_alpha" : 1.7774234423361617,
+  "initial_beta" : 0.09,
+  "final_beta" : 0.09466823953486997,
+  "initial_norm" : 54.760049498277766,
+  "final_norm" : 26.49485923552761
+}

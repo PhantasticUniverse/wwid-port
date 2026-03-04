@@ -123,6 +123,9 @@ Constraints XML lower/upper bound arrays must match baseline ordering exactly �
   - M5.2: Whistle evaluation parity ✓
   - M5.3: Flute evaluation parity ✓
   - M5.4: Whistle calibration + optimization parity ✓
+  - M5.5: Flute calibration + optimization ✓
+  - M5.6: Reed evaluation model ✓
+  - M5.7: Reed calibration + optimization ✓
 
 ## Temperature Default
 

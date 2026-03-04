@@ -72,6 +72,9 @@ pub struct OptimizeResult {
 /// - Whistle window height: `window_height` fields set
 /// - Whistle beta: `beta` fields set
 /// - Whistle joint: both `window_height` and `beta` set
+/// - Flute airstream length: `airstream_length` fields set
+/// - Flute joint: both `airstream_length` and `beta` set
+/// - Reed: both `alpha` and `beta` set
 #[derive(Debug, Clone, Serialize)]
 pub struct CalibResult {
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -82,6 +85,14 @@ pub struct CalibResult {
     pub initial_window_height: Option<f64>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub final_window_height: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub initial_airstream_length: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub final_airstream_length: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub initial_alpha: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub final_alpha: Option<f64>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub initial_beta: Option<f64>,
     #[serde(skip_serializing_if = "Option::is_none")]
