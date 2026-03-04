@@ -1,0 +1,21 @@
+{
+  "scale" : {
+    "name" : "A4_chromatic_ET_scale",
+    "noteCount" : 15,
+    "firstNoteName" : "A4",
+    "firstNoteFreq" : 440.0,
+    "lastNoteName" : "C6",
+    "lastNoteFreq" : 1046.5022612023945
+  },
+  "temperament" : {
+    "name" : "NAF 12-Tone Equal Temperament",
+    "ratioCount" : 16,
+    "firstRatio" : 1.0,
+    "lastRatio" : 2.378414230005442
+  },
+  "fingeringPattern" : {
+    "name" : "6-hole Wood Wind Fingering",
+    "numberOfHoles" : 6,
+    "fingeringCount" : 14
+  }
+}

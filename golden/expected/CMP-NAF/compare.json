@@ -1,0 +1,182 @@
+{
+  "oldName" : "3/4\" bore, 6-hole NAF start",
+  "newName" : "3/4\" bore, 6-hole NAF start",
+  "precision" : 5,
+  "rowCount" : 25,
+  "rows" : [ {
+    "category" : "Mouthpiece",
+    "field" : "Position",
+    "oldValue" : 0.18000068040110218,
+    "newValue" : 0.0045720172821879955,
+    "difference" : -0.17542866311891417,
+    "percentChange" : -97.46
+  }, {
+    "category" : "Mouthpiece",
+    "field" : "Window Length",
+    "oldValue" : 0.18000068040110218,
+    "newValue" : 0.0045720172821879955,
+    "difference" : -0.17542866311891417,
+    "percentChange" : -97.46
+  }, {
+    "category" : "Mouthpiece",
+    "field" : "Window Width",
+    "oldValue" : 0.375000607500328,
+    "newValue" : 0.00952501543050833,
+    "difference" : -0.36547559206981967,
+    "percentChange" : -97.46
+  }, {
+    "category" : "Hole 1",
+    "field" : "Position",
+    "oldValue" : 3.508458242868765,
+    "newValue" : 0.1023412636229053,
+    "difference" : -3.40611697924586,
+    "percentChange" : -97.08301320584555
+  }, {
+    "category" : "Hole 1",
+    "field" : "Diameter",
+    "oldValue" : 0.22480684277583549,
+    "newValue" : 0.005101709351600449,
+    "difference" : -0.21970513342423503,
+    "percentChange" : -97.73062541664375
+  }, {
+    "category" : "Hole 1",
+    "field" : "Height",
+    "oldValue" : 0.18800071064115115,
+    "newValue" : 0.004775218050285239,
+    "difference" : -0.1832254925908659,
+    "percentChange" : -97.46
+  }, {
+    "category" : "Hole 2",
+    "field" : "Position",
+    "oldValue" : 4.3293146096791295,
+    "newValue" : 0.13031718813371965,
+    "difference" : -4.19899742154541,
+    "percentChange" : -96.98988870334423
+  }, {
+    "category" : "Hole 2",
+    "field" : "Diameter",
+    "oldValue" : 0.24910348213962463,
+    "newValue" : 0.005411456606325593,
+    "difference" : -0.24369202553329905,
+    "percentChange" : -97.8276270729558
+  }, {
+    "category" : "Hole 2",
+    "field" : "Height",
+    "oldValue" : 0.18800071064115115,
+    "newValue" : 0.004775218050285239,
+    "difference" : -0.1832254925908659,
+    "percentChange" : -97.46
+  }, {
+    "category" : "Hole 3",
+    "field" : "Position",
+    "oldValue" : 5.150170976489495,
+    "newValue" : 0.16206718813371965,
+    "difference" : -4.988103788355775,
+    "percentChange" : -96.85316878073455
+  }, {
+    "category" : "Hole 3",
+    "field" : "Diameter",
+    "oldValue" : 0.23843394545512378,
+    "newValue" : 0.005222196148323513,
+    "difference" : -0.23321174930680028,
+    "percentChange" : -97.80979334198604
+  }, {
+    "category" : "Hole 3",
+    "field" : "Height",
+    "oldValue" : 0.18800071064115115,
+    "newValue" : 0.004775218050285239,
+    "difference" : -0.1832254925908659,
+    "percentChange" : -97.46
+  }, {
+    "category" : "Hole 4",
+    "field" : "Position",
+    "oldValue" : 6.75880810006101,
+    "newValue" : 0.20901410495249334,
+    "difference" : -6.549793995108517,
+    "percentChange" : -96.90753011687657
+  }, {
+    "category" : "Hole 4",
+    "field" : "Diameter",
+    "oldValue" : 0.30850536042326326,
+    "newValue" : 0.006089570003706119,
+    "difference" : -0.30241579041955713,
+    "percentChange" : -98.02610560952608
+  }, {
+    "category" : "Hole 4",
+    "field" : "Height",
+    "oldValue" : 0.18800071064115115,
+    "newValue" : 0.004775218050285239,
+    "difference" : -0.1832254925908659,
+    "percentChange" : -97.46
+  }, {
+    "category" : "Hole 5",
+    "field" : "Position",
+    "oldValue" : 7.887128675488922,
+    "newValue" : 0.24076410495249334,
+    "difference" : -7.646364570536429,
+    "percentChange" : -96.9473795235429
+  }, {
+    "category" : "Hole 5",
+    "field" : "Diameter",
+    "oldValue" : 0.2998502086038329,
+    "newValue" : 0.006160154293949429,
+    "difference" : -0.29369005430988343,
+    "percentChange" : -97.94558945860585
+  }, {
+    "category" : "Hole 5",
+    "field" : "Height",
+    "oldValue" : 0.18800071064115115,
+    "newValue" : 0.004775218050285239,
+    "difference" : -0.1832254925908659,
+    "percentChange" : -97.46
+  }, {
+    "category" : "Hole 6",
+    "field" : "Position",
+    "oldValue" : 9.015449250916834,
+    "newValue" : 0.27251410495249334,
+    "difference" : -8.74293514596434,
+    "percentChange" : -96.97725429573264
+  }, {
+    "category" : "Hole 6",
+    "field" : "Diameter",
+    "oldValue" : 0.30892084472822867,
+    "newValue" : 0.006139368008863565,
+    "difference" : -0.3027814767193651,
+    "percentChange" : -98.01264041788289
+  }, {
+    "category" : "Hole 6",
+    "field" : "Height",
+    "oldValue" : 0.18800071064115115,
+    "newValue" : 0.004775218050285239,
+    "difference" : -0.1832254925908659,
+    "percentChange" : -97.46
+  }, {
+    "category" : "Bore Point 1",
+    "field" : "Diameter",
+    "oldValue" : 0.750001215000656,
+    "newValue" : 0.01905003086101666,
+    "difference" : -0.7309511841396393,
+    "percentChange" : -97.46
+  }, {
+    "category" : "Bore Point 2",
+    "field" : "Position",
+    "oldValue" : 12.790953423936331,
+    "newValue" : 0.3956490026450572,
+    "difference" : -12.395304421291275,
+    "percentChange" : -96.90680600943587
+  }, {
+    "category" : "Bore Point 2",
+    "field" : "Diameter",
+    "oldValue" : 0.7500012150006533,
+    "newValue" : 0.019050030861016615,
+    "difference" : -0.7309511841396367,
+    "percentChange" : -97.45999999999998
+  }, {
+    "category" : "Termination",
+    "field" : "Flange Diameter",
+    "oldValue" : 1.1250018225009841,
+    "newValue" : 0.028575046291524995,
+    "difference" : -1.096426776209459,
+    "percentChange" : -97.46
+  } ]
+}

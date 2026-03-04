@@ -1,0 +1,145 @@
+{
+  "instrumentName" : "PVC Whistle",
+  "tuningName" : "PVC Whistle Tuning",
+  "usePredicted" : false,
+  "fingeringCount" : 17,
+  "hasAirSpeed" : true,
+  "hasAirFlowRate" : true,
+  "rows" : [ {
+    "note" : "D",
+    "freq" : 587.33,
+    "imZCorrection" : -7364.295083784748,
+    "airSpeed" : 11.714613809187947,
+    "airFlowRate" : 121.83198361555468,
+    "gain" : 4.150265648402566,
+    "qFactor" : 41.76428834839298
+  }, {
+    "note" : "E",
+    "freq" : 660.74,
+    "imZCorrection" : -39329.301679530174,
+    "airSpeed" : 12.649839668474392,
+    "airFlowRate" : 131.55833255213372,
+    "gain" : 4.094084006237372,
+    "qFactor" : 44.49311148418882
+  }, {
+    "note" : "F#",
+    "freq" : 734.16,
+    "imZCorrection" : -1451.6423768914292,
+    "airSpeed" : 13.788902025638924,
+    "airFlowRate" : 143.40458106664485,
+    "gain" : 3.9694077913054806,
+    "qFactor" : 45.696256423083824
+  }, {
+    "note" : "G",
+    "freq" : 783.1,
+    "imZCorrection" : 22345.952874842642,
+    "airSpeed" : 14.6366461921705,
+    "airFlowRate" : 152.22112039857325,
+    "gain" : 3.951467891616635,
+    "qFactor" : 46.81695316874515
+  }, {
+    "note" : "A",
+    "freq" : 880.99,
+    "imZCorrection" : -16090.716052323764,
+    "airSpeed" : 14.79304425708639,
+    "airFlowRate" : 153.8476602736985,
+    "gain" : 3.929351226603381,
+    "qFactor" : 48.274264998671846
+  }, {
+    "note" : "B",
+    "freq" : 978.88,
+    "imZCorrection" : -15621.172334871124,
+    "airSpeed" : 15.277247456911475,
+    "airFlowRate" : 158.88337355187937,
+    "gain" : 3.903739776893078,
+    "qFactor" : 48.84894520930237
+  }, {
+    "note" : "C-nat",
+    "freq" : 1044.1,
+    "imZCorrection" : 16982.241883868563,
+    "airSpeed" : 13.989810850014747,
+    "airFlowRate" : 145.4940328401534,
+    "gain" : 3.735308396828863,
+    "qFactor" : 50.55432095260963
+  }, {
+    "note" : "C#",
+    "freq" : 1101.2,
+    "imZCorrection" : 49897.452860314814,
+    "airSpeed" : 14.801227610154962,
+    "airFlowRate" : 153.93276714561165,
+    "gain" : 3.8991588509184933,
+    "qFactor" : 49.27102767943444
+  }, {
+    "note" : "D",
+    "freq" : 1174.7,
+    "imZCorrection" : 43862.74510655691,
+    "airSpeed" : 18.15152276930034,
+    "airFlowRate" : 188.77583680072357,
+    "gain" : 2.434119616610143,
+    "qFactor" : 43.793266779547665
+  }, {
+    "note" : "E",
+    "freq" : 1321.5,
+    "imZCorrection" : -31831.45533859528,
+    "airSpeed" : 23.607490848532425,
+    "airFlowRate" : 245.51790482473726,
+    "gain" : 1.9000148814587499,
+    "qFactor" : 48.14723692770776
+  }, {
+    "note" : "F#",
+    "freq" : 1468.3,
+    "imZCorrection" : 121014.04438631756,
+    "airSpeed" : 25.61405583381901,
+    "airFlowRate" : 266.38618067171774,
+    "gain" : 1.8869831298472681,
+    "qFactor" : 47.714676375525734
+  }, {
+    "note" : "G",
+    "freq" : 1566.2,
+    "imZCorrection" : 159509.59602295436,
+    "airSpeed" : 27.1370651132475,
+    "airFlowRate" : 282.22547717777405,
+    "gain" : 1.9184335778897923,
+    "qFactor" : 48.561116285011735
+  }, {
+    "note" : "A",
+    "freq" : 1762.0,
+    "imZCorrection" : 278713.52506191673,
+    "airSpeed" : 30.118437432409618,
+    "airFlowRate" : 313.2317492970601,
+    "gain" : 1.7976619796120712,
+    "qFactor" : 46.84432875358762
+  }, {
+    "note" : "B",
+    "freq" : 1957.8,
+    "imZCorrection" : 227957.32690093722,
+    "airSpeed" : 31.720632025984752,
+    "airFlowRate" : 329.8945730702415,
+    "gain" : 1.6830361325205483,
+    "qFactor" : 44.69771666588917
+  }, {
+    "note" : "C-nat",
+    "freq" : 2088.3,
+    "imZCorrection" : 85812.78746443873,
+    "airSpeed" : 41.7495620067222,
+    "airFlowRate" : 434.195444869911,
+    "gain" : 0.9475251365508579,
+    "qFactor" : 33.79198526589438
+  }, {
+    "note" : "C#",
+    "freq" : 2202.5,
+    "imZCorrection" : 61613.12913658233,
+    "airSpeed" : 36.41945348679856,
+    "airFlowRate" : 378.7623162627051,
+    "gain" : 1.3677372716319907,
+    "qFactor" : 40.04280538341772
+  }, {
+    "note" : "D",
+    "freq" : 2349.3,
+    "imZCorrection" : 620146.2049171617,
+    "airSpeed" : 32.607490245037475,
+    "airFlowRate" : 339.1178985483898,
+    "gain" : 1.1954523460351671,
+    "qFactor" : 34.72120421085437
+  } ]
+}

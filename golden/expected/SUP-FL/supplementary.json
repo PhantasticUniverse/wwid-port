@@ -1,0 +1,145 @@
+{
+  "instrumentName" : "Generic flute",
+  "tuningName" : "Generic Flute, in D",
+  "usePredicted" : false,
+  "fingeringCount" : 17,
+  "hasAirSpeed" : true,
+  "hasAirFlowRate" : false,
+  "rows" : [ {
+    "note" : "low D",
+    "freq" : 293.66,
+    "imZCorrection" : 17250.51896856395,
+    "airSpeed" : 4.294394732324628,
+    "airFlowRate" : null,
+    "gain" : 3.544301215706465,
+    "qFactor" : 46.83928672904395
+  }, {
+    "note" : "E",
+    "freq" : 329.63,
+    "imZCorrection" : -21287.65078375338,
+    "airSpeed" : 4.193549887953222,
+    "airFlowRate" : null,
+    "gain" : 3.8128555098592165,
+    "qFactor" : 50.591667754778086
+  }, {
+    "note" : "F#",
+    "freq" : 369.99,
+    "imZCorrection" : 41488.435940480136,
+    "airSpeed" : 5.550014468013903,
+    "airFlowRate" : null,
+    "gain" : 3.823606649873354,
+    "qFactor" : 51.44895185648473
+  }, {
+    "note" : "G",
+    "freq" : 392.0,
+    "imZCorrection" : 20118.856374983825,
+    "airSpeed" : 5.423212136580989,
+    "airFlowRate" : null,
+    "gain" : 3.891537350203068,
+    "qFactor" : 52.09146697822544
+  }, {
+    "note" : "A",
+    "freq" : 440.0,
+    "imZCorrection" : 11041.58817444933,
+    "airSpeed" : 5.792415612374217,
+    "airFlowRate" : null,
+    "gain" : 4.022443717081204,
+    "qFactor" : 53.79398613148493
+  }, {
+    "note" : "B",
+    "freq" : 493.88,
+    "imZCorrection" : 10445.441323882384,
+    "airSpeed" : 6.355927650163897,
+    "airFlowRate" : null,
+    "gain" : 4.092597363972541,
+    "qFactor" : 54.26339762110029
+  }, {
+    "note" : "C-nat",
+    "freq" : 523.25,
+    "imZCorrection" : -23798.55808491548,
+    "airSpeed" : 6.11625844349383,
+    "airFlowRate" : null,
+    "gain" : 4.042904500673689,
+    "qFactor" : 55.82948653861083
+  }, {
+    "note" : "C#",
+    "freq" : 554.37,
+    "imZCorrection" : 34790.453180815595,
+    "airSpeed" : 7.482541391816807,
+    "airFlowRate" : null,
+    "gain" : 4.158135868027125,
+    "qFactor" : 54.74897652260411
+  }, {
+    "note" : "D",
+    "freq" : 587.33,
+    "imZCorrection" : -6432.167317789717,
+    "airSpeed" : 7.098308918528104,
+    "airFlowRate" : null,
+    "gain" : 2.4683188393167708,
+    "qFactor" : 53.10158812013407
+  }, {
+    "note" : "E",
+    "freq" : 659.26,
+    "imZCorrection" : -3227.5877435689035,
+    "airSpeed" : 7.8801236793851634,
+    "airFlowRate" : null,
+    "gain" : 2.319690322103873,
+    "qFactor" : 61.352326432435696
+  }, {
+    "note" : "F#",
+    "freq" : 739.99,
+    "imZCorrection" : 105937.53161472338,
+    "airSpeed" : 10.001614149966752,
+    "airFlowRate" : null,
+    "gain" : 2.353889013638912,
+    "qFactor" : 61.496523153434964
+  }, {
+    "note" : "G",
+    "freq" : 783.99,
+    "imZCorrection" : 3126.022300883691,
+    "airSpeed" : 9.24861367385451,
+    "airFlowRate" : null,
+    "gain" : 2.415966468315192,
+    "qFactor" : 62.11397903333675
+  }, {
+    "note" : "A",
+    "freq" : 880.0,
+    "imZCorrection" : 63955.10005004253,
+    "airSpeed" : 10.912890375033259,
+    "airFlowRate" : null,
+    "gain" : 2.3456090712824347,
+    "qFactor" : 62.18410721911553
+  }, {
+    "note" : "B",
+    "freq" : 987.77,
+    "imZCorrection" : 67526.25038001034,
+    "airSpeed" : 12.036388106890744,
+    "airFlowRate" : null,
+    "gain" : 2.220803183392151,
+    "qFactor" : 60.29293196339509
+  }, {
+    "note" : "hi C-nat",
+    "freq" : 1046.5,
+    "imZCorrection" : 201978.4809989422,
+    "airSpeed" : 13.601454334056838,
+    "airFlowRate" : null,
+    "gain" : 1.6199623434167751,
+    "qFactor" : 58.35678555944453
+  }, {
+    "note" : "C#",
+    "freq" : 1108.7,
+    "imZCorrection" : 253588.01644817402,
+    "airSpeed" : 15.481908977492084,
+    "airFlowRate" : null,
+    "gain" : 1.965735893322751,
+    "qFactor" : 58.91293453366833
+  }, {
+    "note" : "high D",
+    "freq" : 1174.7,
+    "imZCorrection" : 476742.1372673438,
+    "airSpeed" : 16.228527313682502,
+    "airFlowRate" : null,
+    "gain" : 1.0953086335481286,
+    "qFactor" : 51.66142997352563
+  } ]
+}

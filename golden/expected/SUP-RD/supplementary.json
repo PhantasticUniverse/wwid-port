@@ -1,0 +1,81 @@
+{
+  "instrumentName" : "Eric Reiswig smallpipe chanter",
+  "tuningName" : "A3 Closed Fingering",
+  "usePredicted" : true,
+  "fingeringCount" : 9,
+  "hasAirSpeed" : false,
+  "hasAirFlowRate" : false,
+  "rows" : [ {
+    "note" : "G",
+    "freq" : 195.58723099514222,
+    "imZCorrection" : -3.9781583271875613E-4,
+    "airSpeed" : null,
+    "airFlowRate" : null,
+    "gain" : 1.0,
+    "qFactor" : 12.074990721762106
+  }, {
+    "note" : "A",
+    "freq" : 219.93913138207165,
+    "imZCorrection" : 7.861659061093849E-4,
+    "airSpeed" : null,
+    "airFlowRate" : null,
+    "gain" : 1.0,
+    "qFactor" : 13.287855656304354
+  }, {
+    "note" : "B",
+    "freq" : 244.79016311575083,
+    "imZCorrection" : -0.004034139200357924,
+    "airSpeed" : null,
+    "airFlowRate" : null,
+    "gain" : 1.0,
+    "qFactor" : 14.082445076199335
+  }, {
+    "note" : "C#",
+    "freq" : 274.3558818556428,
+    "imZCorrection" : 0.00656136881979964,
+    "airSpeed" : null,
+    "airFlowRate" : null,
+    "gain" : 1.0,
+    "qFactor" : 15.062337606271884
+  }, {
+    "note" : "D",
+    "freq" : 293.0302344245177,
+    "imZCorrection" : 0.002848509464011735,
+    "airSpeed" : null,
+    "airFlowRate" : null,
+    "gain" : 1.0,
+    "qFactor" : 15.875145933254176
+  }, {
+    "note" : "E",
+    "freq" : 329.5713234161086,
+    "imZCorrection" : 0.0036047032823087045,
+    "airSpeed" : null,
+    "airFlowRate" : null,
+    "gain" : 1.0,
+    "qFactor" : 17.400223722254673
+  }, {
+    "note" : "F#",
+    "freq" : 366.180358335861,
+    "imZCorrection" : 0.0036932840080051575,
+    "airSpeed" : null,
+    "airFlowRate" : null,
+    "gain" : 1.0,
+    "qFactor" : 18.516036372395476
+  }, {
+    "note" : "G",
+    "freq" : 391.07612821063054,
+    "imZCorrection" : 2.3965157343959473E-4,
+    "airSpeed" : null,
+    "airFlowRate" : null,
+    "gain" : 1.0,
+    "qFactor" : 19.33030431088484
+  }, {
+    "note" : "A",
+    "freq" : 438.9147740882862,
+    "imZCorrection" : 0.006900882718056639,
+    "airSpeed" : null,
+    "airFlowRate" : null,
+    "gain" : 1.0,
+    "qFactor" : 21.219943048097345
+  } ]
+}

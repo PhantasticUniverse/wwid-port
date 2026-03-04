@@ -1,0 +1,53 @@
+{
+  "instrumentName" : "3/4\" bore, 6-hole NAF start",
+  "borePoints" : [ {
+    "position" : 0.0,
+    "diameter" : 0.750001215000656
+  }, {
+    "position" : 12.790953423936331,
+    "diameter" : 0.7500012150006533
+  } ],
+  "boreLength" : 12.790953423936331,
+  "holes" : [ {
+    "name" : "Hole 6",
+    "position" : 3.508458242868765,
+    "diameter" : 0.22480684277583549,
+    "height" : 0.18800071064115115
+  }, {
+    "name" : "Hole 5",
+    "position" : 4.3293146096791295,
+    "diameter" : 0.24910348213962463,
+    "height" : 0.18800071064115115
+  }, {
+    "name" : "Hole 4",
+    "position" : 5.150170976489495,
+    "diameter" : 0.23843394545512378,
+    "height" : 0.18800071064115115
+  }, {
+    "name" : "Hole 3",
+    "position" : 6.75880810006101,
+    "diameter" : 0.30850536042326326,
+    "height" : 0.18800071064115115
+  }, {
+    "name" : "Hole 2",
+    "position" : 7.887128675488922,
+    "diameter" : 0.2998502086038329,
+    "height" : 0.18800071064115115
+  }, {
+    "name" : "Hole 1",
+    "position" : 9.015449250916834,
+    "diameter" : 0.30892084472822867,
+    "height" : 0.18800071064115115
+  } ],
+  "mouthpiece" : {
+    "position" : 0.18000068040110218,
+    "type" : "Fipple",
+    "windowLength" : 0.18000068040110218,
+    "windowWidth" : 0.375000607500328,
+    "windwayHeight" : 0.03200012096019596,
+    "fippleFactor" : 0.75
+  },
+  "termination" : {
+    "flangeDiameter" : 1.1250018225009841
+  }
+}

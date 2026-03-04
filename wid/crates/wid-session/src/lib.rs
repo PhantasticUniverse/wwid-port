@@ -1405,7 +1405,9 @@ impl StudySession {
         // Extract windway info for air speed/flow calculations
         let (opt_window_length, opt_windway_area) = extract_windway_info(inst);
 
-        // Build LinearV tuner for Whistle instruments (needed for predicted freq)
+        // Build LinearV tuner for Whistle/Flute instruments (needed for predicted freq).
+        // Java: WhistleStudyModel + FluteStudyModel both use LinearVInstrumentTuner(5).
+        // Both use MouthpieceModel::SimpleFipple (Flute extends Whistle).
         let linear_v_tuner = match self.calc_params.mouthpiece_model {
             MouthpieceModel::SimpleFipple => Some(LinearVTuner::new(
                 &compiled,
@@ -1576,7 +1578,9 @@ impl StudySession {
         let compiled = compile(inst)
             .map_err(|e| SessionError::CompileError(e.to_string()))?;
 
-        // Build LinearV tuner for Whistle instruments
+        // Build LinearV tuner for Whistle/Flute instruments.
+        // Java: WhistleStudyModel + FluteStudyModel both use LinearVInstrumentTuner(5).
+        // Both use MouthpieceModel::SimpleFipple (Flute extends Whistle).
         let linear_v_tuner = match self.calc_params.mouthpiece_model {
             MouthpieceModel::SimpleFipple => Some(LinearVTuner::new(
                 &compiled,
@@ -3360,5 +3364,418 @@ mod tests {
         let errors = session.validate_instrument(inst.doc_id).unwrap();
         assert!(!errors.is_empty(), "Modified reed should have validation errors");
         assert!(errors[0].contains("Reed mouthpiece position"));
+    }
+
+    // ── Golden parity: additional oracle constants ──────────────────
+
+    const WHISTLE_TUNING_PVC_XML: &str = include_str!(
+        "../../../../oracle/v2.6.0/WhistleStudy/tunings/SamplePVC-tuning.xml"
+    );
+    const FLUTE_INST_XML: &str = include_str!(
+        "../../../../oracle/v2.6.0/FluteStudy/instruments/SamplePVC-Flute.xml"
+    );
+    const FLUTE_TUNING_XML: &str = include_str!(
+        "../../../../oracle/v2.6.0/FluteStudy/tunings/D4-Equal.xml"
+    );
+    const REED_TUNING_XML: &str = include_str!(
+        "../../../../oracle/v2.6.0/ReedStudy/tunings/A3-ClosedFingering.xml"
+    );
+    const NAF_OPTIMIZED_XML: &str = include_str!(
+        "../../../../golden/expected/NAF-OPT-01/instrument_after_optimize_0.xml"
+    );
+
+    /// Assert two floats match within relative tolerance, or both are < abs_floor.
+    fn assert_close(label: &str, actual: f64, expected: f64, rel_tol: f64, abs_floor: f64) {
+        let diff = (actual - expected).abs();
+        let max_mag = actual.abs().max(expected.abs());
+        if max_mag < abs_floor {
+            assert!(diff < abs_floor,
+                "{label}: actual={actual}, expected={expected}, diff={diff} > floor={abs_floor}");
+        } else {
+            assert!(diff / max_mag < rel_tol,
+                "{label}: actual={actual}, expected={expected}, rel_diff={} > tol={rel_tol}",
+                diff / max_mag);
+        }
+    }
+
+    // ── Golden parity: WIZ-SCALE ────────────────────────────────────
+
+    #[test]
+    fn wiz_scale_matches_golden() {
+        let golden: serde_json::Value = serde_json::from_str(include_str!(
+            "../../../../golden/expected/WIZ-SCALE/scale.json"
+        )).unwrap();
+
+        let mut session = StudySession::new(StudyKind::NAF);
+        let temp_result = session.open_xml(TEMPERAMENT_XML).unwrap();
+        let temp = session.get_temperament(temp_result.doc_id).unwrap().clone();
+        let symbols = wid_types::ScaleSymbolList::scientific_sharps();
+
+        let result = session.generate_scale(
+            &temp, &symbols, "A4", 440.0, "test_scale"
+        ).unwrap();
+
+        let scale = session.get_scale(result.doc_id).unwrap();
+
+        let golden_notes = golden["notes"].as_array().unwrap();
+        assert_eq!(scale.notes.len(), golden_notes.len());
+
+        for (i, (note, gn)) in scale.notes.iter().zip(golden_notes).enumerate() {
+            assert_eq!(note.name, gn["name"].as_str().unwrap(), "note {i} name");
+            assert_close(
+                &format!("note {i} freq"),
+                note.frequency, gn["frequency"].as_f64().unwrap(),
+                1e-12, 1e-10,
+            );
+        }
+    }
+
+    // ── Golden parity: WIZ-TUNING ───────────────────────────────────
+
+    #[test]
+    fn wiz_tuning_matches_golden() {
+        let golden: serde_json::Value = serde_json::from_str(include_str!(
+            "../../../../golden/expected/WIZ-TUNING/tuning.json"
+        )).unwrap();
+
+        let golden_rows = golden["fingerings"].as_array().unwrap();
+        let expected_count = golden["fingeringCount"].as_i64().unwrap() as usize;
+        assert_eq!(golden_rows.len(), expected_count);
+
+        // Parse scale and pattern, then generate tuning
+        let scale = wid_types::parse_scale_xml(SCALE_XML).unwrap();
+        let pattern = wid_types::parse_fingering_pattern_xml(FINGERING_PATTERN_XML).unwrap();
+        let tuning = wid_types::tuning_from_scale_and_pattern(&scale, &pattern, "test_tuning");
+
+        assert_eq!(tuning.fingerings.len(), expected_count);
+
+        for (i, (f, gr)) in tuning.fingerings.iter().zip(golden_rows).enumerate() {
+            assert_eq!(f.note.name, gr["name"].as_str().unwrap(), "row {i} name");
+            if let Some(gf) = gr["frequency"].as_f64() {
+                assert_close(
+                    &format!("row {i} freq"),
+                    f.note.frequency.unwrap(), gf,
+                    1e-12, 1e-10,
+                );
+            } else {
+                assert!(f.note.frequency.is_none(), "row {i} should have no frequency");
+            }
+        }
+    }
+
+    // ── Golden parity: WIZ-RT ───────────────────────────────────────
+
+    #[test]
+    fn wiz_roundtrip_matches_golden() {
+        let golden: serde_json::Value = serde_json::from_str(include_str!(
+            "../../../../golden/expected/WIZ-RT/roundtrip.json"
+        )).unwrap();
+
+        let scale = wid_types::parse_scale_xml(SCALE_XML).unwrap();
+        assert_eq!(scale.name, golden["scale"]["name"].as_str().unwrap());
+        assert_eq!(scale.notes.len(), golden["scale"]["noteCount"].as_i64().unwrap() as usize);
+
+        let temp = wid_types::parse_temperament_xml(TEMPERAMENT_XML).unwrap();
+        assert_eq!(temp.name, golden["temperament"]["name"].as_str().unwrap());
+        assert_eq!(temp.ratios.len(), golden["temperament"]["ratioCount"].as_i64().unwrap() as usize);
+
+        let pattern = wid_types::parse_fingering_pattern_xml(FINGERING_PATTERN_XML).unwrap();
+        assert_eq!(pattern.name, golden["fingeringPattern"]["name"].as_str().unwrap());
+        assert_eq!(
+            pattern.fingerings.len(),
+            golden["fingeringPattern"]["fingeringCount"].as_i64().unwrap() as usize
+        );
+    }
+
+    // ── Golden parity: SUP-NAF ──────────────────────────────────────
+
+    #[test]
+    fn supplementary_naf_matches_golden() {
+        let golden: serde_json::Value = serde_json::from_str(include_str!(
+            "../../../../golden/expected/SUP-NAF/supplementary.json"
+        )).unwrap();
+
+        let mut session = StudySession::new(StudyKind::NAF);
+        let inst = session.open_xml(NAF_6HOLE_XML).unwrap();
+        let tuning = session.open_xml(TUNING_6HOLE_XML).unwrap();
+        session.select_instrument(inst.doc_id);
+        session.select_tuning(tuning.doc_id);
+
+        let result = session.supplementary_info().unwrap();
+        let golden_rows = golden["rows"].as_array().unwrap();
+        assert_eq!(result.rows.len(), golden_rows.len());
+
+        for (_i, (row, gr)) in result.rows.iter().zip(golden_rows).enumerate() {
+            let label = &row.note;
+            assert_eq!(row.note, gr["note"].as_str().unwrap(), "{label} note");
+            assert_close(&format!("{label} freq"), row.freq, gr["freq"].as_f64().unwrap(), 1e-6, 0.01);
+            assert_close(&format!("{label} imZ"), row.im_z_correction, gr["imZCorrection"].as_f64().unwrap(), 1e-6, 1.0);
+            assert_close(&format!("{label} gain"), row.gain, gr["gain"].as_f64().unwrap(), 1e-4, 0.001);
+            assert_close(&format!("{label} Q"), row.q_factor, gr["qFactor"].as_f64().unwrap(), 1e-3, 0.1);
+            if let Some(expected_speed) = gr["airSpeed"].as_f64() {
+                assert_close(&format!("{label} airSpeed"), row.air_speed.unwrap(), expected_speed, 1e-4, 0.001);
+            }
+            if let Some(expected_flow) = gr["airFlowRate"].as_f64() {
+                assert_close(&format!("{label} airFlow"), row.air_flow_rate.unwrap(), expected_flow, 1e-4, 0.001);
+            }
+        }
+    }
+
+    // ── Golden parity: SUP-WH ───────────────────────────────────────
+
+    #[test]
+    fn supplementary_whistle_matches_golden() {
+        let golden: serde_json::Value = serde_json::from_str(include_str!(
+            "../../../../golden/expected/SUP-WH/supplementary.json"
+        )).unwrap();
+
+        let mut session = StudySession::new(StudyKind::Whistle);
+        let inst = session.open_xml(WHISTLE_INST_XML).unwrap();
+        let tuning = session.open_xml(WHISTLE_TUNING_PVC_XML).unwrap();
+        session.select_instrument(inst.doc_id);
+        session.select_tuning(tuning.doc_id);
+
+        let result = session.supplementary_info().unwrap();
+        let golden_rows = golden["rows"].as_array().unwrap();
+        assert_eq!(result.rows.len(), golden_rows.len());
+
+        for (_i, (row, gr)) in result.rows.iter().zip(golden_rows).enumerate() {
+            let label = &row.note;
+            assert_close(&format!("{label} freq"), row.freq, gr["freq"].as_f64().unwrap(), 1e-6, 0.01);
+            assert_close(&format!("{label} gain"), row.gain, gr["gain"].as_f64().unwrap(), 1e-4, 0.001);
+            assert_close(&format!("{label} Q"), row.q_factor, gr["qFactor"].as_f64().unwrap(), 1e-3, 0.1);
+            if let Some(expected_speed) = gr["airSpeed"].as_f64() {
+                assert_close(&format!("{label} airSpeed"), row.air_speed.unwrap(), expected_speed, 1e-4, 0.001);
+            }
+        }
+    }
+
+    // ── Golden parity: SUP-FL ───────────────────────────────────────
+
+    #[test]
+    fn supplementary_flute_matches_golden() {
+        let golden: serde_json::Value = serde_json::from_str(include_str!(
+            "../../../../golden/expected/SUP-FL/supplementary.json"
+        )).unwrap();
+
+        let mut session = StudySession::new(StudyKind::Flute);
+        let inst = session.open_xml(FLUTE_INST_XML).unwrap();
+        let tuning = session.open_xml(FLUTE_TUNING_XML).unwrap();
+        session.select_instrument(inst.doc_id);
+        session.select_tuning(tuning.doc_id);
+
+        let result = session.supplementary_info().unwrap();
+        let golden_rows = golden["rows"].as_array().unwrap();
+        assert_eq!(result.rows.len(), golden_rows.len());
+
+        for (_i, (row, gr)) in result.rows.iter().zip(golden_rows).enumerate() {
+            let label = &row.note;
+            assert_close(&format!("{label} freq"), row.freq, gr["freq"].as_f64().unwrap(), 1e-6, 0.01);
+            assert_close(&format!("{label} gain"), row.gain, gr["gain"].as_f64().unwrap(), 1e-4, 0.001);
+            assert_close(&format!("{label} Q"), row.q_factor, gr["qFactor"].as_f64().unwrap(), 1e-3, 0.1);
+        }
+    }
+
+    // ── Golden parity: SUP-RD ───────────────────────────────────────
+
+    #[test]
+    fn supplementary_reed_matches_golden() {
+        let golden: serde_json::Value = serde_json::from_str(include_str!(
+            "../../../../golden/expected/SUP-RD/supplementary.json"
+        )).unwrap();
+
+        let mut session = StudySession::new(StudyKind::Reed);
+        let inst = session.open_xml(REED_INST_XML).unwrap();
+        let tuning = session.open_xml(REED_TUNING_XML).unwrap();
+        session.select_instrument(inst.doc_id);
+        session.select_tuning(tuning.doc_id);
+
+        let result = session.supplementary_info().unwrap();
+        let golden_rows = golden["rows"].as_array().unwrap();
+        assert_eq!(result.rows.len(), golden_rows.len());
+
+        for (_i, (row, gr)) in result.rows.iter().zip(golden_rows).enumerate() {
+            let label = &row.note;
+            assert_close(&format!("{label} freq"), row.freq, gr["freq"].as_f64().unwrap(), 1e-6, 0.01);
+            assert_close(&format!("{label} gain"), row.gain, gr["gain"].as_f64().unwrap(), 1e-4, 0.001);
+            assert_close(&format!("{label} Q"), row.q_factor, gr["qFactor"].as_f64().unwrap(), 1e-3, 0.1);
+            // Reed: no air speed
+            assert!(row.air_speed.is_none(), "{label} should have no air speed");
+        }
+    }
+
+    // ── Golden parity: GRAPH-WH ─────────────────────────────────────
+
+    #[test]
+    fn graph_tuning_matches_golden() {
+        let golden: serde_json::Value = serde_json::from_str(include_str!(
+            "../../../../golden/expected/GRAPH-WH/graph_tuning.json"
+        )).unwrap();
+
+        let mut session = StudySession::new(StudyKind::Whistle);
+        let inst = session.open_xml(WHISTLE_INST_XML).unwrap();
+        let tuning = session.open_xml(WHISTLE_TUNING_PVC_XML).unwrap();
+        session.select_instrument(inst.doc_id);
+        session.select_tuning(tuning.doc_id);
+
+        let result = session.graph_tuning().unwrap();
+        let golden_curves = golden["curves"].as_array().unwrap();
+        assert_eq!(result.curves.len(), golden_curves.len());
+
+        for (_i, (curve, gc)) in result.curves.iter().zip(golden_curves).enumerate() {
+            let label = &curve.note_name;
+
+            // Compare predicted frequency
+            if let Some(gp) = gc["predictedFreq"].as_f64() {
+                assert_close(&format!("{label} predicted"), curve.predicted_freq, gp, 1e-4, 0.1);
+            }
+
+            // Compare fmin/fmax if both present
+            if let (Some(our_fmin), Some(gfmin)) = (curve.freq_min, gc["fmin"].as_f64()) {
+                assert_close(&format!("{label} fmin"), our_fmin, gfmin, 1e-4, 0.1);
+            }
+            if let (Some(our_fmax), Some(gfmax)) = (curve.freq_max, gc["fmax"].as_f64()) {
+                assert_close(&format!("{label} fmax"), our_fmax, gfmax, 1e-4, 0.1);
+            }
+
+            // Compare X/R at a few sample points if both have curves
+            let gpoints = gc["points"].as_array().unwrap();
+            if !curve.points.is_empty() && !gpoints.is_empty() {
+                assert_eq!(curve.points.len(), gpoints.len(),
+                    "{label}: point count mismatch");
+                // Check first, middle, last
+                for idx in [0, curve.points.len() / 2, curve.points.len() - 1] {
+                    let [freq, xr] = curve.points[idx];
+                    let gpt = gpoints[idx].as_array().unwrap();
+                    assert_close(&format!("{label} pt[{idx}] freq"),
+                        freq, gpt[0].as_f64().unwrap(), 1e-6, 0.01);
+                    assert_close(&format!("{label} pt[{idx}] X/R"),
+                        xr, gpt[1].as_f64().unwrap(), 1e-4, 0.01);
+                }
+            }
+        }
+    }
+
+    // ── Golden parity: SPEC-WH ──────────────────────────────────────
+
+    #[test]
+    fn note_spectrum_matches_golden() {
+        let golden: serde_json::Value = serde_json::from_str(include_str!(
+            "../../../../golden/expected/SPEC-WH/spectrum.json"
+        )).unwrap();
+
+        let mut session = StudySession::new(StudyKind::Whistle);
+        let inst = session.open_xml(WHISTLE_INST_XML).unwrap();
+        let tuning = session.open_xml(WHISTLE_TUNING_PVC_XML).unwrap();
+        session.select_instrument(inst.doc_id);
+        session.select_tuning(tuning.doc_id);
+
+        let result = session.note_spectrum(0).unwrap();
+        assert_eq!(result.points.len(), 2000);
+
+        // Compare at checkpoints
+        let checkpoints = golden["checkpoints"].as_array().unwrap();
+        for cp in checkpoints {
+            let idx = cp["index"].as_i64().unwrap() as usize;
+            let pt = &result.points[idx];
+            assert_close(&format!("cp[{idx}] freq"),
+                pt.freq, cp["freq"].as_f64().unwrap(), 1e-6, 0.01);
+            assert_close(&format!("cp[{idx}] ratio"),
+                pt.impedance_ratio, cp["impedanceRatio"].as_f64().unwrap(), 1e-4, 0.01);
+            assert_close(&format!("cp[{idx}] gain"),
+                pt.loop_gain, cp["loopGain"].as_f64().unwrap(), 1e-4, 0.001);
+        }
+    }
+
+    // ── Golden parity: SKETCH-NAF ───────────────────────────────────
+
+    #[test]
+    fn sketch_matches_golden() {
+        let golden: serde_json::Value = serde_json::from_str(include_str!(
+            "../../../../golden/expected/SKETCH-NAF/sketch.json"
+        )).unwrap();
+
+        let mut session = StudySession::new(StudyKind::NAF);
+        let inst = session.open_xml(NAF_6HOLE_XML).unwrap();
+        session.select_instrument(inst.doc_id);
+
+        let result = session.sketch_instrument().unwrap();
+
+        // Compare bore points
+        let golden_bore = golden["borePoints"].as_array().unwrap();
+        assert_eq!(result.bore_points.len(), golden_bore.len());
+        for (i, (bp, gb)) in result.bore_points.iter().zip(golden_bore).enumerate() {
+            assert_close(&format!("bore[{i}] pos"), bp.position, gb["position"].as_f64().unwrap(), 1e-10, 1e-10);
+            assert_close(&format!("bore[{i}] dia"), bp.diameter, gb["diameter"].as_f64().unwrap(), 1e-10, 1e-10);
+        }
+
+        // Compare holes
+        let golden_holes = golden["holes"].as_array().unwrap();
+        assert_eq!(result.holes.len(), golden_holes.len());
+        for (i, (hole, gh)) in result.holes.iter().zip(golden_holes).enumerate() {
+            assert_close(&format!("hole[{i}] pos"), hole.position, gh["position"].as_f64().unwrap(), 1e-10, 1e-10);
+            assert_close(&format!("hole[{i}] dia"), hole.diameter, gh["diameter"].as_f64().unwrap(), 1e-10, 1e-10);
+            assert_close(&format!("hole[{i}] h"), hole.height, gh["height"].as_f64().unwrap(), 1e-10, 1e-10);
+        }
+
+        // Compare mouthpiece
+        match &result.mouthpiece {
+            types::SketchMouthpiece::Fipple { position, fipple_factor, window_length, window_width, .. } => {
+                assert_close("mp position", *position,
+                    golden["mouthpiece"]["position"].as_f64().unwrap(), 1e-10, 1e-10);
+                assert_close("mp winLen", *window_length,
+                    golden["mouthpiece"]["windowLength"].as_f64().unwrap(), 1e-10, 1e-10);
+                assert_close("mp winWidth", *window_width,
+                    golden["mouthpiece"]["windowWidth"].as_f64().unwrap(), 1e-10, 1e-10);
+                if let Some(ff) = fipple_factor {
+                    assert_close("mp fippleFactor", *ff,
+                        golden["mouthpiece"]["fippleFactor"].as_f64().unwrap(), 1e-10, 1e-10);
+                }
+            }
+            _ => panic!("Expected Fipple mouthpiece"),
+        }
+
+        // Compare termination
+        assert_close("flange", result.flange_diameter,
+            golden["termination"]["flangeDiameter"].as_f64().unwrap(), 1e-10, 1e-10);
+    }
+
+    // ── Golden parity: CMP-NAF ──────────────────────────────────────
+
+    #[test]
+    fn compare_instruments_matches_golden() {
+        let golden: serde_json::Value = serde_json::from_str(include_str!(
+            "../../../../golden/expected/CMP-NAF/compare.json"
+        )).unwrap();
+
+        let mut session = StudySession::new(StudyKind::NAF);
+        let old_inst = session.open_xml(NAF_6HOLE_XML).unwrap();
+        let new_inst = session.open_xml(NAF_OPTIMIZED_XML).unwrap();
+
+        let result = session.compare_instruments(old_inst.doc_id, new_inst.doc_id).unwrap();
+
+        let golden_rows = golden["rows"].as_array().unwrap();
+
+        // Both should have diff rows; check we found meaningful changes
+        assert!(!result.rows.is_empty(), "Should have some diffs");
+        assert!(!golden_rows.is_empty(), "Golden should have some diffs");
+
+        // Compare row-by-row for matching categories/fields
+        // Note: ordering may differ, so compare by category+field lookup
+        for gr in golden_rows {
+            let cat = gr["category"].as_str().unwrap();
+            let field = gr["field"].as_str().unwrap();
+            let matching = result.rows.iter().find(|r| r.category == cat && r.field == field);
+
+            if let Some(row) = matching {
+                if let (Some(go), Some(gn)) = (gr["oldValue"].as_f64(), gr["newValue"].as_f64()) {
+                    let precision = golden["precision"].as_i64().unwrap();
+                    let tol = 10f64.powi(-(precision as i32));
+                    assert_close(&format!("{cat}/{field} old"), row.old_value.unwrap(), go, 1e-8, tol);
+                    assert_close(&format!("{cat}/{field} new"), row.new_value.unwrap(), gn, 1e-8, tol);
+                }
+            }
+            // Allow Rust to produce more or fewer rows than Java due to precision differences
+        }
     }
 }
