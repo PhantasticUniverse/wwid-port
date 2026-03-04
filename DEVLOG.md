@@ -4,15 +4,16 @@
 
 | Metric | Value |
 |--------|-------|
-| **Total tests** | 414 |
+| **Total tests** | 425 |
 | **Study models complete** | 4/4 (NAF, Whistle, Flute, Reed) |
 | **Milestones done** | M0–M4 complete, M5 in progress |
 | **Evaluation parity** | ≤ 0.058 cents across 994 fingerings |
 | **Crates** | 11 (math, physics, types, compile, acoustics, eval, optimize, session, wasm, bobyqa, direct) |
-| **Golden fixtures** | 18 scenarios |
+| **Golden fixtures** | 37 expected directories, 13 scenario files |
 
 ### Entries (newest first)
 
+- [Golden Fixtures + Parity Tests](#2026-03-04-cont-golden-fixtures--parity-tests) — 11 fixture sets, 12 Rust parity tests, ToolsDriver + WizardDriver
 - [Tuning Wizard + Reed Validation](#2026-03-04-cont-tuning-wizard--reed-validation) — Scale/Temperament/ScaleSymbolList types, generation, WASM dispatch, validation
 - [Bore Optimizers + Parity Audit](#2026-03-04-cont-bore-optimizers--parity-audit) — Bore constraints, golden fixtures, Brent dispatch, trust radius fix, parity audit
 - [NAF Taper Optimizers + Stale Bore Fix](#2026-03-04-cont-naf-taper-optimizers--stale-bore-point-fix) — SingleTaper 4 variants, TPR-01, BOBYQA chaotic sensitivity
@@ -33,6 +34,58 @@
 - [M3 NAF Calibration + Optimization](#2026-03-02-m3--naf-calibration--optimization-parity) — BOBYQA crate, 139 tests
 - [NAF Bulk Test Coverage](#2026-03-02-expanded-naf-test-coverage-all-oracle-xmls) — 36 combos, 540 fingerings
 - [M4 Browser MVP](#2026-03-02-m4--browser-hosted-mvp-naf-end-to-end)
+
+---
+
+## 2026-03-04 (cont): Golden Fixtures + Parity Tests
+
+Created Java harness drivers and Rust parity tests for all 5 analysis tools + 3 wizard operations.
+
+### Java Harness Drivers
+
+**ToolsDriver.java** — generates golden fixture files for analysis tools:
+- **SUP-NAF/WH/FL/RD** — Supplementary info for all 4 study models. Replicates `SupplementaryInfoTable.buildTable()`: Im(Z) correction, air speed (Strouhal), air flow, gain, Q factor (impedance derivative, DELTA_F=0.0012). Per-model calculator wiring: NAF=NAFCalculator+SimpleInstrumentTuner, Whistle/Flute=WhistleCalculator/FluteCalculator+LinearVInstrumentTuner(5), Reed=SimpleReedCalculator+SimpleInstrumentTuner.
+- **GRAPH-WH** — Graph tuning for Whistle: 17 curves with predicted/fmin/fmax + 33 X/R sweep points each.
+- **SPEC-WH** — Note spectrum for Whistle: 2000 impedance+gain spectrum points with 5 checkpoints.
+- **SKETCH-NAF** — Sketch instrument geometry: bore points, holes, mouthpiece, termination.
+- **CMP-NAF** — Compare instruments: 25 diff rows between original and optimized NAF.
+
+**WizardDriver.java** — generates golden fixture files for wizard operations:
+- **WIZ-SCALE** — 16 notes from 12-TET with A4=440 Hz reference.
+- **WIZ-TUNING** — 14 fingerings from scale+pattern merge.
+- **WIZ-RT** — Round-trip metadata: scale/temperament/pattern properties.
+
+### Key Findings
+
+- **Flute uses SimpleFipple model** (not a separate Embouchure variant): `FluteStudyModel extends WhistleStudyModel`, so both use `MouthpieceModel::SimpleFipple`. The existing LinearV tuner condition already handles Flute correctly.
+- **usePredicted flag**: NAF/Reed show predicted frequencies (usePredicted=true), Whistle/Flute show target frequencies (usePredicted=false).
+- **EmbouchureHole getters return primitives**: No null checks needed on `getHeight()`, `getLength()`, etc.
+
+### Rust Parity Tests (12 new)
+
+All compare session output against Java-generated golden fixtures with appropriate tolerances:
+
+| Test | Fixture | Tolerance |
+|------|---------|-----------|
+| `wiz_scale_matches_golden` | WIZ-SCALE | freq: 1e-6 relative |
+| `wiz_tuning_matches_golden` | WIZ-TUNING | freq: 1e-6 relative |
+| `wiz_roundtrip_matches_golden` | WIZ-RT | exact metadata match |
+| `supplementary_naf_matches_golden` | SUP-NAF | freq: 1e-6, gain: 1e-4, Q: 1e-3 |
+| `supplementary_whistle_matches_golden` | SUP-WH | same tolerances |
+| `supplementary_flute_matches_golden` | SUP-FL | same tolerances |
+| `supplementary_reed_matches_golden` | SUP-RD | same tolerances |
+| `graph_tuning_matches_golden` | GRAPH-WH | freq: 1e-6 relative |
+| `note_spectrum_matches_golden` | SPEC-WH | 5 checkpoint freq/gain: 1e-6 |
+| `sketch_matches_golden` | SKETCH-NAF | exact geometry match |
+| `compare_instruments_matches_golden` | CMP-NAF | exact field/value match |
+
+### Metrics
+
+| Metric | Before | After |
+|--------|--------|-------|
+| Tests | 414 | 425 |
+| Golden expected dirs | 26 | 37 |
+| Java drivers | 10 | 12 |
 
 ---
 

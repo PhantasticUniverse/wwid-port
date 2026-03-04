@@ -22,11 +22,11 @@ Legend:
 | Open/save Constraints XML |        ✅ | CONSTRAINTS-01/02 | M3        | Constraints ordering ABI             |
 | Drag & drop open          |        ✅ | UX-01             | M4        | Web drop zone parity                 |
 | Calculate tuning (table)  |        ✅ | EVAL-*, NAF-BULK-EVAL, WHISTLE-BULK-EVAL, FLUTE-BULK-EVAL | M2/M5.2/M5.3 | NAF: 36 combos; Whistle: 16; Flute: 8 |
-| Graph tuning              |        ✅ | GRAPH-01          | M5        | Curve samples                        |
-| Note spectrum graph       |        ✅ | SPEC-01           | M5        | Curve samples + markers              |
-| Supplementary info table  |        ✅ | SUP-01            | M5        | Numeric outputs                      |
-| Sketch instrument         |        ✅ | SKETCH-01         | M5        | Numeric geometry export              |
-| Compare instruments       |        ✅ | CMP-01            | M5        | Diff summary                         |
+| Graph tuning              |        ✅ | GRAPH-WH          | M5        | 17 curves, 33 X/R sweep points each |
+| Note spectrum graph       |        ✅ | SPEC-WH           | M5        | 2000 impedance+gain points, 5 checkpoints |
+| Supplementary info table  |        ✅ | SUP-NAF/WH/FL/RD  | M5        | All 4 study models, air speed/flow/gain/Q |
+| Sketch instrument         |        ✅ | SKETCH-NAF        | M5        | Bore, holes, mouthpiece, termination |
+| Compare instruments       |        ✅ | CMP-NAF           | M5        | 25 diff rows, original vs optimized  |
 
 ---
 
@@ -107,7 +107,7 @@ Legend:
 | Bore from bottom (merged)    |        ✅ | — | M5        | Position + diameter, 40K evals |
 | Hole + bore (3 merged)       |        ✅ | — | M5        | PRESERVE_BELL mode |
 | Global hole + bore dia       |        ✅ | — | M5        | DIRECT-C→BOBYQA |
-| Reed validity rule           |        ✅ | RD-VAL-01  | M5        | mouthpiece position rule |
+| Reed validity rule           |        ✅ | —          | M5        | mouthpiece pos = bore start (unit test) |
 
 ---
 
@@ -127,11 +127,11 @@ Legend:
 
 | Component                | Baseline | Fixture(s) | Milestone | Notes                |
 | ------------------------ | -------: | ---------- | --------- | -------------------- |
-| Symbol lists             |        ✅ | WIZ-02     | M5        | reusable             |
-| Temperaments             |        ✅ | WIZ-02     | M5        | reusable             |
-| Scales (intervals/freqs) |        ✅ | WIZ-01/02  | M5        | reusable             |
-| Fingering patterns       |        ✅ | WIZ-02     | M5        | reusable             |
-| Final tuning generation  |        ✅ | WIZ-01     | M5        | parity of output XML |
+| Symbol lists             |        ✅ | WIZ-RT     | M5        | scientific_sharps/flats factories    |
+| Temperaments             |        ✅ | WIZ-RT     | M5        | ET + just intonation, XML round-trip |
+| Scales (intervals/freqs) |        ✅ | WIZ-SCALE  | M5        | 16 notes, A4=440 Hz reference        |
+| Fingering patterns       |        ✅ | WIZ-RT     | M5        | Parsed as Tuning with optional freqs |
+| Final tuning generation  |        ✅ | WIZ-TUNING | M5        | 14 fingerings, scale+pattern merge   |
 
 ---
 
