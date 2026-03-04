@@ -4,7 +4,7 @@
 
 | Metric | Value |
 |--------|-------|
-| **Total tests** | 354 |
+| **Total tests** | 414 |
 | **Study models complete** | 4/4 (NAF, Whistle, Flute, Reed) |
 | **Milestones done** | M0–M4 complete, M5 in progress |
 | **Evaluation parity** | ≤ 0.058 cents across 994 fingerings |
@@ -13,6 +13,7 @@
 
 ### Entries (newest first)
 
+- [Tuning Wizard + Reed Validation](#2026-03-04-cont-tuning-wizard--reed-validation) — Scale/Temperament/ScaleSymbolList types, generation, WASM dispatch, validation
 - [Bore Optimizers + Parity Audit](#2026-03-04-cont-bore-optimizers--parity-audit) — Bore constraints, golden fixtures, Brent dispatch, trust radius fix, parity audit
 - [NAF Taper Optimizers + Stale Bore Fix](#2026-03-04-cont-naf-taper-optimizers--stale-bore-point-fix) — SingleTaper 4 variants, TPR-01, BOBYQA chaotic sensitivity
 - [DIRECT-C Stress Test + Golden Fixtures](#2026-03-04-cont-direct-c-global-optimizer--stress-test--golden-fixtures) — 6 bugs fixed, DIRECT-01 fixture
@@ -32,6 +33,44 @@
 - [M3 NAF Calibration + Optimization](#2026-03-02-m3--naf-calibration--optimization-parity) — BOBYQA crate, 139 tests
 - [NAF Bulk Test Coverage](#2026-03-02-expanded-naf-test-coverage-all-oracle-xmls) — 36 combos, 540 fingerings
 - [M4 Browser MVP](#2026-03-02-m4--browser-hosted-mvp-naf-end-to-end)
+
+---
+
+## 2026-03-04 (cont): Tuning Wizard + Reed Validation
+
+### Wizard Types (wid-types)
+
+Added three new domain types matching Java's `com.wwidesigner.note` package:
+- **Scale** — named collection of notes with frequencies. XML root: `<scale>`.
+- **Temperament** — frequency ratios for interval definitions. Factories: `equal_temperament_12()` (37 ratios, 3 octaves) and `just_intonation_12()` (5-limit + 7/5 tritone).
+- **ScaleSymbolList** — note naming systems. Factories: `scientific_sharps()` and `scientific_flats()`.
+
+FingeringPattern shares Tuning's type but has no `<note>` elements. Made `Note` implement `Default` and `Fingering.note` use `#[serde(default)]` so fingeringPattern XML parses cleanly.
+
+### Scale Generation
+
+Two pure functions matching Java wizard behavior:
+- `scale_from_temperament(temp, symbols, ref_name, ref_freq, name)` — multiplier = ref_freq / ratio[ref_index], freq[i] = ratio[i] * multiplier
+- `tuning_from_scale_and_pattern(scale, pattern, name)` — assigns scale frequencies to pattern fingerings by position
+
+### Root Element Detection
+
+Discovered that `quick_xml::de::from_str` does NOT enforce the `#[serde(rename)]` root element name. A `<fingeringPattern>` XML would successfully deserialize as `Tuning`. Fixed by adding `detect_root_element()` that inspects the XML string before routing to the correct parser.
+
+### Reed Validation
+
+Implemented `validate_instrument_geometry()` matching Java's `Mouthpiece.checkValidity()`:
+- Reed instruments: mouthpiece position must equal first bore position (±0.0001m)
+- Fipple/embouchure: position >= first bore AND < last bore
+- Holes must fall within bore range
+
+### WASM Dispatch
+
+14 new commands: `generate_scale`, `generate_tuning`, `validate_instrument`, `list_scales`, `list_temperaments`, `list_scale_symbol_lists`, `list_fingering_patterns`, `get_scale`, `get_temperament`, `get_scale_symbol_list`.
+
+### Test Results
+
+414 tests pass (was 392). 22 new tests across wid-types (10) and wid-session (12+).
 
 ---
 
