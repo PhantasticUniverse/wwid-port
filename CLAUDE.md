@@ -122,6 +122,7 @@ Constraints XML lower/upper bound arrays must match baseline ordering exactly �
   - M5.1: Study model infrastructure refactor ✓
   - M5.2: Whistle evaluation parity ✓
   - M5.3: Flute evaluation parity ✓
+  - M5.4: Whistle calibration + optimization parity ✓
 
 ## Temperature Default
 

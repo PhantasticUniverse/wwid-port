@@ -1,5 +1,46 @@
 # Development Log
 
+## 2026-03-04: M5.4 — Whistle Calibration + Optimization
+
+Complete Whistle calibration and optimization pipeline. All three calibrators (WindowHeight, Beta, joint) and all three hole optimizers (HoleSize, HolePosition, HoleCombined) match Java oracle golden fixtures.
+
+### Calibrators
+
+1. **WindowHeightObjectiveFunction** (1D Brent) — calibrates mouthpiece window height using FmaxEvaluator error vector. FeadogMk1: WH 0.0029 → 0.00246
+2. **BetaObjectiveFunction** (1D Brent) — calibrates mouthpiece beta using FminEvaluator error vector. FeadogMk1: beta 0.522 → 0.510
+3. **WhistleCalibrationObjectiveFunction** (2D BOBYQA) — joint calibration using FminmaxEvaluator (FMAX_WEIGHT=4.0, FMIN_WEIGHT=1.0). FeadogMk1: WH+beta jointly optimized
+
+### Hole Optimizers
+
+4. **HoleSizeObjectiveFunction** — N-dim BOBYQA for hole diameters. SamplePVC-Whistle: norm 15900 → 5661
+5. **HolePositionObjectiveFunction** — (N+1)-dim BOBYQA for bore length + inter-hole spacings with PRESERVE_TAPER. Norm 15900 → 4604
+6. **HoleObjectiveFunction** — (2N+1)-dim merged BOBYQA. Norm 15900 → 1899
+
+### New evaluator infrastructure
+
+- `calculate_fmax_error_vector()` — cents(target.frequencyMax, predicted fmax) per fingering
+- `calculate_fmin_error_vector()` — cents(target.frequencyMin, predicted fmin) per fingering
+- `calculate_fminmax_error_vector()` — RMS of weighted fmax + fmin errors
+
+### Bug fix: HolePosition geometry ordering
+
+`get_hole_geometry_position()` used `push()` which produced bottom-to-top spacing order, but Java uses indexed `geometry[i+1]` which produces top-to-bottom order. Fixed to use indexed assignment, matching Java's `HolePositionObjectiveFunction.getGeometryPoint()`.
+
+### Session integration
+
+- `wid-session/src/whistle.rs` — optimizer registry (6 optimizers), constraint template generation
+- CalibResult extended with optional window_height/beta fields (supports NAF fipple + Whistle calibration)
+- Dispatch for calibrate/optimize/create_constraints by StudyKind::Whistle
+
+### Bobyqa crate name shadowing fix
+
+Rust 2024 edition couldn't resolve `use bobyqa::X` inside a module also named `bobyqa`. Fixed by renaming the Cargo dependency: `bobyqa_impl = { package = "bobyqa", path = "../bobyqa" }`.
+
+### Test results
+- 217 total tests, all passing (up from 198)
+- 16 new Whistle optimization tests (3 calibrator + 6 hole optimizer + 7 evaluator/geometry)
+- Golden fixtures: 6 new (WH-CAL/3 + WH-OPT/3)
+
 ## 2026-03-02: M5.3 — Flute Evaluation Parity
 
 Flute (transverse) evaluation matches Java oracle within 0.058 cents across 110 fingerings (8 combos). This was the smallest evaluation milestone because Flute reuses virtually everything from Whistle — same tuner (LinearV), same termination (unflanged), same hole calculator, identical `CalculatorParams`.

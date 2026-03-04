@@ -243,6 +243,172 @@ pub fn set_fipple_factor(raw: &mut InstrumentRaw, value: f64) {
     }
 }
 
+/// Read the window height from a raw instrument (in metres).
+///
+/// For fipple instruments: returns `fipple.window_height * length_unit`.
+/// For embouchure hole instruments: returns `embouchure_hole.height * length_unit`.
+pub fn get_window_height(raw: &InstrumentRaw) -> Option<f64> {
+    let m = raw.length_type.to_metres();
+    if let Some(ref fipple) = raw.mouthpiece.fipple {
+        return fipple.window_height.map(|h| h * m);
+    }
+    if let Some(ref emb) = raw.mouthpiece.embouchure_hole {
+        return Some(emb.height * m);
+    }
+    None
+}
+
+/// Set the window height on a raw instrument (value in metres).
+///
+/// For fipple instruments: sets `fipple.window_height`.
+/// For embouchure hole instruments: sets `embouchure_hole.height`.
+pub fn set_window_height(raw: &mut InstrumentRaw, value_metres: f64) {
+    let m = raw.length_type.to_metres();
+    if let Some(ref mut fipple) = raw.mouthpiece.fipple {
+        fipple.window_height = Some(value_metres / m);
+    } else if let Some(ref mut emb) = raw.mouthpiece.embouchure_hole {
+        emb.height = value_metres / m;
+    }
+}
+
+/// Read the mouthpiece beta factor from a raw instrument.
+pub fn get_beta(raw: &InstrumentRaw) -> Option<f64> {
+    raw.mouthpiece.beta
+}
+
+/// Set the mouthpiece beta factor on a raw instrument.
+pub fn set_beta(raw: &mut InstrumentRaw, value: f64) {
+    raw.mouthpiece.beta = Some(value);
+}
+
+/// Extract hole diameters sorted by bore position ascending (in metres).
+///
+/// Returns N diameters for N holes, matching Java `HoleSizeObjectiveFunction.getGeometryPoint()`.
+pub fn get_hole_diameters(raw: &InstrumentRaw) -> Vec<f64> {
+    let m = raw.length_type.to_metres();
+    let mut sorted: Vec<(f64, f64)> = raw
+        .holes
+        .iter()
+        .map(|h| (h.bore_position * m, h.diameter * m))
+        .collect();
+    sorted.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
+    sorted.iter().map(|&(_, d)| d).collect()
+}
+
+/// Set hole diameters from a vector sorted by bore position ascending (in metres).
+pub fn set_hole_diameters(raw: &mut InstrumentRaw, diameters: &[f64]) {
+    let m = raw.length_type.to_metres();
+    let n_holes = raw.holes.len();
+    let mut hole_order: Vec<usize> = (0..n_holes).collect();
+    hole_order.sort_by(|&a, &b| {
+        raw.holes[a]
+            .bore_position
+            .partial_cmp(&raw.holes[b].bore_position)
+            .unwrap()
+    });
+    for (i, &idx) in hole_order.iter().enumerate() {
+        if i < diameters.len() {
+            raw.holes[idx].diameter = diameters[i] / m;
+        }
+    }
+}
+
+/// Extract HolePosition geometry vector (in metres).
+///
+/// Matches Java `HolePositionObjectiveFunction.getGeometryPoint()`:
+/// ```text
+/// geometry[0]   = end of bore position
+/// geometry[1]   = spacing: last_hole → bore_end
+/// geometry[2]   = spacing: second_to_last → last_hole
+/// ...
+/// geometry[N]   = spacing: first_hole → second_hole
+/// ```
+///
+/// Holes are sorted by bore position ascending. The loop iterates from
+/// last hole (farthest from mouthpiece) backward.
+pub fn get_hole_geometry_position(raw: &InstrumentRaw) -> Vec<f64> {
+    let m = raw.length_type.to_metres();
+    let n_holes = raw.holes.len();
+
+    // Sort holes by bore position ascending
+    let mut sorted_positions: Vec<f64> = raw
+        .holes
+        .iter()
+        .map(|h| h.bore_position * m)
+        .collect();
+    sorted_positions.sort_by(|a, b| a.partial_cmp(b).unwrap());
+
+    // Bore end = max bore point position
+    let bore_end = raw
+        .bore_points
+        .iter()
+        .map(|bp| bp.bore_position * m)
+        .fold(f64::NEG_INFINITY, f64::max);
+
+    let mut geometry = vec![0.0; n_holes + 1];
+
+    // [0] bore end position
+    geometry[0] = bore_end;
+
+    // [1..N] spacings indexed by hole (matching Java HolePositionObjectiveFunction):
+    // geometry[i+1] = prior_position - sorted_holes[i].position
+    // Loop from bottom (i=n-1) to top (i=0), building spacings between
+    // consecutive holes, ending with top-to-second-from-top.
+    //
+    // Result: geometry[1] = top-to-second spacing, ..., geometry[N] = bottom-to-bore-end
+    let mut prior_pos = bore_end;
+    for i in (0..n_holes).rev() {
+        geometry[i + 1] = prior_pos - sorted_positions[i];
+        prior_pos = sorted_positions[i];
+    }
+
+    geometry
+}
+
+/// Apply a HolePosition geometry vector (in metres) to a raw instrument.
+///
+/// Reverse of [`get_hole_geometry_position`]. Also adjusts the bore end
+/// position with PRESERVE_TAPER semantics (interpolating/extrapolating
+/// the bore diameter at the new end position).
+pub fn set_hole_geometry_position(raw: &mut InstrumentRaw, geometry: &[f64]) {
+    let m = raw.length_type.to_metres();
+    let n_holes = raw.holes.len();
+
+    // Sort hole indices by bore position ascending
+    let mut hole_order: Vec<usize> = (0..n_holes).collect();
+    hole_order.sort_by(|&a, &b| {
+        raw.holes[a]
+            .bore_position
+            .partial_cmp(&raw.holes[b].bore_position)
+            .unwrap()
+    });
+
+    // [0] bore end — update last bore point with PRESERVE_TAPER
+    let new_bore_end = geometry[0];
+    let new_dia = interpolate_bore_diameter(&raw.bore_points, new_bore_end, m);
+    if let Some(last_bp) = raw
+        .bore_points
+        .iter_mut()
+        .max_by(|a, b| a.bore_position.partial_cmp(&b.bore_position).unwrap())
+    {
+        last_bp.bore_position = new_bore_end / m;
+        if let Some(dia) = new_dia {
+            last_bp.bore_diameter = dia / m;
+        }
+    }
+
+    // Reconstruct hole positions from spacings (working bottom-up)
+    // geometry[1] = bore_end - last_hole
+    // geometry[2] = last_hole - second_to_last
+    // ...
+    let mut prior_pos = new_bore_end;
+    for i in (0..n_holes).rev() {
+        let hole_pos = prior_pos - geometry[i + 1];
+        raw.holes[hole_order[i]].bore_position = hole_pos / m;
+        prior_pos = hole_pos;
+    }
+}
+
 /// Extract the HoleFromTop geometry vector from a raw instrument (in metres).
 ///
 /// Returns `[bore_end, top_hole_fraction, spacing_1..N-1, diameter_0..N-1]`

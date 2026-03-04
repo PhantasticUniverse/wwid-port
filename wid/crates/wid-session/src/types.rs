@@ -65,11 +65,27 @@ pub struct OptimizeResult {
     pub evaluations: usize,
 }
 
-/// Result of fipple factor calibration.
+/// Result of a calibration run.
+///
+/// Fields are optional to support different calibration types:
+/// - NAF fipple: `fipple_factor` fields set
+/// - Whistle window height: `window_height` fields set
+/// - Whistle beta: `beta` fields set
+/// - Whistle joint: both `window_height` and `beta` set
 #[derive(Debug, Clone, Serialize)]
 pub struct CalibResult {
-    pub initial_fipple_factor: f64,
-    pub final_fipple_factor: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub initial_fipple_factor: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub final_fipple_factor: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub initial_window_height: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub final_window_height: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub initial_beta: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub final_beta: Option<f64>,
     pub initial_norm: f64,
     pub final_norm: f64,
 }

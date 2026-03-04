@@ -47,10 +47,12 @@ Legend:
 | Feature / Optimizer     | Baseline | Fixture(s)  | Milestone | Notes                       |
 | ----------------------- | -------: | ----------- | --------- | --------------------------- |
 | Evaluation parity       |        ✅ | WHISTLE-BULK-EVAL, WH-ZSAMPLE | M5.2 | 2 instruments × 8 tunings = 16 combos, 272 fingerings |
-| Whistle calibrator      |        ✅ | WH-CAL-01   | M5        | min/max evaluator           |
-| Hole size               |        ✅ | WH-HS-01    | M5        |                             |
-| Hole spacing            |        ✅ | WH-SP-01    | M5        |                             |
-| Hole size + spacing     |        ✅ | WH-HSSP-01  | M5        |                             |
+| Window height calibrator|        ✅ | WH-CAL/calib_window_height | M5.4 | 1D Brent, FmaxEvaluator |
+| Beta calibrator         |        ✅ | WH-CAL/calib_beta | M5.4 | 1D Brent, FminEvaluator |
+| Joint calibrator        |        ✅ | WH-CAL/calib_joint | M5.4 | 2D BOBYQA, FminmaxEvaluator |
+| Hole size               |        ✅ | WH-OPT/opt_hole_size | M5.4 | N-dim BOBYQA |
+| Hole position           |        ✅ | WH-OPT/opt_hole_position | M5.4 | (N+1)-dim BOBYQA |
+| Hole size + position    |        ✅ | WH-OPT/opt_hole | M5.4 | (2N+1)-dim merged BOBYQA |
 | Taper / bore optimizers |        ✅ | WH-TAPER-01 | M5        | Naming rules like Head/Body |
 
 ---

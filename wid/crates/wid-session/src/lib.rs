@@ -28,6 +28,7 @@
 pub mod doc_store;
 pub mod naf;
 pub mod types;
+pub mod whistle;
 
 use bobyqa::BobyqaProgress;
 use doc_store::{DocContent, DocStore};
@@ -255,6 +256,16 @@ impl StudySession {
                 }
                 self.selection.constraints_id.is_some()
             }
+            StudyKind::Whistle => {
+                if !whistle::is_valid_optimizer(key) {
+                    return false;
+                }
+                // Calibrators don't require constraints
+                if whistle::is_calibrator(key) {
+                    return true;
+                }
+                self.selection.constraints_id.is_some()
+            }
             _ => false, // Other study models not yet implemented
         }
     }
@@ -273,6 +284,7 @@ impl StudySession {
     pub fn available_optimizers(&self) -> Vec<OptimizerInfo> {
         match self.study_kind {
             StudyKind::NAF => naf::available_optimizers(),
+            StudyKind::Whistle => whistle::available_optimizers(),
             _ => Vec::new(),
         }
     }
@@ -369,56 +381,65 @@ impl StudySession {
 
     // ── Calibrate fipple factor ─────────────────────────────────────
 
-    /// Calibrate the fipple factor using the selected instrument and tuning.
+    /// Calibrate mouthpiece parameters using the selected instrument and tuning.
     ///
-    /// Modifies the instrument in place. Uses only the lowest-frequency
-    /// fingering, matching the Java FippleFactorObjectiveFunction.
+    /// Modifies the instrument in place.
+    /// - NAF: calibrates fipple factor (lowest fingering only)
+    /// - Whistle: calibrates window height, beta, or both (all fingerings)
     pub fn calibrate(&mut self) -> Result<CalibResult, SessionError> {
         let inst_id = self.selection.instrument_id
             .ok_or(SessionError::MissingSelection("instrument"))?;
         let tun_id = self.selection.tuning_id
             .ok_or(SessionError::MissingSelection("tuning"))?;
+        let optimizer_key = self.selection.optimizer_key.clone()
+            .ok_or(SessionError::MissingSelection("optimizer"))?;
 
         // Clone tuning first (before mutable borrow of instrument)
         let tuning = self.docs.get_tuning(tun_id)
             .ok_or(SessionError::DocNotFound(tun_id))?
             .clone();
 
-        // Get bounds from constraints if available, otherwise use defaults
-        let (lower, upper) = if let Some(c_id) = self.selection.constraints_id {
-            if let Some(c) = self.docs.get_constraints(c_id) {
-                let lb = c.lower_bounds();
-                let ub = c.upper_bounds();
-                if !lb.is_empty() && lb[0] > 0.0 {
-                    (lb[0], ub[0])
-                } else {
-                    (wid_optimize::fipple::DEFAULT_FF_LOWER, wid_optimize::fipple::DEFAULT_FF_UPPER)
-                }
-            } else {
-                (wid_optimize::fipple::DEFAULT_FF_LOWER, wid_optimize::fipple::DEFAULT_FF_UPPER)
-            }
+        // Get bounds from constraints if available
+        let constraint_bounds = if let Some(c_id) = self.selection.constraints_id {
+            self.docs.get_constraints(c_id).map(|c| {
+                (c.lower_bounds(), c.upper_bounds())
+            })
         } else {
-            (wid_optimize::fipple::DEFAULT_FF_LOWER, wid_optimize::fipple::DEFAULT_FF_UPPER)
+            None
         };
 
         let inst = self.docs.get_instrument_mut(inst_id)
             .ok_or(SessionError::DocNotFound(inst_id))?;
 
-        let result = wid_optimize::fipple::calibrate_fipple(
-            inst,
-            &tuning,
-            &self.params,
-            lower,
-            upper,
-            &self.calc_params,
-        );
+        match self.study_kind {
+            StudyKind::NAF => {
+                let (lower, upper) = match &constraint_bounds {
+                    Some((lb, ub)) if !lb.is_empty() && lb[0] > 0.0 => (lb[0], ub[0]),
+                    _ => (wid_optimize::fipple::DEFAULT_FF_LOWER, wid_optimize::fipple::DEFAULT_FF_UPPER),
+                };
 
-        Ok(CalibResult {
-            initial_fipple_factor: result.initial_fipple_factor,
-            final_fipple_factor: result.final_fipple_factor,
-            initial_norm: result.initial_norm,
-            final_norm: result.final_norm,
-        })
+                let result = wid_optimize::fipple::calibrate_fipple(
+                    inst, &tuning, &self.params, lower, upper, &self.calc_params,
+                );
+
+                Ok(CalibResult {
+                    initial_fipple_factor: Some(result.initial_fipple_factor),
+                    final_fipple_factor: Some(result.final_fipple_factor),
+                    initial_window_height: None,
+                    final_window_height: None,
+                    initial_beta: None,
+                    final_beta: None,
+                    initial_norm: result.initial_norm,
+                    final_norm: result.final_norm,
+                })
+            }
+            StudyKind::Whistle => {
+                calibrate_whistle_impl(inst, &tuning, &self.params, &self.calc_params, &optimizer_key, &constraint_bounds)
+            }
+            _ => Err(SessionError::CannotOptimize(
+                format!("Calibration not implemented for {:?}", self.study_kind),
+            )),
+        }
     }
 
     // ── Optimize holes ──────────────────────────────────────────────
@@ -440,9 +461,15 @@ impl StudySession {
         let constraints_id = self.selection.constraints_id
             .ok_or(SessionError::MissingSelection("constraints"))?;
 
-        if self.study_kind == StudyKind::NAF && naf::is_fipple_optimizer(&optimizer_key) {
+        // Calibrators should use calibrate(), not optimize()
+        let is_calibrator = match self.study_kind {
+            StudyKind::NAF => naf::is_fipple_optimizer(&optimizer_key),
+            StudyKind::Whistle => whistle::is_calibrator(&optimizer_key),
+            _ => false,
+        };
+        if is_calibrator {
             return Err(SessionError::CannotOptimize(
-                "Use calibrate() for fipple factor optimization".to_string(),
+                "Use calibrate() for calibration-type optimizers".to_string(),
             ));
         }
 
@@ -466,14 +493,42 @@ impl StudySession {
             })
         };
 
-        let result = wid_optimize::hole_from_top::optimize_holes_with_progress(
-            &mut work_inst,
-            &tuning,
-            &constraints,
-            &self.params,
-            &self.calc_params,
-            &mut progress_adapter,
-        );
+        let result = match self.study_kind {
+            StudyKind::NAF => {
+                wid_optimize::hole_from_top::optimize_holes_with_progress(
+                    &mut work_inst, &tuning, &constraints, &self.params,
+                    &self.calc_params, &mut progress_adapter,
+                )
+            }
+            StudyKind::Whistle => {
+                match optimizer_key.as_str() {
+                    whistle::HOLE_SIZE => {
+                        wid_optimize::hole_size::optimize_hole_size_with_progress(
+                            &mut work_inst, &tuning, &constraints, &self.params,
+                            &self.calc_params, &mut progress_adapter,
+                        )
+                    }
+                    whistle::HOLE_POSITION => {
+                        wid_optimize::hole_position::optimize_hole_position_with_progress(
+                            &mut work_inst, &tuning, &constraints, &self.params,
+                            &self.calc_params, &mut progress_adapter,
+                        )
+                    }
+                    whistle::HOLE => {
+                        wid_optimize::hole_combined::optimize_holes_combined_with_progress(
+                            &mut work_inst, &tuning, &constraints, &self.params,
+                            &self.calc_params, &mut progress_adapter,
+                        )
+                    }
+                    _ => return Err(SessionError::CannotOptimize(
+                        format!("Unknown Whistle optimizer: {}", optimizer_key),
+                    )),
+                }
+            }
+            _ => return Err(SessionError::CannotOptimize(
+                format!("Optimization not implemented for {:?}", self.study_kind),
+            )),
+        };
 
         // Store optimized instrument as a new document
         let name = format!("Untitled {}", self.next_untitled);
@@ -510,6 +565,7 @@ impl StudySession {
         let n_holes = self.instrument_hole_count()?;
         let constraints = match self.study_kind {
             StudyKind::NAF => naf::create_default_constraints(optimizer_key, n_holes),
+            StudyKind::Whistle => whistle::create_default_constraints(optimizer_key, n_holes),
             _ => return Err(SessionError::CannotOptimize(
                 format!("Constraints not yet implemented for {:?}", self.study_kind),
             )),
@@ -535,6 +591,7 @@ impl StudySession {
         let n_holes = self.instrument_hole_count()?;
         let constraints = match self.study_kind {
             StudyKind::NAF => naf::create_blank_constraints(optimizer_key, n_holes),
+            StudyKind::Whistle => whistle::create_blank_constraints(optimizer_key, n_holes),
             _ => return Err(SessionError::CannotOptimize(
                 format!("Constraints not yet implemented for {:?}", self.study_kind),
             )),
@@ -645,6 +702,74 @@ impl StudySession {
         let inst = self.docs.get_instrument(inst_id)
             .ok_or(SessionError::DocNotFound(inst_id))?;
         Ok(inst.holes.len() as u32)
+    }
+}
+
+// ── Whistle calibration dispatch ────────────────────────────────────
+
+fn calibrate_whistle_impl(
+    inst: &mut InstrumentRaw,
+    tuning: &Tuning,
+    params: &PhysicalParameters,
+    calc_params: &CalculatorParams,
+    optimizer_key: &str,
+    constraint_bounds: &Option<(Vec<f64>, Vec<f64>)>,
+) -> Result<CalibResult, SessionError> {
+    match optimizer_key {
+        whistle::WINDOW_HEIGHT => {
+            let (lower, upper) = match constraint_bounds {
+                Some((lb, ub)) if !lb.is_empty() && lb[0] > 0.0 => (lb[0], ub[0]),
+                _ => (wid_optimize::window_height::DEFAULT_WH_LOWER, wid_optimize::window_height::DEFAULT_WH_UPPER),
+            };
+            let result = wid_optimize::window_height::calibrate_window_height(
+                inst, tuning, params, lower, upper, calc_params,
+            );
+            Ok(CalibResult {
+                initial_fipple_factor: None, final_fipple_factor: None,
+                initial_window_height: result.initial_window_height,
+                final_window_height: result.final_window_height,
+                initial_beta: None, final_beta: None,
+                initial_norm: result.initial_norm, final_norm: result.final_norm,
+            })
+        }
+        whistle::BETA => {
+            let (lower, upper) = match constraint_bounds {
+                Some((lb, ub)) if !lb.is_empty() && lb[0] > 0.0 => (lb[0], ub[0]),
+                _ => (wid_optimize::beta::DEFAULT_BETA_LOWER, wid_optimize::beta::DEFAULT_BETA_UPPER),
+            };
+            let result = wid_optimize::beta::calibrate_beta(
+                inst, tuning, params, lower, upper, calc_params,
+            );
+            Ok(CalibResult {
+                initial_fipple_factor: None, final_fipple_factor: None,
+                initial_window_height: None, final_window_height: None,
+                initial_beta: result.initial_beta, final_beta: result.final_beta,
+                initial_norm: result.initial_norm, final_norm: result.final_norm,
+            })
+        }
+        whistle::WHISTLE_CALIB => {
+            let wh_bounds = match constraint_bounds {
+                Some((lb, ub)) if !lb.is_empty() && lb[0] > 0.0 => (lb[0], ub[0]),
+                _ => (wid_optimize::window_height::DEFAULT_WH_LOWER, wid_optimize::window_height::DEFAULT_WH_UPPER),
+            };
+            let beta_bounds = match constraint_bounds {
+                Some((lb, ub)) if lb.len() > 1 && lb[1] > 0.0 => (lb[1], ub[1]),
+                _ => (wid_optimize::beta::DEFAULT_BETA_LOWER, wid_optimize::beta::DEFAULT_BETA_UPPER),
+            };
+            let result = wid_optimize::whistle_calib::calibrate_whistle(
+                inst, tuning, params, wh_bounds, beta_bounds, calc_params,
+            );
+            Ok(CalibResult {
+                initial_fipple_factor: None, final_fipple_factor: None,
+                initial_window_height: result.initial_window_height,
+                final_window_height: result.final_window_height,
+                initial_beta: result.initial_beta, final_beta: result.final_beta,
+                initial_norm: result.initial_norm, final_norm: result.final_norm,
+            })
+        }
+        _ => Err(SessionError::CannotOptimize(
+            format!("Unknown Whistle calibrator: {}", optimizer_key),
+        )),
     }
 }
 

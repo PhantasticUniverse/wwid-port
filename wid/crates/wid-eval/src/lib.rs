@@ -11,6 +11,7 @@
 
 mod brent;
 pub mod calculator_params;
+pub mod evaluators;
 pub mod linear_v;
 
 pub use calculator_params::CalculatorParams;

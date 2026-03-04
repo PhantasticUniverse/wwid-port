@@ -1,0 +1,7 @@
+{
+  "optimizer" : "WindowHeightObjectiveFunction",
+  "initial_window_height" : 0.0029,
+  "final_window_height" : 0.00245802722837824,
+  "initial_norm" : 1979.3508870977525,
+  "final_norm" : 1639.3462863942636
+}

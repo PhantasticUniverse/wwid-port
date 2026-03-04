@@ -243,7 +243,7 @@ fn compute_velocity_at_note(
 // ── Playing range helpers ───────────────────────────────────────────
 
 /// Find the reactance zero (fmax) near a target frequency for a specific fingering.
-fn find_x_zero_for_fingering(
+pub fn find_x_zero_for_fingering(
     instrument: &InstrumentCompiled,
     fingering: &Fingering,
     params: &PhysicalParameters,
@@ -273,7 +273,7 @@ fn calc_gain(gain_factor: Option<f64>, freq: f64, z: Complex64, rho: f64) -> f64
 /// - fmin is a local minimum of Im(Z)/Re(Z).
 ///
 /// Matches the Java `PlayingRange.findFmin()` behavior including gain check.
-fn find_fmin(
+pub fn find_fmin(
     instrument: &InstrumentCompiled,
     fingering: &Fingering,
     params: &PhysicalParameters,

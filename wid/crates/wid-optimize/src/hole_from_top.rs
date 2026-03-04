@@ -26,7 +26,7 @@
 //! - Stopping trust region radius: 1e-8
 //! - Max evaluations: `20000 + (n_dims - 1) * 5000`
 
-use bobyqa::{BobyqaProgress, bobyqa_minimize, bobyqa_minimize_with_callback};
+use bobyqa_impl::{BobyqaProgress, bobyqa_minimize, bobyqa_minimize_with_callback};
 use wid_compile::{compile, get_hole_geometry_from_top, set_hole_geometry_from_top};
 use wid_eval::{CalculatorParams, calculate_error_vector};
 use wid_physics::PhysicalParameters;

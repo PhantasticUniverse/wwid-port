@@ -1,0 +1,9 @@
+{
+  "optimizer" : "WhistleCalibrationObjectiveFunction",
+  "initial_window_height" : 0.0029,
+  "final_window_height" : 0.002460124433667274,
+  "initial_beta" : 0.522,
+  "final_beta" : 0.5182118511250104,
+  "initial_norm" : 39125.90968943595,
+  "final_norm" : 33390.32121843042
+}

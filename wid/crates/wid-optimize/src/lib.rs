@@ -7,10 +7,15 @@
 //! - Hole geometry optimization (`hole_from_top`)
 //! - Weighted norm calculation (`calc_norm`)
 
-pub mod bobyqa;
+pub mod beta;
 pub mod brent_min;
 pub mod fipple;
+pub mod hole_combined;
 pub mod hole_from_top;
+pub mod hole_position;
+pub mod hole_size;
+pub mod whistle_calib;
+pub mod window_height;
 
 /// Compute the weighted L2 norm (sum of weighted squared errors).
 ///
@@ -41,6 +46,17 @@ pub fn fingering_weights(fingerings: &[wid_types::Fingering]) -> Vec<i32> {
 pub struct CalibrationResult {
     pub initial_fipple_factor: f64,
     pub final_fipple_factor: f64,
+    pub initial_norm: f64,
+    pub final_norm: f64,
+}
+
+/// Result of a whistle mouthpiece calibration (window height, beta, or both).
+#[derive(Debug, Clone)]
+pub struct WhistleCalibrationResult {
+    pub initial_window_height: Option<f64>,
+    pub final_window_height: Option<f64>,
+    pub initial_beta: Option<f64>,
+    pub final_beta: Option<f64>,
     pub initial_norm: f64,
     pub final_norm: f64,
 }
