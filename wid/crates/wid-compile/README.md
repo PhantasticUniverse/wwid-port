@@ -12,12 +12,15 @@ Converts `InstrumentRaw` (from XML) into `InstrumentCompiled` — a component ch
 | `BoreSection` | Length + left/right radius (metres) |
 | `CompiledHole` | Position, diameter, height, interpolated bore diameter |
 | `CompiledMouthpiece` | Position, bore diameter, headspace sections, type |
-| `MouthpieceType` | `Fipple { ... }` or `EmbouchureHole { ... }` |
+| `MouthpieceType` | `Fipple { ... }`, `EmbouchureHole { ... }`, or `SimpleReed { alpha, is_lip_reed }` |
 | `CompiledTermination` | Flange diameter, bore diameter, position |
 | `get_hole_geometry_from_top()` | Extract geometry vector (metres) for HoleFromTop optimizer |
 | `set_hole_geometry_from_top()` | Apply geometry vector to `InstrumentRaw` |
 | `get_fipple_factor()` | Read fipple factor from instrument |
 | `set_fipple_factor()` | Write fipple factor on instrument |
+| `get_beta()` / `set_beta()` | Read/write mouthpiece beta factor |
+| `get_window_height()` / `set_window_height()` | Read/write fipple window height |
+| `get_airstream_length()` / `set_airstream_length()` | Read/write embouchure hole airstream length |
 
 ## Dependencies
 

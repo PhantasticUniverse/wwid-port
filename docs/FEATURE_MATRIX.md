@@ -53,6 +53,8 @@ Legend:
 | Hole size               |        ✅ | WH-OPT/opt_hole_size | M5.4 | N-dim BOBYQA |
 | Hole position           |        ✅ | WH-OPT/opt_hole_position | M5.4 | (N+1)-dim BOBYQA |
 | Hole size + position    |        ✅ | WH-OPT/opt_hole | M5.4 | (2N+1)-dim merged BOBYQA |
+| Hole spacing (global)   |        ✅ | —            | M5        | DIRECT-C→BOBYQA, session dispatched |
+| Hole size+spacing (global)|      ✅ | —            | M5        | DIRECT-C→BOBYQA, session dispatched |
 | Taper / bore optimizers |        ✅ | WH-TAPER-01 | M5        | Naming rules like Head/Body |
 
 ---
@@ -82,6 +84,7 @@ Legend:
 | Hole size                    |        ✅ | — | M5.7 | N-dim BOBYQA (reused from Whistle) |
 | Hole position                |        ✅ | — | M5.7 | (N+1)-dim BOBYQA (reused from Whistle) |
 | Hole size + position         |        ✅ | — | M5.7 | (2N+1)-dim merged BOBYQA (reused from Whistle) |
+| Hole size+spacing (global)   |        ✅ | — | M5        | DIRECT-C→BOBYQA, session dispatched |
 | Bore optimizers (5)          |        ✅ | — | M5        | Deferred |
 | Reed validity rule           |        ✅ | RD-VAL-01  | M5        | mouthpiece position rule |
 
@@ -93,8 +96,8 @@ Legend:
 | ---------------------- | -------: | ---------- | --------- | -------------- |
 | Brent (1D)             |        ✅ | NAF-FF-02  | M3        |                |
 | BOBYQA (bounded local) |        ✅ | NAF-OPT-01 | M3        | high fidelity  |
-| DIRECT-C + refine      |        ✅ | DIRECT-01  | M5        | match baseline |
-| Multi-start            |        ✅ | MS-01      | M5        | seeded         |
+| DIRECT-C + refine      |        ✅ | DIRECT-01  | M5        | Engine done; golden fixture pending |
+| Multi-start            |        ✅ | MS-01      | M5        | Engine done; golden fixture pending |
 | Two-stage multi-start  |        ✅ | MS-02      | M5        | seeded         |
 
 ---

@@ -1,6 +1,6 @@
 # wid-eval
 
-Top-level impedance evaluation pipeline: computes input impedance, finds playing frequencies, and produces cents deviations for each fingering. Supports NAF, Whistle, and Flute study models.
+Top-level impedance evaluation pipeline: computes input impedance, finds playing frequencies, and produces cents deviations for each fingering. Supports NAF, Whistle, Flute, and Reed study models.
 
 ## Public API
 
@@ -22,8 +22,11 @@ Study model parameters that control the impedance pipeline:
 | `NAF` | 0.9605 | 0.0 | ThickFlanged | DefaultFipple | — |
 | `WHISTLE` | 1.0 | 0.010 | Unflanged | SimpleFipple | 5 |
 | `FLUTE` | 1.0 | 0.010 | Unflanged | SimpleFipple | 5 |
+| `REED` | 1.0 | 0.010 | Unflanged | SimpleReed | — |
 
 `FLUTE` is identical to `WHISTLE` — `FluteStudyModel extends WhistleStudyModel` in the Java baseline. The mouthpiece difference (EmbouchureHole vs Fipple) is handled internally by `simple_fipple` parameter extraction.
+
+`REED` uses `SimpleInstrumentTuner` (standard reactance-zero search, same as NAF), NOT the LinearV tuner. `finger_adjustment=0.010` matches Java's `DefaultHoleCalculator()` no-arg constructor default.
 
 ## Tuner models
 
@@ -56,7 +59,7 @@ Bracket search + Brent-Dekker solver for Im(Z) = 0 crossings. Bracket preference
 
 ## Tests
 
-12 unit tests + 14 integration tests:
+12 unit tests + 19 integration tests:
 
 **Unit tests**: Brent solver (5), calculator params (2), Z-samples (1), evaluation (1), error vector (1), cents utility (2).
 
@@ -66,3 +69,5 @@ Bracket search + Brent-Dekker solver for Im(Z) = 0 crossings. Bracket preference
 - `whistle_z_sample.rs` (1): Z-sample parity for SamplePVC-Whistle.
 - `bulk_flute_eval.rs` (4): All 8 Flute combos (2×4 = 110 fingerings). Max cents deviation: 0.058.
 - `flute_z_sample.rs` (1): Z-sample parity for SamplePVC-Flute (exact match).
+- `bulk_reed_eval.rs` (4): All 7 Reed combos (72 fingerings). Max cents deviation: 0.000011.
+- `reed_z_sample.rs` (1): Z-sample parity for SampleChanter-Reed.

@@ -10,7 +10,7 @@ use wid_compile::InstrumentCompiled;
 use wid_physics::PhysicalParameters;
 use wid_types::Fingering;
 
-use crate::linear_v::{find_fmin, find_x_zero_for_fingering};
+use crate::linear_v::{self, find_fmin, find_x_zero_for_fingering, LinearVTuner};
 use crate::{CalculatorParams, cents};
 
 /// Default penalty when fmax/fmin prediction fails.
@@ -21,6 +21,7 @@ const FMINMAX_PENALTY: f64 = 1200.0;
 /// Weights for the FminmaxEvaluator (matching Java FminmaxEvaluator).
 const FMAX_WEIGHT: f64 = 4.0;
 const FMIN_WEIGHT: f64 = 1.0;
+const FPLAYING_WEIGHT: f64 = 1.0;
 
 /// Predict fmax (Im(Z)=0 crossing near target) for a single fingering.
 ///
@@ -105,12 +106,15 @@ pub fn calculate_fmin_error_vector(
 
 /// Compute error vector combining fmin and fmax with RMS weighting.
 ///
-/// Used by `WhistleCalibrationObjectiveFunction` via `FminmaxEvaluator`.
+/// Used by `WhistleCalibrationObjectiveFunction` and
+/// `FluteCalibrationObjectiveFunction` via `FminmaxEvaluator`.
+///
 /// For each fingering:
 /// - If `frequencyMax` is available: `dev = FMAX_WEIGHT * cents(fmax)`
 ///   - If also `frequencyMin`: `dev = sqrt(dev^2 + (FMIN_WEIGHT * cents(fmin))^2)`
 /// - Else if `frequencyMin` only: `dev = FMIN_WEIGHT * cents(fmin)`
-/// - Else if `frequency` only: `dev = cents(freq)`
+/// - Else if `frequency` only: `dev = FPLAYING_WEIGHT * cents(freq, predicted_playing_freq)`
+///   (uses LinearV tuner for predicted playing frequency, matching Java)
 /// - Else: `dev = 0.0`
 pub fn calculate_fminmax_error_vector(
     instrument: &InstrumentCompiled,
@@ -118,6 +122,15 @@ pub fn calculate_fminmax_error_vector(
     params: &PhysicalParameters,
     calc_params: &CalculatorParams,
 ) -> Vec<f64> {
+    // Build LinearV tuner once for the frequency-only fallback path.
+    let tuner = LinearVTuner::new(
+        instrument,
+        fingerings,
+        params,
+        calc_params,
+        calc_params.blowing_level,
+    );
+
     fingerings
         .iter()
         .map(|f| {
@@ -145,9 +158,12 @@ pub fn calculate_fminmax_error_vector(
                     None => FMINMAX_PENALTY,
                 }
             } else if let Some(target_freq) = f.note.frequency {
-                // Only frequency (playing frequency)
-                match predicted_fmax(instrument, f, params, calc_params) {
-                    Some(pred) => cents(target_freq, pred),
+                // Only frequency — use LinearV tuner for predicted playing frequency,
+                // matching Java FminmaxEvaluator's `predicted.getFrequency()` path.
+                match linear_v::predicted_frequency_linear_v(
+                    &tuner, instrument, f, params, calc_params,
+                ) {
+                    Some(pred) => FPLAYING_WEIGHT * cents(target_freq, pred),
                     None => FMINMAX_PENALTY,
                 }
             } else {

@@ -1,0 +1,9 @@
+{
+  "optimizer" : "FluteCalibrationObjectiveFunction",
+  "initial_airstream_length" : 0.004,
+  "final_airstream_length" : 0.003980735730311932,
+  "initial_beta" : 0.35,
+  "final_beta" : 0.2,
+  "initial_norm" : 2649.612447927295,
+  "final_norm" : 1313.405490636519
+}

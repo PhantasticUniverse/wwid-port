@@ -1,5 +1,68 @@
 # Development Log
 
+## 2026-03-04 (cont): DIRECT-C Global Optimizer — Stress Test + Golden Fixtures
+
+### Stress test findings (6 bugs fixed)
+1. **Centre rectangle potential sign** (Critical): DIRECT-1 potential was `centre_f - min_neighbor`, should be `min_neighbor - centre_f`
+2. **Grid spacing formula** (Important): Used cell-centre `(i+0.5)/N`, Java uses interior-point `(i+1)/(N+1)`
+3. **Trust radius** (Important): Was hardcoded 10.0, now computed from bounds matching Java `BaseObjectiveFunction.getInitialTrustRegionRadius()`
+4. **Flute missing Global optimizers** (Critical): Added `GLOBAL_HOLE` + `GLOBAL_HOLE_POSITION` to flute.rs (Java inherits from WhistleStudyModel)
+5. **Progress/cancel support** (Important): Added `_with_progress` variants through full pipeline
+6. **Geometry dimension assertion** (Minor): `set_merged_geometry` now asserts on length mismatch
+
+### Golden fixture: DIRECT-01
+- `DirectOptDriver.java`: Runs `GlobalHoleObjectiveFunction` + `GlobalHolePositionObjectiveFunction` on SamplePVC-Whistle through `ObjectiveFunctionOptimizer.optimizeObjectiveFunction()`
+- GlobalHole: norm 15900 → 1899 (13 dims, 9074 evals)
+- GlobalHolePosition: norm 15900 → 20832 (7 dims, 7815 evals — DIRECT found poor basin)
+- 6 Rust parity tests: initial norm match, significant improvement, both stages used, correct geometry dimensions, geometry roundtrip, progress callback
+
+**Test count**: 280 tests, all passing
+
+---
+
+## 2026-03-04 (cont): DIRECT-C Global Optimizer + Multi-Start Infrastructure
+
+### New crate: `direct` (DIRECT-C global optimizer)
+
+Clean-room Rust implementation of the DIRECT-C algorithm (DIviding RECTangles, Centred variant) for derivative-free global optimization over box constraints.
+
+**Algorithm layers**:
+1. **Base DIRECT** (Jones 1993): BTreeMap-sorted hyperrectangles, convex hull POH selection, trisection along longest sides
+2. **DIRECT-1** (Gablonsky 2001): Single-side division for non-hypercubes, per-dimension potential tracking with half-decay
+3. **DIRECT-C** (Patkau/WIDesigner): Variant selection strategies when standard POH stagnates — Large & Near (diameter × distance hull) and Low Value & Near (50 exponential distance bins × f-value hull)
+
+**Key implementation details**:
+- `RectKey` ordering: (diameter, f_value, serial) in BTreeMap for efficient convex hull queries
+- Diameter rounded to f32 for grouping (matches Java/NLopt)
+- Variant cycling pattern: `[2, 1, 1, 2, 1]` with stagnation detection
+- 19 tests: Rosenbrock (2D, 5D), six-hump camel, Rastrigin, Styblinski-Tang, Goldstein-Price, sphere (1D/2D/5D), target value, callback, edge cases
+
+### Multi-start infrastructure (`wid-optimize/src/multi_start.rs`)
+
+- `random_start_points()` — xoshiro256** PRNG for reproducible sampling
+- `grid_start_points()` — deterministic grid with `ceil(n^(1/d))` per dimension
+- `multi_start_bobyqa()` / `multi_start_bobyqa_with_progress()` — run BOBYQA from N start points, keep best
+- 7 tests: bounds, reproducibility, grid layout, improvement, progress, cancellation
+
+### Two-stage pipeline (`wid-optimize/src/global_optimize.rs`)
+
+Port of Java `ObjectiveFunctionOptimizer.runDirect()` + `runBobyqa()`:
+- Stage 1: DIRECT-C global search (2× budget, convergence 7e-8, target value 0.001)
+- Stage 2: BOBYQA local refinement from DIRECT-C's best point
+- Returns whichever stage found better result
+- Instrument-level wrappers: `optimize_global_holes_combined()` (40K evals), `optimize_global_holes_position()` (30K evals)
+- 3 tests: Rosenbrock, six-hump camel, sphere 5D
+
+### Session integration
+
+- Whistle: registered `GlobalHolePositionObjectiveFunction` + `GlobalHoleObjectiveFunction`
+- Reed: registered `GlobalHoleObjectiveFunction`
+- Flute: registered `GlobalHolePositionObjectiveFunction` + `GlobalHoleObjectiveFunction`
+- Dispatch in `optimize()` routes Global keys to DIRECT-C→BOBYQA pipeline with progress support
+- Constraint templates delegate to parent (same geometry layout)
+
+---
+
 ## 2026-03-04 (cont): M5.7 Reed Calibration + Optimization
 
 ### Reed calibration (alpha + beta)

@@ -8,6 +8,7 @@ members = [
     "crates/wid-acoustics",
     "crates/wid-eval",
     "crates/bobyqa",
+    "crates/direct",
     "crates/wid-optimize",
     "crates/wid-session",
     "crates/wid-wasm",

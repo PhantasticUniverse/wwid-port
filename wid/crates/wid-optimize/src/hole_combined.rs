@@ -285,3 +285,137 @@ mod tests {
         );
     }
 }
+
+#[cfg(test)]
+mod flute_tests {
+    use super::*;
+    use wid_physics::TemperatureType;
+    use wid_types::{Constraint, ConstraintType, parse_instrument_xml, parse_tuning_xml};
+
+    const FLUTE_XML: &str =
+        include_str!("../../../../oracle/v2.6.0/FluteStudy/instruments/SamplePVC-Flute.xml");
+    const FLUTE_TUNING_XML: &str =
+        include_str!("../../../../oracle/v2.6.0/FluteStudy/tunings/D4-Equal.xml");
+
+    fn default_params() -> PhysicalParameters {
+        PhysicalParameters::new(72.0, TemperatureType::F)
+    }
+
+    fn flute_merged_constraints() -> Constraints {
+        // 13 constraints from LargeHoleSize_Spacing_6holes.xml
+        let pos_lower = [0.4, 0.015, 0.015, 0.015, 0.015, 0.015, 0.015];
+        let pos_upper = [0.7, 0.035, 0.035, 0.1, 0.035, 0.0375, 0.2];
+        let size_upper = [0.01, 0.01, 0.01, 0.01, 0.0105, 0.01];
+
+        let mut constraints = Vec::new();
+        for i in 0..7 {
+            constraints.push(Constraint {
+                display_name: "position".to_string(),
+                category: "Hole position".to_string(),
+                constraint_type: ConstraintType::DIMENSIONAL,
+                lower_bound: Some(pos_lower[i]),
+                upper_bound: Some(pos_upper[i]),
+            });
+        }
+        for &ub in &size_upper {
+            constraints.push(Constraint {
+                display_name: "diameter".to_string(),
+                category: "Hole size".to_string(),
+                constraint_type: ConstraintType::DIMENSIONAL,
+                lower_bound: Some(0.004),
+                upper_bound: Some(ub),
+            });
+        }
+
+        Constraints {
+            name: "Large Hole Size+Spacing".to_string(),
+            objective_display_name: "Hole position and size optimizer".to_string(),
+            objective_function_name: "HoleObjectiveFunction".to_string(),
+            number_of_holes: 6,
+            constraint_list: constraints,
+        }
+    }
+
+    // Golden: FL-OPT/opt_hole.json
+    const GOLDEN_INITIAL_NORM: f64 = 2649.612447927295;
+    const GOLDEN_FINAL_NORM: f64 = 1202.126658120694;
+
+    #[test]
+    fn flute_initial_norm_matches() {
+        let inst = parse_instrument_xml(FLUTE_XML).unwrap();
+        let tuning = parse_tuning_xml(FLUTE_TUNING_XML).unwrap();
+        let params = default_params();
+        let weights = crate::fingering_weights(&tuning.fingerings);
+        let norm = evaluate_norm(
+            &inst,
+            &tuning.fingerings,
+            &weights,
+            &params,
+            &CalculatorParams::FLUTE,
+        );
+        assert!(
+            (norm - GOLDEN_INITIAL_NORM).abs() / GOLDEN_INITIAL_NORM < 0.01,
+            "flute initial norm: expected {GOLDEN_INITIAL_NORM}, got {norm}"
+        );
+    }
+
+    #[test]
+    fn flute_optimization_matches_golden() {
+        let mut inst = parse_instrument_xml(FLUTE_XML).unwrap();
+        let tuning = parse_tuning_xml(FLUTE_TUNING_XML).unwrap();
+        let params = default_params();
+        let constraints = flute_merged_constraints();
+
+        let result = optimize_holes_combined(
+            &mut inst,
+            &tuning,
+            &constraints,
+            &params,
+            &CalculatorParams::FLUTE,
+        );
+
+        // Should improve
+        assert!(
+            result.final_norm < result.initial_norm,
+            "optimization should reduce norm: initial={}, final={}",
+            result.initial_norm,
+            result.final_norm
+        );
+
+        // Final norm within 2x of golden
+        assert!(
+            result.final_norm < GOLDEN_FINAL_NORM * 2.0,
+            "final norm should be close to golden: expected ~{GOLDEN_FINAL_NORM}, got {}",
+            result.final_norm
+        );
+    }
+
+    #[test]
+    fn fife_optimization_reduces_norm() {
+        let fife_xml = include_str!(
+            "../../../../oracle/v2.6.0/FluteStudy/instruments/fife.xml"
+        );
+        let fife_tuning_xml = include_str!(
+            "../../../../oracle/v2.6.0/FluteStudy/tunings/fife-tuning.xml"
+        );
+        let mut inst = parse_instrument_xml(fife_xml).unwrap();
+        let tuning = parse_tuning_xml(fife_tuning_xml).unwrap();
+        let params = default_params();
+        let constraints = flute_merged_constraints();
+
+        let result = optimize_holes_combined(
+            &mut inst,
+            &tuning,
+            &constraints,
+            &params,
+            &CalculatorParams::FLUTE,
+        );
+
+        assert!(
+            result.final_norm <= result.initial_norm * 1.01,
+            "fife optimization should not worsen norm: initial={}, final={}",
+            result.initial_norm,
+            result.final_norm
+        );
+    }
+}

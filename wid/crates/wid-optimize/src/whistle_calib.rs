@@ -117,9 +117,7 @@ mod tests {
     }
 
     // Golden: calib_joint.json
-    const GOLDEN_INITIAL_WH: f64 = 0.0029;
     const GOLDEN_FINAL_WH: f64 = 0.002460124433667274;
-    const GOLDEN_INITIAL_BETA: f64 = 0.522;
     const GOLDEN_FINAL_BETA: f64 = 0.5182118511250104;
     const GOLDEN_INITIAL_NORM: f64 = 39125.90968943595;
     const GOLDEN_FINAL_NORM: f64 = 33390.32121843042;

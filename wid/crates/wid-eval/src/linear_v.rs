@@ -87,6 +87,9 @@ fn window_length(instrument: &InstrumentCompiled) -> f64 {
     match &instrument.mouthpiece.mouthpiece_type {
         MouthpieceType::Fipple { window_length, .. } => *window_length,
         MouthpieceType::EmbouchureHole { airstream_length, .. } => *airstream_length,
+        MouthpieceType::SimpleReed { .. } => {
+            unreachable!("LinearV tuner not used with reed mouthpieces")
+        }
     }
 }
 

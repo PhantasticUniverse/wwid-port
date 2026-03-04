@@ -1,0 +1,7 @@
+{
+  "optimizer" : "BetaObjectiveFunction",
+  "initial_beta" : 0.35,
+  "final_beta" : 0.35,
+  "initial_norm" : 0.0,
+  "final_norm" : 0.0
+}

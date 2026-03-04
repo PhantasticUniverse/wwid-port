@@ -112,6 +112,9 @@ fn calc_z_window(
             let eff = (hole_width * *length).sqrt();
             (eff, *height)
         }
+        MouthpieceType::SimpleReed { .. } => {
+            unreachable!("calc_z_window called with reed mouthpiece")
+        }
     };
 
     // Reactance: empirical model from whistle measurements

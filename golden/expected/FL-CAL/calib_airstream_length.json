@@ -1,0 +1,7 @@
+{
+  "optimizer" : "AirstreamLengthObjectiveFunction",
+  "initial_airstream_length" : 0.004,
+  "final_airstream_length" : 0.004,
+  "initial_norm" : 0.0,
+  "final_norm" : 0.0
+}

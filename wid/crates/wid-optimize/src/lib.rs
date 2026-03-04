@@ -8,6 +8,8 @@
 //! - Weighted norm calculation (`calc_norm`)
 
 pub mod airstream_length;
+pub mod global_optimize;
+pub mod multi_start;
 pub mod beta;
 pub mod brent_min;
 pub mod fipple;

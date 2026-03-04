@@ -228,3 +228,124 @@ mod tests {
         );
     }
 }
+
+#[cfg(test)]
+mod flute_tests {
+    use super::*;
+    use wid_physics::TemperatureType;
+    use wid_types::{Constraint, ConstraintType, parse_instrument_xml, parse_tuning_xml};
+
+    const FLUTE_XML: &str =
+        include_str!("../../../../oracle/v2.6.0/FluteStudy/instruments/SamplePVC-Flute.xml");
+    const FLUTE_TUNING_XML: &str =
+        include_str!("../../../../oracle/v2.6.0/FluteStudy/tunings/D4-Equal.xml");
+
+    fn default_params() -> PhysicalParameters {
+        PhysicalParameters::new(72.0, TemperatureType::F)
+    }
+
+    fn flute_size_constraints() -> Constraints {
+        // From LargeHoleSize_6holes.xml
+        let upper_bounds = [0.01, 0.01, 0.01, 0.01, 0.011, 0.01];
+        let constraints: Vec<Constraint> = upper_bounds
+            .iter()
+            .map(|&ub| Constraint {
+                display_name: "diameter".to_string(),
+                category: "Hole size".to_string(),
+                constraint_type: ConstraintType::DIMENSIONAL,
+                lower_bound: Some(0.004),
+                upper_bound: Some(ub),
+            })
+            .collect();
+        Constraints {
+            name: "Large Hole Size".to_string(),
+            objective_display_name: "Hole size only".to_string(),
+            objective_function_name: "HoleSizeObjectiveFunction".to_string(),
+            number_of_holes: 6,
+            constraint_list: constraints,
+        }
+    }
+
+    // Golden: FL-OPT/opt_hole_size.json
+    const GOLDEN_INITIAL_NORM: f64 = 2649.612447927295;
+    const GOLDEN_FINAL_NORM: f64 = 1081.8439058068495;
+
+    #[test]
+    fn flute_initial_norm_matches() {
+        let inst = parse_instrument_xml(FLUTE_XML).unwrap();
+        let tuning = parse_tuning_xml(FLUTE_TUNING_XML).unwrap();
+        let params = default_params();
+        let weights = crate::fingering_weights(&tuning.fingerings);
+        let norm = evaluate_norm(
+            &inst,
+            &tuning.fingerings,
+            &weights,
+            &params,
+            &CalculatorParams::FLUTE,
+        );
+        assert!(
+            (norm - GOLDEN_INITIAL_NORM).abs() / GOLDEN_INITIAL_NORM < 0.01,
+            "flute initial norm: expected {GOLDEN_INITIAL_NORM}, got {norm}"
+        );
+    }
+
+    #[test]
+    fn flute_optimization_matches_golden() {
+        let mut inst = parse_instrument_xml(FLUTE_XML).unwrap();
+        let tuning = parse_tuning_xml(FLUTE_TUNING_XML).unwrap();
+        let params = default_params();
+        let constraints = flute_size_constraints();
+
+        let result = optimize_hole_size(
+            &mut inst,
+            &tuning,
+            &constraints,
+            &params,
+            &CalculatorParams::FLUTE,
+        );
+
+        // Should improve
+        assert!(
+            result.final_norm < result.initial_norm,
+            "optimization should reduce norm: initial={}, final={}",
+            result.initial_norm,
+            result.final_norm
+        );
+
+        // Final norm within 2x of golden
+        assert!(
+            result.final_norm < GOLDEN_FINAL_NORM * 2.0,
+            "final norm should be close to golden: expected ~{GOLDEN_FINAL_NORM}, got {}",
+            result.final_norm
+        );
+    }
+
+    #[test]
+    fn fife_optimization_reduces_norm() {
+        let fife_xml = include_str!(
+            "../../../../oracle/v2.6.0/FluteStudy/instruments/fife.xml"
+        );
+        let fife_tuning_xml = include_str!(
+            "../../../../oracle/v2.6.0/FluteStudy/tunings/fife-tuning.xml"
+        );
+        let mut inst = parse_instrument_xml(fife_xml).unwrap();
+        let tuning = parse_tuning_xml(fife_tuning_xml).unwrap();
+        let params = default_params();
+        let constraints = flute_size_constraints();
+
+        let result = optimize_hole_size(
+            &mut inst,
+            &tuning,
+            &constraints,
+            &params,
+            &CalculatorParams::FLUTE,
+        );
+
+        assert!(
+            result.final_norm <= result.initial_norm * 1.01,
+            "fife optimization should not worsen norm: initial={}, final={}",
+            result.initial_norm,
+            result.final_norm
+        );
+    }
+}

@@ -18,7 +18,7 @@ pub use calculator_params::CalculatorParams;
 pub use linear_v::LinearVTuner;
 
 use num_complex::Complex64;
-use wid_acoustics::{bore, hole, mouthpiece, simple_fipple, termination};
+use wid_acoustics::{bore, hole, mouthpiece, simple_fipple, simple_reed, termination};
 use wid_acoustics::termination::TerminationType;
 use calculator_params::MouthpieceModel;
 use wid_compile::{Component, InstrumentCompiled};
@@ -92,6 +92,14 @@ pub fn calc_z(
                 wave_number,
                 params,
             );
+        }
+        MouthpieceModel::SimpleReed => {
+            let mp_tm = simple_reed::calc_reed_mouthpiece_tm(
+                &instrument.mouthpiece,
+                wave_number,
+                params,
+            );
+            sv = mp_tm.multiply_sv(&sv);
         }
     }
 
@@ -336,6 +344,23 @@ pub fn calculate_error_vector(
                         if let Some(predicted) = linear_v::predicted_frequency_linear_v(
                             &tuner, instrument, f, params, calc_params,
                         ) {
+                            cents(target, predicted)
+                        } else {
+                            1200.0
+                        }
+                    } else {
+                        1200.0
+                    }
+                })
+                .collect()
+        }
+        // Reed instruments use SimpleInstrumentTuner (standard reactance-zero search).
+        MouthpieceModel::SimpleReed => {
+            fingerings
+                .iter()
+                .map(|f| {
+                    if let Some(target) = f.note.frequency {
+                        if let Some(predicted) = predicted_frequency(instrument, f, params, calc_params) {
                             cents(target, predicted)
                         } else {
                             1200.0

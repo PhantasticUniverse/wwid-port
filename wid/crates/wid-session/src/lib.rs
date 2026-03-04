@@ -542,6 +542,18 @@ impl StudySession {
                             &self.calc_params, &mut progress_adapter,
                         )
                     }
+                    whistle::GLOBAL_HOLE => {
+                        wid_optimize::global_optimize::optimize_global_holes_combined_with_progress(
+                            &mut work_inst, &tuning, &constraints, &self.params,
+                            &self.calc_params, &mut progress_adapter,
+                        )
+                    }
+                    whistle::GLOBAL_HOLE_POSITION => {
+                        wid_optimize::global_optimize::optimize_global_holes_position_with_progress(
+                            &mut work_inst, &tuning, &constraints, &self.params,
+                            &self.calc_params, &mut progress_adapter,
+                        )
+                    }
                     _ => return Err(SessionError::CannotOptimize(
                         format!("Unknown Whistle optimizer: {}", optimizer_key),
                     )),
@@ -567,6 +579,18 @@ impl StudySession {
                             &self.calc_params, &mut progress_adapter,
                         )
                     }
+                    flute::GLOBAL_HOLE => {
+                        wid_optimize::global_optimize::optimize_global_holes_combined_with_progress(
+                            &mut work_inst, &tuning, &constraints, &self.params,
+                            &self.calc_params, &mut progress_adapter,
+                        )
+                    }
+                    flute::GLOBAL_HOLE_POSITION => {
+                        wid_optimize::global_optimize::optimize_global_holes_position_with_progress(
+                            &mut work_inst, &tuning, &constraints, &self.params,
+                            &self.calc_params, &mut progress_adapter,
+                        )
+                    }
                     _ => return Err(SessionError::CannotOptimize(
                         format!("Unknown Flute optimizer: {}", optimizer_key),
                     )),
@@ -588,6 +612,12 @@ impl StudySession {
                     }
                     reed::HOLE => {
                         wid_optimize::hole_combined::optimize_holes_combined_with_progress(
+                            &mut work_inst, &tuning, &constraints, &self.params,
+                            &self.calc_params, &mut progress_adapter,
+                        )
+                    }
+                    reed::GLOBAL_HOLE => {
+                        wid_optimize::global_optimize::optimize_global_holes_combined_with_progress(
                             &mut work_inst, &tuning, &constraints, &self.params,
                             &self.calc_params, &mut progress_adapter,
                         )

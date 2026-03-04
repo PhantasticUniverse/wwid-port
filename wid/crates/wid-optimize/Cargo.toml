@@ -9,6 +9,7 @@ wid-compile = { path = "../wid-compile" }
 wid-eval = { path = "../wid-eval" }
 wid-physics = { path = "../wid-physics" }
 bobyqa_impl = { package = "bobyqa", path = "../bobyqa" }
+direct_impl = { package = "direct", path = "../direct" }
 
 [dev-dependencies]
 approx = { workspace = true }

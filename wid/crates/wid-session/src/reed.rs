@@ -16,6 +16,7 @@ pub const REED_CALIB: &str = "ReedCalibratorObjectiveFunction";
 pub const HOLE_SIZE: &str = "HoleSizeObjectiveFunction";
 pub const HOLE_POSITION: &str = "HolePositionObjectiveFunction";
 pub const HOLE: &str = "HoleObjectiveFunction";
+pub const GLOBAL_HOLE: &str = "GlobalHoleObjectiveFunction";
 
 /// Returns the list of available Reed optimizers.
 pub fn available_optimizers() -> Vec<OptimizerInfo> {
@@ -40,12 +41,17 @@ pub fn available_optimizers() -> Vec<OptimizerInfo> {
             display_name: "Hole size only".to_string(),
             objective_function_name: HOLE_SIZE.to_string(),
         },
+        OptimizerInfo {
+            key: GLOBAL_HOLE.to_string(),
+            display_name: "Hole size+spacing (global)".to_string(),
+            objective_function_name: GLOBAL_HOLE.to_string(),
+        },
     ]
 }
 
 /// Check if an optimizer key is a valid Reed optimizer.
 pub fn is_valid_optimizer(key: &str) -> bool {
-    matches!(key, REED_CALIB | HOLE_SIZE | HOLE_POSITION | HOLE)
+    matches!(key, REED_CALIB | HOLE_SIZE | HOLE_POSITION | HOLE | GLOBAL_HOLE)
 }
 
 /// Check if the optimizer is a calibrator (doesn't need hole constraints).
@@ -89,6 +95,7 @@ fn display_name_for(objective_function_name: &str) -> &'static str {
         HOLE => "Hole position and size optimizer",
         HOLE_POSITION => "Hole position optimizer",
         HOLE_SIZE => "Hole size optimizer",
+        GLOBAL_HOLE => "Hole size+spacing (global) optimizer",
         _ => "Unknown",
     }
 }
@@ -102,6 +109,7 @@ fn constraint_template(
         HOLE => hole_constraints(n_holes),
         HOLE_POSITION => hole_position_constraints(n_holes),
         HOLE_SIZE => hole_size_constraints(n_holes),
+        GLOBAL_HOLE => hole_constraints(n_holes),
         _ => Vec::new(),
     }
 }

@@ -1,28 +1,35 @@
-//! Whistle study model: optimizer registry and constraint generation.
+//! Flute study model — optimizer registry, calibrator dispatch, and
+//! constraint templates.
 //!
-//! This module defines the available optimizers for Whistle instruments
-//! and provides constraint template generation (default and blank).
+//! Supports 8 optimizers:
+//! - **Calibrators** (no constraints needed): AirstreamLength (1D),
+//!   Beta (1D), FluteCalibration (2D joint)
+//! - **Hole optimizers** (constraints required): HoleSize, HolePosition, Hole
+//! - **Global hole optimizers** (constraints required): GlobalHolePosition,
+//!   GlobalHole (DIRECT-C → BOBYQA)
+//!
+//! Mirrors `whistle.rs` but uses airstream length instead of window height.
 
 use crate::types::OptimizerInfo;
 use wid_types::{Constraint, ConstraintType, Constraints};
 
-/// Whistle optimizer keys (matching Java objective function names).
-pub const WINDOW_HEIGHT: &str = "WindowHeightObjectiveFunction";
+/// Flute optimizer keys (matching Java objective function names).
+pub const AIRSTREAM_LENGTH: &str = "AirstreamLengthObjectiveFunction";
 pub const BETA: &str = "BetaObjectiveFunction";
-pub const WHISTLE_CALIB: &str = "WhistleCalibrationObjectiveFunction";
+pub const FLUTE_CALIB: &str = "FluteCalibrationObjectiveFunction";
 pub const HOLE_SIZE: &str = "HoleSizeObjectiveFunction";
 pub const HOLE_POSITION: &str = "HolePositionObjectiveFunction";
 pub const HOLE: &str = "HoleObjectiveFunction";
 pub const GLOBAL_HOLE_POSITION: &str = "GlobalHolePositionObjectiveFunction";
 pub const GLOBAL_HOLE: &str = "GlobalHoleObjectiveFunction";
 
-/// Returns the list of available Whistle optimizers.
+/// Returns the list of available Flute optimizers.
 pub fn available_optimizers() -> Vec<OptimizerInfo> {
     vec![
         OptimizerInfo {
-            key: WINDOW_HEIGHT.to_string(),
-            display_name: "Window height calibrator".to_string(),
-            objective_function_name: WINDOW_HEIGHT.to_string(),
+            key: AIRSTREAM_LENGTH.to_string(),
+            display_name: "Airstream length calibrator".to_string(),
+            objective_function_name: AIRSTREAM_LENGTH.to_string(),
         },
         OptimizerInfo {
             key: BETA.to_string(),
@@ -30,9 +37,9 @@ pub fn available_optimizers() -> Vec<OptimizerInfo> {
             objective_function_name: BETA.to_string(),
         },
         OptimizerInfo {
-            key: WHISTLE_CALIB.to_string(),
-            display_name: "Whistle calibration".to_string(),
-            objective_function_name: WHISTLE_CALIB.to_string(),
+            key: FLUTE_CALIB.to_string(),
+            display_name: "Flute calibration".to_string(),
+            objective_function_name: FLUTE_CALIB.to_string(),
         },
         OptimizerInfo {
             key: HOLE.to_string(),
@@ -62,31 +69,26 @@ pub fn available_optimizers() -> Vec<OptimizerInfo> {
     ]
 }
 
-/// Check if an optimizer key is a valid Whistle optimizer.
+/// Check if an optimizer key is a valid Flute optimizer.
 pub fn is_valid_optimizer(key: &str) -> bool {
     matches!(
         key,
-        WINDOW_HEIGHT | BETA | WHISTLE_CALIB | HOLE_SIZE | HOLE_POSITION | HOLE
+        AIRSTREAM_LENGTH | BETA | FLUTE_CALIB | HOLE_SIZE | HOLE_POSITION | HOLE
         | GLOBAL_HOLE_POSITION | GLOBAL_HOLE
     )
 }
 
 /// Check if the optimizer is a calibrator (doesn't need hole constraints).
 pub fn is_calibrator(key: &str) -> bool {
-    matches!(key, WINDOW_HEIGHT | BETA | WHISTLE_CALIB)
+    matches!(key, AIRSTREAM_LENGTH | BETA | FLUTE_CALIB)
 }
 
 /// Check if the optimizer requires constraints to be selected.
-///
-/// Calibrators use built-in default bounds; hole optimizers need explicit constraints.
 pub fn optimizer_needs_constraints(key: &str) -> bool {
     !is_calibrator(key)
 }
 
 /// Create default constraints for a given optimizer and hole count.
-///
-/// Calibrator constraints have pre-filled default bounds matching Java defaults.
-/// Hole optimizer constraints have blank bounds (all None).
 pub fn create_default_constraints(
     objective_function_name: &str,
     number_of_holes: u32,
@@ -103,7 +105,7 @@ pub fn create_default_constraints(
     }
 }
 
-/// Create blank constraints — same as default for Whistle.
+/// Create blank constraints — same as default for Flute.
 pub fn create_blank_constraints(
     objective_function_name: &str,
     number_of_holes: u32,
@@ -113,9 +115,9 @@ pub fn create_blank_constraints(
 
 fn display_name_for(objective_function_name: &str) -> &'static str {
     match objective_function_name {
-        WINDOW_HEIGHT => "Window Height calibrator",
+        AIRSTREAM_LENGTH => "Airstream length calibrator",
         BETA => "Beta calibrator",
-        WHISTLE_CALIB => "Whistle calibration",
+        FLUTE_CALIB => "Flute calibration",
         HOLE => "Hole position and size optimizer",
         HOLE_POSITION => "Hole position optimizer",
         HOLE_SIZE => "Hole size optimizer",
@@ -130,9 +132,9 @@ fn constraint_template(
     n_holes: u32,
 ) -> Vec<Constraint> {
     match objective_function_name {
-        WINDOW_HEIGHT => window_height_constraints(),
+        AIRSTREAM_LENGTH => airstream_length_constraints(),
         BETA => beta_constraints(),
-        WHISTLE_CALIB => whistle_calib_constraints(),
+        FLUTE_CALIB => flute_calib_constraints(),
         HOLE => hole_constraints(n_holes),
         HOLE_POSITION => hole_position_constraints(n_holes),
         HOLE_SIZE => hole_size_constraints(n_holes),
@@ -143,14 +145,14 @@ fn constraint_template(
     }
 }
 
-/// WindowHeight: single constraint with default bounds.
-fn window_height_constraints() -> Vec<Constraint> {
+/// AirstreamLength: single constraint with default bounds.
+fn airstream_length_constraints() -> Vec<Constraint> {
     vec![Constraint {
-        display_name: "Window height".to_string(),
-        category: "Mouthpiece window".to_string(),
+        display_name: "Airstream length".to_string(),
+        category: "Mouthpiece calibration".to_string(),
         constraint_type: ConstraintType::DIMENSIONAL,
-        lower_bound: Some(wid_optimize::window_height::DEFAULT_WH_LOWER),
-        upper_bound: Some(wid_optimize::window_height::DEFAULT_WH_UPPER),
+        lower_bound: Some(wid_optimize::airstream_length::DEFAULT_AL_LOWER),
+        upper_bound: Some(wid_optimize::airstream_length::DEFAULT_AL_UPPER),
     }]
 }
 
@@ -165,15 +167,15 @@ fn beta_constraints() -> Vec<Constraint> {
     }]
 }
 
-/// WhistleCalibration: window height + beta (2 constraints).
-fn whistle_calib_constraints() -> Vec<Constraint> {
+/// FluteCalibration: airstream length + beta (2 constraints).
+fn flute_calib_constraints() -> Vec<Constraint> {
     vec![
         Constraint {
-            display_name: "Window height".to_string(),
+            display_name: "Airstream length".to_string(),
             category: "Mouthpiece calibration".to_string(),
             constraint_type: ConstraintType::DIMENSIONAL,
-            lower_bound: Some(wid_optimize::window_height::DEFAULT_WH_LOWER),
-            upper_bound: Some(wid_optimize::window_height::DEFAULT_WH_UPPER),
+            lower_bound: Some(wid_optimize::airstream_length::DEFAULT_AL_LOWER),
+            upper_bound: Some(wid_optimize::airstream_length::DEFAULT_AL_UPPER),
         },
         Constraint {
             display_name: "Beta".to_string(),
@@ -186,82 +188,23 @@ fn whistle_calib_constraints() -> Vec<Constraint> {
 }
 
 /// Hole position constraints: bore length + inter-hole spacings (N+1 total).
-///
-/// Ordering matches Java HolePositionObjectiveFunction geometry vector:
-/// `[bore_end, spacing_top_to_next, ..., spacing_bottom_to_bore_end]`
-///
-/// Hole numbering: Hole N = top (closest to mouthpiece), Hole 1 = bottom (closest to bell).
+/// Same ordering as Whistle — reused hole optimizer infrastructure.
 fn hole_position_constraints(n_holes: u32) -> Vec<Constraint> {
-    let mut constraints = Vec::new();
-
-    constraints.push(Constraint {
-        display_name: "Bore length".to_string(),
-        category: "Hole position".to_string(),
-        constraint_type: ConstraintType::DIMENSIONAL,
-        lower_bound: None,
-        upper_bound: None,
-    });
-
-    // Spacings: geometry[1..=n_holes] maps to constraints top-to-bottom then bore-end
-    for j in 1..=n_holes {
-        if j < n_holes {
-            // Inter-hole spacing
-            let upper_num = n_holes - j + 1;
-            let lower_num = n_holes - j;
-            let upper = if upper_num == n_holes {
-                format!("Hole {} (top)", n_holes)
-            } else {
-                format!("Hole {}", upper_num)
-            };
-            let lower = if lower_num == 1 {
-                "Hole 1 (bottom)".to_string()
-            } else {
-                format!("Hole {}", lower_num)
-            };
-            constraints.push(Constraint {
-                display_name: format!("{upper} to {lower} distance"),
-                category: "Hole position".to_string(),
-                constraint_type: ConstraintType::DIMENSIONAL,
-                lower_bound: None,
-                upper_bound: None,
-            });
-        } else {
-            // Bottom hole to bore end
-            constraints.push(Constraint {
-                display_name: "Hole 1 (bottom) to bore end distance".to_string(),
-                category: "Hole position".to_string(),
-                constraint_type: ConstraintType::DIMENSIONAL,
-                lower_bound: None,
-                upper_bound: None,
-            });
-        }
-    }
-
-    constraints
+    // Reuse Whistle's hole_position_constraints — identical structure
+    crate::whistle::create_default_constraints(
+        crate::whistle::HOLE_POSITION,
+        n_holes,
+    )
+    .constraint_list
 }
 
 /// Hole size constraints: diameters only (N total).
-///
-/// Ordered top-to-bottom matching geometry vector.
 fn hole_size_constraints(n_holes: u32) -> Vec<Constraint> {
-    let mut constraints = Vec::new();
-    for i in (1..=n_holes).rev() {
-        let name = if i == n_holes {
-            format!("Hole {} (top) diameter", n_holes)
-        } else if i == 1 {
-            "Hole 1 (bottom) diameter".to_string()
-        } else {
-            format!("Hole {} diameter", i)
-        };
-        constraints.push(Constraint {
-            display_name: name,
-            category: "Hole size".to_string(),
-            constraint_type: ConstraintType::DIMENSIONAL,
-            lower_bound: None,
-            upper_bound: None,
-        });
-    }
-    constraints
+    crate::whistle::create_default_constraints(
+        crate::whistle::HOLE_SIZE,
+        n_holes,
+    )
+    .constraint_list
 }
 
 /// Merged hole constraints: position (N+1) + size (N) = 2N+1 total.

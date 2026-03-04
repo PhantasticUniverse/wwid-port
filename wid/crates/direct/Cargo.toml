@@ -1,0 +1,13 @@
+[package]
+name = "direct"
+version = "0.1.0"
+edition = "2024"
+description = "Pure Rust implementation of the DIRECT-C global optimizer"
+license = "Apache-2.0"
+keywords = ["optimization", "global", "derivative-free", "direct"]
+categories = ["science", "mathematics"]
+readme = "README.md"
+rust-version = "1.85"
+
+[dev-dependencies]
+approx = "0.5"

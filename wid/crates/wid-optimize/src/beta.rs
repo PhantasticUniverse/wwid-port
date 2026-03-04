@@ -153,4 +153,34 @@ mod tests {
             result.final_norm
         );
     }
+
+    // ── Flute beta calibration (FL-CAL/calib_beta.json) ─────────
+
+    #[test]
+    fn flute_fmin_norm_is_zero_for_frequency_only_tuning() {
+        // Golden: initial_norm=0.0, final_norm=0.0.
+        // D4-Equal has only <frequency> targets, no <frequencyMin>.
+        // FminEvaluator returns 0 for all fingerings → norm = 0.
+        let flute_xml = include_str!(
+            "../../../../oracle/v2.6.0/FluteStudy/instruments/SamplePVC-Flute.xml"
+        );
+        let flute_tuning_xml = include_str!(
+            "../../../../oracle/v2.6.0/FluteStudy/tunings/D4-Equal.xml"
+        );
+        let inst = parse_instrument_xml(flute_xml).unwrap();
+        let tuning = parse_tuning_xml(flute_tuning_xml).unwrap();
+        let params = default_params();
+        let weights = fingering_weights(&tuning.fingerings);
+        let norm = evaluate_fmin_norm(
+            &inst,
+            &tuning.fingerings,
+            &weights,
+            &params,
+            &CalculatorParams::FLUTE,
+        );
+        assert!(
+            norm < 1e-10,
+            "fmin norm with frequency-only tuning should be 0.0, got {norm}"
+        );
+    }
 }

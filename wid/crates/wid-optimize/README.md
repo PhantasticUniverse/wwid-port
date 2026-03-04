@@ -1,48 +1,85 @@
 # wid-optimize
 
-Calibration and optimization for NAF instrument design. Provides fipple factor calibration (1D Brent) and hole geometry optimization (BOBYQA).
+Calibration and optimization infrastructure for instrument design across all study models. Provides 1D Brent and N-dimensional BOBYQA optimizers for mouthpiece calibration and hole geometry optimization.
 
-## Public API
+## Calibrators
 
-| Type / Function | Description |
-|----------------|-------------|
-| `calibrate_fipple()` | 1D fipple factor calibration using Brent minimizer |
-| `optimize_holes()` | Multi-variable hole geometry optimization using BOBYQA |
-| `calc_norm()` | Weighted L2 norm matching Java `BaseObjectiveFunction.calcNorm()` |
-| `fingering_weights()` | Extract optimization weights from fingerings |
-| `CalibrationResult` | Initial/final fipple factor and norm |
-| `OptimizationResult` | Initial/final norm, geometry, evaluation count |
+Mouthpiece calibrators adjust physical parameters to minimize evaluation error. Each operates on a single instrument and tuning pair.
 
-## Fipple calibration (`fipple.rs`)
+| Module | Study Models | Algorithm | Params | Evaluator |
+|--------|-------------|-----------|--------|-----------|
+| `fipple` | NAF | 1D Brent | fipple factor | CentDeviation (lowest note only) |
+| `window_height` | Whistle | 1D Brent | window height | Fmax |
+| `beta` | Whistle, Flute | 1D Brent | beta factor | Fmin |
+| `whistle_calib` | Whistle | 2D BOBYQA | window height + beta | Fminmax |
+| `airstream_length` | Flute | 1D Brent | airstream length | Fmax |
+| `flute_calib` | Flute | 2D BOBYQA | airstream length + beta | Fminmax |
 
-Matches Java `FippleFactorObjectiveFunction`:
-- Uses only the lowest-frequency fingering (matching `getLowestNote`)
-- 1D Brent optimizer (golden section + parabolic interpolation)
-- Bounds from constraints XML (default: [0.2, 1.5])
-- Objective: set fipple factor → compile → evaluate → weighted norm
+## Hole Optimizers
 
-## Hole optimization (`hole_from_top.rs`)
+Hole optimizers adjust geometry (positions, diameters, or both) within constraint bounds to minimize evaluation error using BOBYQA.
 
-Matches Java `HoleFromTopObjectiveFunction` (a `MergedObjectiveFunction`):
-- 13 dimensions for 6-hole NAF: `[bore_length, top_hole_fraction, 5 spacings, 6 diameters]`
-- BOBYQA optimizer with bounds from constraints XML
-- Trust region: 10.0 initial, 1e-8 stopping
-- Max evaluations: `20000 + (n_dims - 1) × 5000`
-- Interpolation points: `2 × n_dims + 1`
-- Initial point clamped to bounds (matching Java `getInitialPoint`)
+| Module | Study Models | Dimensions | Geometry |
+|--------|-------------|------------|----------|
+| `hole_from_top` | NAF | 2N+1 | bore length + top hole fraction + spacings + diameters |
+| `hole_size` | Whistle, Flute | N | diameters only |
+| `hole_position` | Whistle, Flute | N+1 | bore end position + inter-hole spacings |
+| `hole_combined` | Whistle, Flute | 2N+1 | positions + diameters (merged) |
+
+All hole optimizers support progress callbacks via `*_with_progress()` variants.
+
+## Evaluator Dispatch
+
+Calibrators and hole optimizers use different evaluator functions:
+
+| Evaluator | Function | Used By |
+|-----------|----------|---------|
+| CentDeviation | `calculate_error_vector` | Hole optimizers, fipple calibrator |
+| Fmax | `calculate_fmax_error_vector` | Window height, airstream length calibrators |
+| Fmin | `calculate_fmin_error_vector` | Beta calibrator |
+| Fminmax | `calculate_fminmax_error_vector` | Joint whistle/flute calibrators |
+
+## BOBYQA Configuration
+
+All BOBYQA-based optimizers use consistent settings matching the Java baseline:
+
+| Parameter | Value |
+|-----------|-------|
+| Initial trust region | 10.0 |
+| Stopping trust region | 1e-8 |
+| Max evaluations | `20000 + (n_dims - 1) × 5000` |
+| Interpolation points | `2 × n_dims + 1` |
+| Initial point | Clamped to bounds |
+
+## Result Types
+
+| Type | Fields |
+|------|--------|
+| `CalibrationResult` | initial/final fipple factor, norms |
+| `WhistleCalibrationResult` | initial/final window height, beta, norms |
+| `FluteCalibrationResult` | initial/final airstream length, beta, norms |
+| `OptimizationResult` | initial/final norms, geometry vectors, evaluation count |
 
 ## Dependencies
 
 - `bobyqa` — BOBYQA multivariate optimizer
-- `wid-eval` — impedance evaluation (cents deviation)
+- `wid-eval` — impedance evaluation (error vectors)
 - `wid-compile` — geometry mutation and compilation
 - `wid-physics` — physical parameters
 - `wid-types` — instrument, tuning, constraints types
 
 ## Tests
 
-20 tests:
+54 tests:
 - Brent minimizer: quadratic, cosine, tolerance matching, boundary start (4)
 - Fipple calibration: NAF-FF-02 (0-hole), NAF-FF-03 (6-hole), post-calibration eval (6)
-- Hole optimization: NAF-OPT-01 (all weight=1), NAF-OPT-02 (weight=0 exclusion), post-optimization eval, constraints bounds (7)
+- Hole from top: NAF-OPT-01/02 golden, post-optimization eval, constraints bounds (7)
 - Norm calculation: weighted, uniform, empty (3)
+- Window height: initial value, initial norm, calibration golden (3)
+- Beta: initial value, initial norm, Whistle golden, Flute golden (4)
+- Whistle joint: initial norm, calibration golden (2)
+- Airstream length: initial value, roundtrip, fmax norm, calibration, fife smoke (5)
+- Flute joint: initial norm, calibration golden, fife smoke (3)
+- Hole size: Whistle initial norm + golden, Flute initial norm + golden + fife smoke (5)
+- Hole position: Whistle initial norm + geometry + golden, Flute initial norm + golden + fife smoke (6)
+- Hole combined: Whistle initial norm + geometry + golden, Flute initial norm + golden + fife smoke (6)

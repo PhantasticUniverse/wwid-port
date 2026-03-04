@@ -8,14 +8,19 @@
 ///
 /// - `DefaultFipple` — transfer matrix model used by NAF
 ///   (upstream: `DefaultFippleMouthpieceCalculator`)
-/// - `SimpleFipple` — empirical window impedance model used by Whistle
+/// - `SimpleFipple` — empirical window impedance model used by Whistle/Flute
 ///   (upstream: `SimpleFippleMouthpieceCalculator`)
+/// - `SimpleReed` — linear reactance model used by Reed instruments
+///   (upstream: `SimpleReedMouthpieceCalculator`)
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum MouthpieceModel {
     /// NAF: headspace compliance + fipple factor transfer matrix.
     DefaultFipple,
-    /// Whistle: empirical Z_window with headspace transmission in parallel.
+    /// Whistle/Flute: empirical Z_window with headspace transmission in parallel.
     SimpleFipple,
+    /// Reed: linear reactance model `X = alpha * 1e-3 * freq + beta`.
+    /// Used by single reed, double reed, and lip reed instruments.
+    SimpleReed,
 }
 
 /// Acoustic calculator parameters that vary by study model.
@@ -25,8 +30,8 @@ pub struct CalculatorParams {
     /// NAF: 0.9605 (reduced hole size), others: 1.0.
     pub hole_size_mult: f64,
 
-    /// Finger position adjustment for closed-hole calculations.
-    /// NAF: 0.0, Whistle/Flute: 0.010.
+    /// Finger position adjustment for closed-hole calculations (metres).
+    /// NAF: 0.0, Whistle/Flute/Reed: 0.010.
     pub finger_adjustment: f64,
 
     /// Whether to use unflanged end termination.
@@ -82,6 +87,26 @@ impl CalculatorParams {
         finger_adjustment: 0.010,
         unflanged_end: true,
         mouthpiece_model: MouthpieceModel::SimpleFipple,
+        blowing_level: 5,
+    };
+
+    /// Reed study model parameters.
+    ///
+    /// Matches Java `SimpleReedCalculator`:
+    /// - `DefaultHoleCalculator` (scale 1.0, finger_adjustment = 0.010)
+    /// - `ThickFlangedOpenEndCalculator` (unflanged_end = false)
+    /// - `SimpleReedMouthpieceCalculator` (linear reactance)
+    /// - `SimpleInstrumentTuner` (standard reactance-zero search, not LinearV)
+    ///
+    /// Note: `SimpleReedCalculator` uses `new DefaultHoleCalculator()` (default
+    /// constructor), which sets `fingerAdjustment = DEFAULT_FINGER_ADJ = 0.010`.
+    /// This differs from NAF (0.0) because NAF uses the 1-arg constructor
+    /// `DefaultHoleCalculator(holeSizeMult)` which sets fingerAdjustment to 0.0.
+    pub const REED: Self = Self {
+        hole_size_mult: 1.0,
+        finger_adjustment: 0.010,
+        unflanged_end: false,
+        mouthpiece_model: MouthpieceModel::SimpleReed,
         blowing_level: 5,
     };
 }

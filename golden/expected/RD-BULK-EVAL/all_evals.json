@@ -1,0 +1,403 @@
+[ {
+  "instrument" : "SampleChanter.xml",
+  "tuning" : "A3-ClosedFingering.xml",
+  "name" : "SampleChanter__A3-ClosedFingering",
+  "numFingerings" : 9,
+  "fingerings" : [ {
+    "note" : "G",
+    "targetFreq" : 195.56,
+    "predictedFreq" : 195.58723099514222,
+    "cents" : 0.24105105351981287
+  }, {
+    "note" : "A",
+    "targetFreq" : 220.0,
+    "predictedFreq" : 219.93913138207165,
+    "cents" : -0.4790563831798603
+  }, {
+    "note" : "B",
+    "targetFreq" : 244.44,
+    "predictedFreq" : 244.79016311575083,
+    "cents" : 2.4782380888915054
+  }, {
+    "note" : "C#",
+    "targetFreq" : 275.0,
+    "predictedFreq" : 274.3558818556428,
+    "cents" : -4.059735450068348
+  }, {
+    "note" : "D",
+    "targetFreq" : 293.33,
+    "predictedFreq" : 293.0302344245177,
+    "cents" : -1.770121456937058
+  }, {
+    "note" : "E",
+    "targetFreq" : 330.0,
+    "predictedFreq" : 329.5713234161086,
+    "cents" : -2.2503695240198933
+  }, {
+    "note" : "F#",
+    "targetFreq" : 366.67,
+    "predictedFreq" : 366.180358335861,
+    "cents" : -2.3133902775461435
+  }, {
+    "note" : "G",
+    "targetFreq" : 391.11,
+    "predictedFreq" : 391.07612821063054,
+    "cents" : -0.14993872425234675
+  }, {
+    "note" : "A",
+    "targetFreq" : 440.0,
+    "predictedFreq" : 438.9147740882862,
+    "cents" : -4.275229088085593
+  } ]
+}, {
+  "instrument" : "SampleChanter.xml",
+  "tuning" : "D4-uilleann-ET-tuning.xml",
+  "name" : "SampleChanter__D4-uilleann-ET-tuning",
+  "numFingerings" : 16,
+  "fingerings" : [ {
+    "note" : "D4",
+    "targetFreq" : 293.66,
+    "predictedFreq" : 195.58723128920423,
+    "cents" : -703.6014938889898
+  }, {
+    "note" : "Eb4",
+    "targetFreq" : 311.13,
+    "predictedFreq" : 217.52077004305613,
+    "cents" : -619.63721568112
+  }, {
+    "note" : "E4",
+    "targetFreq" : 329.63,
+    "predictedFreq" : 244.67897922399564,
+    "cents" : -515.9488648618978
+  }, {
+    "note" : "F#4",
+    "targetFreq" : 369.99,
+    "predictedFreq" : 273.0442283404789,
+    "cents" : -526.0219407330766
+  }, {
+    "note" : "G4",
+    "targetFreq" : 392.0,
+    "predictedFreq" : 292.83310153826005,
+    "cents" : -504.93001296927895
+  }, {
+    "note" : "A4",
+    "targetFreq" : 440.0,
+    "predictedFreq" : 326.68645820281273,
+    "cents" : -515.5162443428856
+  }, {
+    "note" : "B4",
+    "targetFreq" : 493.88,
+    "predictedFreq" : 365.8867998761963,
+    "cents" : -519.3158143151134
+  }, {
+    "note" : "C5",
+    "targetFreq" : 523.25,
+    "predictedFreq" : 386.35171865622266,
+    "cents" : -525.1027089531352
+  }, {
+    "note" : "C#5",
+    "targetFreq" : 554.37,
+    "predictedFreq" : 398.297264661886,
+    "cents" : -572.4043386432791
+  }, {
+    "note" : "D5",
+    "targetFreq" : 587.33,
+    "predictedFreq" : 437.55904783903907,
+    "cents" : -509.63233354069826
+  }, {
+    "note" : "Eb5",
+    "targetFreq" : 622.25,
+    "predictedFreq" : 629.527815534557,
+    "cents" : 20.13095913409091
+  }, {
+    "note" : "E5",
+    "targetFreq" : 659.26,
+    "predictedFreq" : 702.1125665140145,
+    "cents" : 109.02575999903617
+  }, {
+    "note" : "F#5",
+    "targetFreq" : 739.99,
+    "predictedFreq" : 785.7309401543671,
+    "cents" : 103.83551590101816
+  }, {
+    "note" : "G5",
+    "targetFreq" : 783.99,
+    "predictedFreq" : 831.1984173243563,
+    "cents" : 101.22918566943085
+  }, {
+    "note" : "A5",
+    "targetFreq" : 880.0,
+    "predictedFreq" : 936.5046764660996,
+    "cents" : 107.7392098563257
+  }, {
+    "note" : "B5",
+    "targetFreq" : 987.77,
+    "predictedFreq" : 1053.1253930215153,
+    "cents" : 110.91620032459345
+  } ]
+}, {
+  "instrument" : "SampleChanter.xml",
+  "tuning" : "D4-uilleann-JI-tuning.xml",
+  "name" : "SampleChanter__D4-uilleann-JI-tuning",
+  "numFingerings" : 16,
+  "fingerings" : [ {
+    "note" : "D4",
+    "targetFreq" : 293.66,
+    "predictedFreq" : 195.58723128920423,
+    "cents" : -703.6014938889898
+  }, {
+    "note" : "Eb4",
+    "targetFreq" : 311.28,
+    "predictedFreq" : 217.5207700444538,
+    "cents" : -620.4716659917694
+  }, {
+    "note" : "E4",
+    "targetFreq" : 330.37,
+    "predictedFreq" : 244.67897921542684,
+    "cents" : -519.831027750242
+  }, {
+    "note" : "F#4",
+    "targetFreq" : 367.08,
+    "predictedFreq" : 273.04422825296626,
+    "cents" : -512.3518224156802
+  }, {
+    "note" : "G4",
+    "targetFreq" : 391.55,
+    "predictedFreq" : 292.83310153543323,
+    "cents" : -502.94148536750544
+  }, {
+    "note" : "A4",
+    "targetFreq" : 440.49,
+    "predictedFreq" : 326.6864581514036,
+    "cents" : -517.4431370766025
+  }, {
+    "note" : "B4",
+    "targetFreq" : 489.43,
+    "predictedFreq" : 365.88679987206973,
+    "cents" : -503.6462002502005
+  }, {
+    "note" : "C5",
+    "targetFreq" : 522.06,
+    "predictedFreq" : 386.351718664759,
+    "cents" : -521.1609702758576
+  }, {
+    "note" : "C#5",
+    "targetFreq" : 550.61,
+    "predictedFreq" : 398.29726418125773,
+    "cents" : -560.6222901093902
+  }, {
+    "note" : "D5",
+    "targetFreq" : 587.32,
+    "predictedFreq" : 437.5590478390395,
+    "cents" : -509.6028569468326
+  }, {
+    "note" : "Eb5",
+    "targetFreq" : 622.56,
+    "predictedFreq" : 629.5278155388705,
+    "cents" : 19.26868688543894
+  }, {
+    "note" : "E5",
+    "targetFreq" : 660.74,
+    "predictedFreq" : 702.1125665625317,
+    "cents" : 105.14359729095224
+  }, {
+    "note" : "F#5",
+    "targetFreq" : 734.15,
+    "predictedFreq" : 785.7309396898552,
+    "cents" : 117.55261059400122
+  }, {
+    "note" : "G5",
+    "targetFreq" : 783.09,
+    "predictedFreq" : 831.1984173243487,
+    "cents" : 103.2177386666695
+  }, {
+    "note" : "A5",
+    "targetFreq" : 880.98,
+    "predictedFreq" : 936.5046764661848,
+    "cents" : 105.81231739520247
+  }, {
+    "note" : "B5",
+    "targetFreq" : 978.87,
+    "predictedFreq" : 1053.1253930219314,
+    "cents" : 126.5856550533716
+  } ]
+}, {
+  "instrument" : "SampleChanter.xml",
+  "tuning" : "D4-union-ET-tuning.xml",
+  "name" : "SampleChanter__D4-union-ET-tuning",
+  "numFingerings" : 18,
+  "fingerings" : [ {
+    "note" : "D4",
+    "targetFreq" : 293.66,
+    "predictedFreq" : 195.58723128920423,
+    "cents" : -703.6014938889898
+  }, {
+    "note" : "Eb4",
+    "targetFreq" : 311.13,
+    "predictedFreq" : 217.52077004305613,
+    "cents" : -619.63721568112
+  }, {
+    "note" : "E4",
+    "targetFreq" : 329.63,
+    "predictedFreq" : 244.67897922399564,
+    "cents" : -515.9488648618978
+  }, {
+    "note" : "F#4",
+    "targetFreq" : 369.99,
+    "predictedFreq" : 273.0442283404789,
+    "cents" : -526.0219407330766
+  }, {
+    "note" : "G4",
+    "targetFreq" : 392.0,
+    "predictedFreq" : 292.83310153826005,
+    "cents" : -504.93001296927895
+  }, {
+    "note" : "A4",
+    "targetFreq" : 440.0,
+    "predictedFreq" : 326.68645820281273,
+    "cents" : -515.5162443428856
+  }, {
+    "note" : "B4",
+    "targetFreq" : 493.88,
+    "predictedFreq" : 365.8867998761963,
+    "cents" : -519.3158143151134
+  }, {
+    "note" : "C5",
+    "targetFreq" : 523.25,
+    "predictedFreq" : 386.35171865622266,
+    "cents" : -525.1027089531352
+  }, {
+    "note" : "C#5",
+    "targetFreq" : 554.37,
+    "predictedFreq" : 398.297264661886,
+    "cents" : -572.4043386432791
+  }, {
+    "note" : "D5",
+    "targetFreq" : 587.33,
+    "predictedFreq" : 437.55904783903907,
+    "cents" : -509.63233354069826
+  }, {
+    "note" : "Eb5",
+    "targetFreq" : 622.25,
+    "predictedFreq" : 638.66565986688,
+    "cents" : 45.079866905955505
+  }, {
+    "note" : "E5",
+    "targetFreq" : 659.26,
+    "predictedFreq" : 702.6471364641108,
+    "cents" : 110.34337430976235
+  }, {
+    "note" : "F#5",
+    "targetFreq" : 739.99,
+    "predictedFreq" : 785.7309401543671,
+    "cents" : 103.83551590101816
+  }, {
+    "note" : "G5",
+    "targetFreq" : 783.99,
+    "predictedFreq" : 831.1984173243563,
+    "cents" : 101.22918566943085
+  }, {
+    "note" : "A5",
+    "targetFreq" : 880.0,
+    "predictedFreq" : 936.5046764660996,
+    "cents" : 107.7392098563257
+  }, {
+    "note" : "B5",
+    "targetFreq" : 987.77,
+    "predictedFreq" : 1053.1253930215153,
+    "cents" : 110.91620032459345
+  }, {
+    "note" : "C#6",
+    "targetFreq" : 1108.73,
+    "predictedFreq" : 1072.287357477383,
+    "cents" : -57.85980180061007
+  }, {
+    "note" : "D6",
+    "targetFreq" : 1174.7,
+    "predictedFreq" : 1306.3287860250193,
+    "cents" : 183.87082576995337
+  } ]
+}, {
+  "instrument" : "ReiswigChanter.xml",
+  "tuning" : "A3-Reiswig.xml",
+  "name" : "ReiswigChanter__A3-Reiswig",
+  "numFingerings" : 9,
+  "fingerings" : [ {
+    "note" : "G",
+    "targetFreq" : 195.56,
+    "predictedFreq" : 195.60246171240547,
+    "cents" : 0.3758600059164036
+  }, {
+    "note" : "A",
+    "targetFreq" : 220.0,
+    "predictedFreq" : 220.3036886172248,
+    "cents" : 2.388152411240618
+  }, {
+    "note" : "B",
+    "targetFreq" : 244.44,
+    "predictedFreq" : 244.6121396091091,
+    "cents" : 1.2187410734092852
+  }, {
+    "note" : "C#",
+    "targetFreq" : 275.0,
+    "predictedFreq" : 273.9736225442884,
+    "cents" : -6.4735411537078
+  }, {
+    "note" : "D",
+    "targetFreq" : 293.33,
+    "predictedFreq" : 295.62255812217285,
+    "cents" : 13.478079591815023
+  }, {
+    "note" : "E",
+    "targetFreq" : 330.0,
+    "predictedFreq" : 327.471371261166,
+    "cents" : -13.316685549720148
+  }, {
+    "note" : "F#",
+    "targetFreq" : 366.67,
+    "predictedFreq" : 370.5006821723832,
+    "cents" : 17.992758699709942
+  }, {
+    "note" : "G",
+    "targetFreq" : 391.11,
+    "predictedFreq" : 393.29004719580456,
+    "cents" : 9.623104090933296
+  }, {
+    "note" : "A",
+    "targetFreq" : 440.0,
+    "predictedFreq" : 435.4257053383762,
+    "cents" : -18.092333121706144
+  } ]
+}, {
+  "instrument" : "Didgeridoo-2stage-D2-D3.xml",
+  "tuning" : "Didgeridoo-D2-D3-tuning.xml",
+  "name" : "Didgeridoo-2stage-D2-D3__Didgeridoo-D2-D3-tuning",
+  "numFingerings" : 2,
+  "fingerings" : [ {
+    "note" : "Fundamental",
+    "targetFreq" : 73.42,
+    "predictedFreq" : 72.820248095372,
+    "cents" : -14.20015013797859
+  }, {
+    "note" : "1st trumpet",
+    "targetFreq" : 146.83,
+    "predictedFreq" : 147.31903459997753,
+    "cents" : 5.756497768882992
+  } ]
+}, {
+  "instrument" : "Didgeridoo-3stage-D2-D3.xml",
+  "tuning" : "Didgeridoo-D2-D3-tuning.xml",
+  "name" : "Didgeridoo-3stage-D2-D3__Didgeridoo-D2-D3-tuning",
+  "numFingerings" : 2,
+  "fingerings" : [ {
+    "note" : "Fundamental",
+    "targetFreq" : 73.42,
+    "predictedFreq" : 73.23922906308607,
+    "cents" : -4.267811327748142
+  }, {
+    "note" : "1st trumpet",
+    "targetFreq" : 146.83,
+    "predictedFreq" : 146.4695213392861,
+    "cents" : -4.255535384255492
+  } ]
+} ]

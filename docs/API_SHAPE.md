@@ -2,7 +2,7 @@
 
 ## Purpose
 
-> **Status**: Core API implemented through Phase 4e (NAF study model). Session lifecycle, document I/O, selection, evaluation, optimization, calibration, and constraints creation are all working end-to-end in the browser. Graph/spectrum/sketch/compare tools are Phase 4f/M5.
+> **Status**: Core API implemented across all four study models (NAF, Whistle, Flute, Reed). Session lifecycle, document I/O, selection, evaluation, optimization, calibration, and constraints creation are all working end-to-end in the browser. 240 tests passing. Graph/spectrum/sketch/compare tools and advanced optimization modes (DIRECT-C, multi-start) are remaining M5 work.
 
 Define a stable “StudySession” API that mirrors baseline StudyModel behavior:
 
