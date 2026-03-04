@@ -40,8 +40,10 @@ use wid_eval::calculator_params::MouthpieceModel;
 use wid_optimize::fingering_weights;
 pub use wid_physics::{PhysicalParameters, TemperatureType};
 use wid_types::{
-    Constraints, InstrumentRaw, Tuning,
-    parse_constraints_xml, parse_instrument_xml, parse_tuning_xml,
+    Constraints, InstrumentRaw, Scale, ScaleSymbolList, Temperament, Tuning,
+    parse_constraints_xml, parse_fingering_pattern_xml, parse_instrument_xml,
+    parse_scale_symbol_list_xml, parse_scale_xml, parse_temperament_xml,
+    parse_tuning_xml, scale_from_temperament, tuning_from_scale_and_pattern,
 };
 
 // Re-export key types for convenience.
@@ -109,59 +111,71 @@ impl StudySession {
 
     // ── Document I/O ────────────────────────────────────────────────
 
-    /// Open an XML document, auto-detecting its kind.
+    /// Open an XML document, auto-detecting its kind from the root element.
     ///
-    /// Tries to parse as instrument, tuning, then constraints.
-    /// Returns the assigned document ID and detected kind.
+    /// Detects the root element tag to disambiguate types that would otherwise
+    /// parse successfully into multiple types (e.g., fingeringPattern vs tuning).
     pub fn open_xml(&mut self, xml: &str) -> Result<OpenResult, SessionError> {
-        // Try instrument first
-        if let Ok(inst) = parse_instrument_xml(xml) {
-            let name = inst.name.clone();
-            let id = self.docs.insert(
-                DocKind::Instrument,
-                name.clone(),
-                DocContent::Instrument(inst),
-            );
-            return Ok(OpenResult {
-                doc_id: id,
-                doc_kind: DocKind::Instrument,
-                name,
-            });
-        }
+        let stripped = wid_types::strip_xml_namespaces(xml);
 
-        // Try tuning
-        if let Ok(tuning) = parse_tuning_xml(xml) {
-            let name = tuning.name.clone();
-            let id = self.docs.insert(
-                DocKind::Tuning,
-                name.clone(),
-                DocContent::Tuning(tuning),
-            );
-            return Ok(OpenResult {
-                doc_id: id,
-                doc_kind: DocKind::Tuning,
-                name,
-            });
-        }
+        // Detect root element to route parsing correctly
+        let root = detect_root_element(&stripped);
 
-        // Try constraints
-        if let Ok(constraints) = parse_constraints_xml(xml) {
-            let name = constraints.name.clone();
-            let id = self.docs.insert(
-                DocKind::Constraints,
-                name.clone(),
-                DocContent::Constraints(constraints),
-            );
-            return Ok(OpenResult {
-                doc_id: id,
-                doc_kind: DocKind::Constraints,
-                name,
-            });
+        match root.as_deref() {
+            Some("instrument") => {
+                let inst = parse_instrument_xml(xml)
+                    .map_err(|e| SessionError::InvalidXml(e.to_string()))?;
+                let name = inst.name.clone();
+                let id = self.docs.insert(DocKind::Instrument, name.clone(), DocContent::Instrument(inst));
+                Ok(OpenResult { doc_id: id, doc_kind: DocKind::Instrument, name })
+            }
+            Some("tuning") => {
+                let tuning = parse_tuning_xml(xml)
+                    .map_err(|e| SessionError::InvalidXml(e.to_string()))?;
+                let name = tuning.name.clone();
+                let id = self.docs.insert(DocKind::Tuning, name.clone(), DocContent::Tuning(tuning));
+                Ok(OpenResult { doc_id: id, doc_kind: DocKind::Tuning, name })
+            }
+            Some("constraints") => {
+                let constraints = parse_constraints_xml(xml)
+                    .map_err(|e| SessionError::InvalidXml(e.to_string()))?;
+                let name = constraints.name.clone();
+                let id = self.docs.insert(DocKind::Constraints, name.clone(), DocContent::Constraints(constraints));
+                Ok(OpenResult { doc_id: id, doc_kind: DocKind::Constraints, name })
+            }
+            Some("scale") => {
+                let scale = parse_scale_xml(xml)
+                    .map_err(|e| SessionError::InvalidXml(e.to_string()))?;
+                let name = scale.name.clone();
+                let id = self.docs.insert(DocKind::Scale, name.clone(), DocContent::Scale(scale));
+                Ok(OpenResult { doc_id: id, doc_kind: DocKind::Scale, name })
+            }
+            Some("temperament") => {
+                let temperament = parse_temperament_xml(xml)
+                    .map_err(|e| SessionError::InvalidXml(e.to_string()))?;
+                let name = temperament.name.clone();
+                let id = self.docs.insert(DocKind::Temperament, name.clone(), DocContent::Temperament(temperament));
+                Ok(OpenResult { doc_id: id, doc_kind: DocKind::Temperament, name })
+            }
+            Some("scaleSymbolList") => {
+                let symbols = parse_scale_symbol_list_xml(xml)
+                    .map_err(|e| SessionError::InvalidXml(e.to_string()))?;
+                let name = symbols.name.clone();
+                let id = self.docs.insert(DocKind::ScaleSymbolList, name.clone(), DocContent::ScaleSymbolList(symbols));
+                Ok(OpenResult { doc_id: id, doc_kind: DocKind::ScaleSymbolList, name })
+            }
+            Some("fingeringPattern") => {
+                let pattern = parse_fingering_pattern_xml(xml)
+                    .map_err(|e| SessionError::InvalidXml(e.to_string()))?;
+                let name = pattern.name.clone();
+                let id = self.docs.insert(DocKind::FingeringPattern, name.clone(), DocContent::Tuning(pattern));
+                Ok(OpenResult { doc_id: id, doc_kind: DocKind::FingeringPattern, name })
+            }
+            _ => Err(SessionError::InvalidXml(format!(
+                "Unknown root element: {:?}",
+                root
+            ))),
         }
-
-        Err(SessionError::InvalidXml(
-            "Could not parse as instrument, tuning, or constraints".to_string(),
-        ))
     }
 
     /// Serialize a document back to WIDesigner-compatible XML.
@@ -169,17 +183,33 @@ impl StudySession {
         let doc = self.docs.get(doc_id)
             .ok_or(SessionError::DocNotFound(doc_id))?;
 
-        match &doc.content {
-            DocContent::Instrument(inst) => {
+        match (&doc.kind, &doc.content) {
+            (_, DocContent::Instrument(inst)) => {
                 serialize_instrument_xml(inst)
                     .map_err(|e| SessionError::InvalidXml(e.to_string()))
             }
-            DocContent::Tuning(tuning) => {
+            (DocKind::FingeringPattern, DocContent::Tuning(tuning)) => {
+                serialize_fingering_pattern_xml(tuning)
+                    .map_err(|e| SessionError::InvalidXml(e.to_string()))
+            }
+            (_, DocContent::Tuning(tuning)) => {
                 serialize_tuning_xml(tuning)
                     .map_err(|e| SessionError::InvalidXml(e.to_string()))
             }
-            DocContent::Constraints(constraints) => {
+            (_, DocContent::Constraints(constraints)) => {
                 serialize_constraints_xml(constraints)
+                    .map_err(|e| SessionError::InvalidXml(e.to_string()))
+            }
+            (_, DocContent::Scale(scale)) => {
+                serialize_scale_xml(scale)
+                    .map_err(|e| SessionError::InvalidXml(e.to_string()))
+            }
+            (_, DocContent::Temperament(temperament)) => {
+                serialize_temperament_xml(temperament)
+                    .map_err(|e| SessionError::InvalidXml(e.to_string()))
+            }
+            (_, DocContent::ScaleSymbolList(symbols)) => {
+                serialize_scale_symbol_list_xml(symbols)
                     .map_err(|e| SessionError::InvalidXml(e.to_string()))
             }
         }
@@ -1029,6 +1059,91 @@ impl StudySession {
             .ok_or(SessionError::DocNotFound(doc_id))
     }
 
+    // ── Wizard operations ────────────────────────────────────────────
+
+    /// Generate a Scale from a Temperament, symbols, reference note, and frequency.
+    ///
+    /// The scale is stored as a new document and returned as an OpenResult.
+    pub fn generate_scale(
+        &mut self,
+        temperament: &Temperament,
+        symbols: &ScaleSymbolList,
+        ref_name: &str,
+        ref_frequency: f64,
+        scale_name: &str,
+    ) -> Result<OpenResult, SessionError> {
+        let scale = scale_from_temperament(temperament, symbols, ref_name, ref_frequency, scale_name)
+            .map_err(|e| SessionError::EvalError(e))?;
+        let name = scale.name.clone();
+        let id = self.docs.insert(
+            DocKind::Scale,
+            name.clone(),
+            DocContent::Scale(scale),
+        );
+        Ok(OpenResult {
+            doc_id: id,
+            doc_kind: DocKind::Scale,
+            name,
+        })
+    }
+
+    /// Generate a Tuning from a Scale and a FingeringPattern.
+    ///
+    /// The generated Tuning is stored as a new document and returned as an OpenResult.
+    pub fn generate_tuning(
+        &mut self,
+        scale_id: DocId,
+        pattern_id: DocId,
+        tuning_name: &str,
+    ) -> Result<OpenResult, SessionError> {
+        let scale = self.docs.get_scale(scale_id)
+            .ok_or(SessionError::DocNotFound(scale_id))?
+            .clone();
+        let pattern = self.docs.get_tuning(pattern_id)
+            .ok_or(SessionError::DocNotFound(pattern_id))?
+            .clone();
+
+        let tuning = tuning_from_scale_and_pattern(&scale, &pattern, tuning_name);
+        let name = tuning.name.clone();
+        let id = self.docs.insert(
+            DocKind::Tuning,
+            name.clone(),
+            DocContent::Tuning(tuning),
+        );
+        Ok(OpenResult {
+            doc_id: id,
+            doc_kind: DocKind::Tuning,
+            name,
+        })
+    }
+
+    /// Get the scale content for a given doc ID.
+    pub fn get_scale(&self, doc_id: DocId) -> Result<&Scale, SessionError> {
+        self.docs.get_scale(doc_id).ok_or(SessionError::DocNotFound(doc_id))
+    }
+
+    /// Get the temperament content for a given doc ID.
+    pub fn get_temperament(&self, doc_id: DocId) -> Result<&Temperament, SessionError> {
+        self.docs.get_temperament(doc_id).ok_or(SessionError::DocNotFound(doc_id))
+    }
+
+    /// Get the scale symbol list content for a given doc ID.
+    pub fn get_scale_symbol_list(&self, doc_id: DocId) -> Result<&ScaleSymbolList, SessionError> {
+        self.docs.get_scale_symbol_list(doc_id).ok_or(SessionError::DocNotFound(doc_id))
+    }
+
+    // ── Instrument validation ───────────────────────────────────────
+
+    /// Validate instrument geometry constraints.
+    ///
+    /// Returns a list of validation errors (empty = valid).
+    /// Java reference: `Mouthpiece.checkValidity()`.
+    pub fn validate_instrument(&self, doc_id: DocId) -> Result<Vec<String>, SessionError> {
+        let inst = self.docs.get_instrument(doc_id)
+            .ok_or(SessionError::DocNotFound(doc_id))?;
+        Ok(validate_instrument_geometry(inst))
+    }
+
     // ── Document access ─────────────────────────────────────────────
 
     /// Get the document store (for tests and inspection).
@@ -1830,6 +1945,47 @@ fn serialize_constraints_xml(constraints: &Constraints) -> Result<String, quick_
     Ok(xml)
 }
 
+fn serialize_scale_xml(scale: &Scale) -> Result<String, quick_xml::SeError> {
+    let inner = quick_xml::se::to_string(scale)?;
+    let xml = format!(
+        "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n{}",
+        add_namespace(&inner, "scale", "http://www.wwidesigner.com/Tuning")
+    );
+    Ok(xml)
+}
+
+fn serialize_temperament_xml(temperament: &Temperament) -> Result<String, quick_xml::SeError> {
+    let inner = quick_xml::se::to_string(temperament)?;
+    let xml = format!(
+        "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n{}",
+        add_namespace(&inner, "temperament", "http://www.wwidesigner.com/Tuning")
+    );
+    Ok(xml)
+}
+
+fn serialize_scale_symbol_list_xml(symbols: &ScaleSymbolList) -> Result<String, quick_xml::SeError> {
+    let inner = quick_xml::se::to_string(symbols)?;
+    let xml = format!(
+        "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n{}",
+        add_namespace(&inner, "scaleSymbolList", "http://www.wwidesigner.com/Tuning")
+    );
+    Ok(xml)
+}
+
+fn serialize_fingering_pattern_xml(tuning: &Tuning) -> Result<String, quick_xml::SeError> {
+    let inner = quick_xml::se::to_string(tuning)?;
+    // Replace <tuning> with <fingeringPattern> in the serialized output
+    let inner = inner
+        .replacen("<tuning>", "<fingeringPattern>", 1)
+        .replacen("<tuning ", "<fingeringPattern ", 1)
+        .replace("</tuning>", "</fingeringPattern>");
+    let xml = format!(
+        "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n{}",
+        add_namespace(&inner, "fingeringPattern", "http://www.wwidesigner.com/Tuning")
+    );
+    Ok(xml)
+}
+
 /// Extract windway info from a raw instrument for supplementary calculations.
 ///
 /// Returns `(window_length, windway_area)` in metres and mm² respectively.
@@ -1910,12 +2066,97 @@ fn extract_mouthpiece_sketch(mp: &wid_types::MouthpieceRaw) -> types::SketchMout
 }
 
 /// Add WIDesigner namespace prefix to the root element.
+/// Extract the root element name from namespace-stripped XML.
+///
+/// E.g., `<instrument>` → "instrument", `<tuning>` → "tuning".
+fn detect_root_element(xml: &str) -> Option<String> {
+    // Skip XML declaration if present
+    let xml = xml.trim_start();
+    let start = if xml.starts_with("<?") {
+        xml.find("?>").map(|i| &xml[i + 2..]).unwrap_or(xml)
+    } else {
+        xml
+    };
+    let start = start.trim_start();
+    if !start.starts_with('<') {
+        return None;
+    }
+    let after_lt = &start[1..];
+    let end = after_lt.find(|c: char| c.is_whitespace() || c == '>' || c == '/')?;
+    Some(after_lt[..end].to_string())
+}
+
 fn add_namespace(xml: &str, root_tag: &str, namespace: &str) -> String {
     let open = format!("<{root_tag}");
     let replacement = format!("<ns2:{root_tag} xmlns:ns2=\"{namespace}\"");
     let close = format!("</{root_tag}>");
     let close_replacement = format!("</ns2:{root_tag}>");
     xml.replacen(&open, &replacement, 1).replace(&close, &close_replacement)
+}
+
+/// Validate instrument geometry constraints.
+///
+/// Java reference: `Mouthpiece.checkValidity()` lines 400-419.
+///
+/// Rules:
+/// - At least 2 bore points required
+/// - Reed instruments: mouthpiece position must equal first bore position (±0.0001m)
+/// - Fipple/embouchure: position >= first bore and position < last bore
+fn validate_instrument_geometry(inst: &InstrumentRaw) -> Vec<String> {
+    let mut errors = Vec::new();
+
+    if inst.bore_points.len() < 2 {
+        errors.push("Instrument must have at least 2 bore points".to_string());
+        return errors;
+    }
+
+    let scale = inst.length_type.to_metres();
+    let mp_pos = inst.mouthpiece.position * scale;
+    let bore_bottom = inst.bore_points.first().unwrap().bore_position * scale;
+    let bore_top = inst.bore_points.last().unwrap().bore_position * scale;
+
+    let is_reed = inst.mouthpiece.single_reed.is_some()
+        || inst.mouthpiece.double_reed.is_some()
+        || inst.mouthpiece.lip_reed.is_some();
+
+    if is_reed {
+        // Reed: mouthpiece position must equal lowest bore position
+        if (mp_pos - bore_bottom).abs() > 0.0001 {
+            errors.push(format!(
+                "Reed mouthpiece position ({:.4}m) must equal lowest bore position ({:.4}m) within 0.0001m",
+                mp_pos, bore_bottom
+            ));
+        }
+    } else {
+        // Fipple/embouchure: position must be within bore range
+        if mp_pos < bore_bottom - 0.0001 {
+            errors.push(format!(
+                "Mouthpiece position ({:.4}m) is below the lowest bore position ({:.4}m)",
+                mp_pos, bore_bottom
+            ));
+        }
+        if mp_pos >= bore_top + 0.0001 {
+            errors.push(format!(
+                "Mouthpiece position ({:.4}m) must be less than the highest bore position ({:.4}m)",
+                mp_pos, bore_top
+            ));
+        }
+    }
+
+    // Check holes are within bore range
+    for (i, hole) in inst.holes.iter().enumerate() {
+        let hp = hole.bore_position * scale;
+        if hp < bore_bottom - 0.0001 || hp > bore_top + 0.0001 {
+            let fallback = format!("Hole {}", i + 1);
+            let name = hole.name.as_deref().unwrap_or(&fallback);
+            errors.push(format!(
+                "{name} position ({:.4}m) is outside the bore range ({:.4}m to {:.4}m)",
+                hp, bore_bottom, bore_top
+            ));
+        }
+    }
+
+    errors
 }
 
 #[cfg(test)]
@@ -2947,5 +3188,177 @@ mod tests {
             .find(|r| r.field == "Fipple Factor")
             .expect("Should detect fipple factor change");
         assert!((ff_row.difference.unwrap() - 0.25).abs() < 1e-10);
+    }
+
+    // ══════════════════════════════════════════════════════════════════
+    // Wizard tests
+    // ══════════════════════════════════════════════════════════════════
+
+    const SCALE_XML: &str = include_str!(
+        "../../../../oracle/v2.6.0/NafStudy/scales/A4_ET_NAT_chromatic_scale.xml"
+    );
+    const TEMPERAMENT_XML: &str = include_str!(
+        "../../../../oracle/v2.6.0/NafStudy/temperaments/NAF_ET_chromatic_temperament.xml"
+    );
+    const FINGERING_PATTERN_XML: &str = include_str!(
+        "../../../../oracle/v2.6.0/NafStudy/fingerings/Wood_Wind_NAF_6-hole_fingering.xml"
+    );
+
+    #[test]
+    fn open_scale_xml() {
+        let mut session = StudySession::new(StudyKind::NAF);
+        let result = session.open_xml(SCALE_XML).unwrap();
+        assert_eq!(result.doc_kind, DocKind::Scale);
+        assert_eq!(result.name, "A4_chromatic_ET_scale");
+    }
+
+    #[test]
+    fn open_temperament_xml() {
+        let mut session = StudySession::new(StudyKind::NAF);
+        let result = session.open_xml(TEMPERAMENT_XML).unwrap();
+        assert_eq!(result.doc_kind, DocKind::Temperament);
+        assert_eq!(result.name, "NAF 12-Tone Equal Temperament");
+    }
+
+    #[test]
+    fn open_fingering_pattern_xml() {
+        let mut session = StudySession::new(StudyKind::NAF);
+        let result = session.open_xml(FINGERING_PATTERN_XML).unwrap();
+        assert_eq!(result.doc_kind, DocKind::FingeringPattern);
+        assert_eq!(result.name, "6-hole Wood Wind Fingering");
+    }
+
+    #[test]
+    fn list_wizard_docs() {
+        let mut session = StudySession::new(StudyKind::NAF);
+        session.open_xml(SCALE_XML).unwrap();
+        session.open_xml(TEMPERAMENT_XML).unwrap();
+        session.open_xml(FINGERING_PATTERN_XML).unwrap();
+
+        assert_eq!(session.list_docs(DocKind::Scale).len(), 1);
+        assert_eq!(session.list_docs(DocKind::Temperament).len(), 1);
+        assert_eq!(session.list_docs(DocKind::FingeringPattern).len(), 1);
+    }
+
+    #[test]
+    fn generate_scale_from_session_temperament() {
+        let mut session = StudySession::new(StudyKind::NAF);
+        let temp_result = session.open_xml(TEMPERAMENT_XML).unwrap();
+        let temp = session.get_temperament(temp_result.doc_id).unwrap().clone();
+        let symbols = wid_types::ScaleSymbolList::scientific_sharps();
+
+        let result = session
+            .generate_scale(&temp, &symbols, "A4", 440.0, "Test Scale")
+            .unwrap();
+        assert_eq!(result.doc_kind, DocKind::Scale);
+
+        let scale = session.get_scale(result.doc_id).unwrap();
+        assert_eq!(scale.notes[0].name, "A4");
+        assert!((scale.notes[0].frequency - 440.0).abs() < 1e-10);
+    }
+
+    #[test]
+    fn generate_tuning_from_scale_and_pattern() {
+        let mut session = StudySession::new(StudyKind::NAF);
+        let scale_result = session.open_xml(SCALE_XML).unwrap();
+        let pattern_result = session.open_xml(FINGERING_PATTERN_XML).unwrap();
+
+        let result = session
+            .generate_tuning(scale_result.doc_id, pattern_result.doc_id, "Gen Tuning")
+            .unwrap();
+
+        assert_eq!(result.doc_kind, DocKind::Tuning);
+        let tuning = session.get_tuning(result.doc_id).unwrap();
+        assert_eq!(tuning.name, "Gen Tuning");
+        assert_eq!(tuning.number_of_holes, 6);
+        assert_eq!(tuning.fingerings.len(), 14);
+        // First fingering should have A4 = 440 Hz from the scale
+        assert_eq!(tuning.fingerings[0].note.name, "A4");
+        assert!((tuning.fingerings[0].note.frequency.unwrap() - 440.0).abs() < 1e-10);
+    }
+
+    #[test]
+    fn scale_xml_roundtrip() {
+        let mut session = StudySession::new(StudyKind::NAF);
+        let result = session.open_xml(SCALE_XML).unwrap();
+        let xml = session.export_xml(result.doc_id).unwrap();
+        assert!(xml.contains("<ns2:scale"));
+        assert!(xml.contains("A4_chromatic_ET_scale"));
+        // Re-parse the exported XML
+        let result2 = session.open_xml(&xml).unwrap();
+        assert_eq!(result2.doc_kind, DocKind::Scale);
+        let scale = session.get_scale(result2.doc_id).unwrap();
+        assert_eq!(scale.notes.len(), 15);
+    }
+
+    #[test]
+    fn temperament_xml_roundtrip() {
+        let mut session = StudySession::new(StudyKind::NAF);
+        let result = session.open_xml(TEMPERAMENT_XML).unwrap();
+        let xml = session.export_xml(result.doc_id).unwrap();
+        assert!(xml.contains("<ns2:temperament"));
+        // Re-parse
+        let result2 = session.open_xml(&xml).unwrap();
+        assert_eq!(result2.doc_kind, DocKind::Temperament);
+        let temp = session.get_temperament(result2.doc_id).unwrap();
+        assert_eq!(temp.ratios.len(), 16);
+    }
+
+    #[test]
+    fn fingering_pattern_xml_roundtrip() {
+        let mut session = StudySession::new(StudyKind::NAF);
+        let result = session.open_xml(FINGERING_PATTERN_XML).unwrap();
+        let xml = session.export_xml(result.doc_id).unwrap();
+        assert!(xml.contains("<ns2:fingeringPattern"));
+        // Re-parse
+        let result2 = session.open_xml(&xml).unwrap();
+        assert_eq!(result2.doc_kind, DocKind::FingeringPattern);
+    }
+
+    // ══════════════════════════════════════════════════════════════════
+    // Instrument validation tests
+    // ══════════════════════════════════════════════════════════════════
+
+    #[test]
+    fn validate_naf_instrument_passes() {
+        let mut session = StudySession::new(StudyKind::NAF);
+        let inst = session.open_xml(NAF_6HOLE_XML).unwrap();
+        let errors = session.validate_instrument(inst.doc_id).unwrap();
+        assert!(errors.is_empty(), "NAF instrument should be valid, got: {errors:?}");
+    }
+
+    #[test]
+    fn validate_whistle_instrument_passes() {
+        let mut session = StudySession::new(StudyKind::Whistle);
+        let inst = session.open_xml(WHISTLE_INST_XML).unwrap();
+        let errors = session.validate_instrument(inst.doc_id).unwrap();
+        assert!(errors.is_empty(), "Whistle instrument should be valid, got: {errors:?}");
+    }
+
+    const REED_INST_XML: &str = include_str!(
+        "../../../../oracle/v2.6.0/ReedStudy/instruments/SampleChanter.xml"
+    );
+
+    #[test]
+    fn validate_reed_instrument_passes() {
+        let mut session = StudySession::new(StudyKind::Reed);
+        let inst = session.open_xml(REED_INST_XML).unwrap();
+        let errors = session.validate_instrument(inst.doc_id).unwrap();
+        assert!(errors.is_empty(), "Reed instrument should be valid, got: {errors:?}");
+    }
+
+    #[test]
+    fn validate_invalid_reed_position_fails() {
+        let mut session = StudySession::new(StudyKind::Reed);
+        let inst = session.open_xml(REED_INST_XML).unwrap();
+
+        // Modify mouthpiece position to be different from bore bottom
+        let mut data = session.get_instrument(inst.doc_id).unwrap().clone();
+        data.mouthpiece.position = 999.0; // way off
+        session.set_instrument(inst.doc_id, data).unwrap();
+
+        let errors = session.validate_instrument(inst.doc_id).unwrap();
+        assert!(!errors.is_empty(), "Modified reed should have validation errors");
+        assert!(errors[0].contains("Reed mouthpiece position"));
     }
 }

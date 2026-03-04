@@ -116,6 +116,24 @@ impl WasmSession {
             "supplementary_info" => self.cmd_supplementary_info(),
             "graph_tuning" => self.cmd_graph_tuning(),
             "note_spectrum" => self.cmd_note_spectrum(&cmd.args),
+            "validate_instrument" => self.cmd_validate_instrument(&cmd.args),
+            "generate_scale" => self.cmd_generate_scale(&cmd.args),
+            "generate_tuning" => self.cmd_generate_tuning(&cmd.args),
+            "list_scales" => {
+                Response::ok(self.session.list_docs(wid_session::DocKind::Scale))
+            }
+            "list_temperaments" => {
+                Response::ok(self.session.list_docs(wid_session::DocKind::Temperament))
+            }
+            "list_scale_symbol_lists" => {
+                Response::ok(self.session.list_docs(wid_session::DocKind::ScaleSymbolList))
+            }
+            "list_fingering_patterns" => {
+                Response::ok(self.session.list_docs(wid_session::DocKind::FingeringPattern))
+            }
+            "get_scale" => self.cmd_get_scale(&cmd.args),
+            "get_temperament" => self.cmd_get_temperament(&cmd.args),
+            "get_scale_symbol_list" => self.cmd_get_scale_symbol_list(&cmd.args),
             _ => Response::err(format!("Unknown command: {}", cmd.cmd)),
         }
     }
@@ -416,6 +434,124 @@ impl WasmSession {
         };
         match self.session.note_spectrum(index) {
             Ok(r) => Response::ok(r),
+            Err(e) => Response::err(e),
+        }
+    }
+
+    // ── Wizard + validation handlers ──────────────────────────────────
+
+    fn cmd_validate_instrument(&self, args: &serde_json::Value) -> String {
+        let doc_id = match args.get("docId").and_then(|v| v.as_u64()) {
+            Some(id) => wid_session::DocId(id as u32),
+            None => return Response::err("Missing 'docId' argument"),
+        };
+        match self.session.validate_instrument(doc_id) {
+            Ok(errors) => Response::ok(errors),
+            Err(e) => Response::err(e),
+        }
+    }
+
+    fn cmd_generate_scale(&mut self, args: &serde_json::Value) -> String {
+        // Accept either inline temperament/symbols or doc IDs
+        let ref_name = match args.get("refName").and_then(|v| v.as_str()) {
+            Some(s) => s,
+            None => return Response::err("Missing 'refName' argument"),
+        };
+        let ref_frequency = match args.get("refFrequency").and_then(|v| v.as_f64()) {
+            Some(f) => f,
+            None => return Response::err("Missing 'refFrequency' argument"),
+        };
+        let scale_name = args
+            .get("scaleName")
+            .and_then(|v| v.as_str())
+            .unwrap_or("Generated Scale");
+
+        // Get temperament from doc ID or standard factory
+        let temperament = if let Some(id) = args.get("temperamentId").and_then(|v| v.as_u64()) {
+            match self.session.get_temperament(wid_session::DocId(id as u32)) {
+                Ok(t) => t.clone(),
+                Err(e) => return Response::err(e),
+            }
+        } else if let Some(kind) = args.get("temperament").and_then(|v| v.as_str()) {
+            match kind {
+                "ET12" => wid_types::Temperament::equal_temperament_12(),
+                "JI12" => wid_types::Temperament::just_intonation_12(),
+                _ => return Response::err(format!("Unknown standard temperament: {kind}")),
+            }
+        } else {
+            return Response::err("Missing 'temperamentId' or 'temperament' argument");
+        };
+
+        // Get symbols from doc ID or standard factory
+        let symbols = if let Some(id) = args.get("symbolsId").and_then(|v| v.as_u64()) {
+            match self.session.get_scale_symbol_list(wid_session::DocId(id as u32)) {
+                Ok(s) => s.clone(),
+                Err(e) => return Response::err(e),
+            }
+        } else if let Some(kind) = args.get("symbols").and_then(|v| v.as_str()) {
+            match kind {
+                "scientific_sharps" => wid_types::ScaleSymbolList::scientific_sharps(),
+                "scientific_flats" => wid_types::ScaleSymbolList::scientific_flats(),
+                _ => return Response::err(format!("Unknown standard symbols: {kind}")),
+            }
+        } else {
+            return Response::err("Missing 'symbolsId' or 'symbols' argument");
+        };
+
+        match self.session.generate_scale(&temperament, &symbols, ref_name, ref_frequency, scale_name) {
+            Ok(r) => Response::ok(r),
+            Err(e) => Response::err(e),
+        }
+    }
+
+    fn cmd_generate_tuning(&mut self, args: &serde_json::Value) -> String {
+        let scale_id = match args.get("scaleId").and_then(|v| v.as_u64()) {
+            Some(id) => wid_session::DocId(id as u32),
+            None => return Response::err("Missing 'scaleId' argument"),
+        };
+        let pattern_id = match args.get("patternId").and_then(|v| v.as_u64()) {
+            Some(id) => wid_session::DocId(id as u32),
+            None => return Response::err("Missing 'patternId' argument"),
+        };
+        let name = args
+            .get("name")
+            .and_then(|v| v.as_str())
+            .unwrap_or("Generated Tuning");
+        match self.session.generate_tuning(scale_id, pattern_id, name) {
+            Ok(r) => Response::ok(r),
+            Err(e) => Response::err(e),
+        }
+    }
+
+    fn cmd_get_scale(&self, args: &serde_json::Value) -> String {
+        let doc_id = match args.get("docId").and_then(|v| v.as_u64()) {
+            Some(id) => wid_session::DocId(id as u32),
+            None => return Response::err("Missing 'docId' argument"),
+        };
+        match self.session.get_scale(doc_id) {
+            Ok(s) => Response::ok(s),
+            Err(e) => Response::err(e),
+        }
+    }
+
+    fn cmd_get_temperament(&self, args: &serde_json::Value) -> String {
+        let doc_id = match args.get("docId").and_then(|v| v.as_u64()) {
+            Some(id) => wid_session::DocId(id as u32),
+            None => return Response::err("Missing 'docId' argument"),
+        };
+        match self.session.get_temperament(doc_id) {
+            Ok(t) => Response::ok(t),
+            Err(e) => Response::err(e),
+        }
+    }
+
+    fn cmd_get_scale_symbol_list(&self, args: &serde_json::Value) -> String {
+        let doc_id = match args.get("docId").and_then(|v| v.as_u64()) {
+            Some(id) => wid_session::DocId(id as u32),
+            None => return Response::err("Missing 'docId' argument"),
+        };
+        match self.session.get_scale_symbol_list(doc_id) {
+            Ok(s) => Response::ok(s),
             Err(e) => Response::err(e),
         }
     }

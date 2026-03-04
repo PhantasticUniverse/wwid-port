@@ -12,6 +12,10 @@ pub enum DocKind {
     Instrument,
     Tuning,
     Constraints,
+    Scale,
+    Temperament,
+    ScaleSymbolList,
+    FingeringPattern,
 }
 
 /// Study model kind.

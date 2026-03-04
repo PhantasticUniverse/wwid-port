@@ -13,10 +13,12 @@
 pub mod constraints;
 pub mod instrument;
 pub mod tuning;
+pub mod wizard;
 
 pub use constraints::*;
 pub use instrument::*;
 pub use tuning::*;
+pub use wizard::*;
 
 /// Strip WIDesigner namespace prefixes from XML for serde deserialization.
 ///
@@ -51,6 +53,38 @@ pub fn parse_tuning_xml(xml: &str) -> Result<Tuning, quick_xml::DeError> {
 /// Deserialize constraints from WIDesigner XML.
 pub fn parse_constraints_xml(xml: &str) -> Result<Constraints, quick_xml::DeError> {
     let clean = strip_xml_namespaces(xml);
+    quick_xml::de::from_str(&clean)
+}
+
+/// Deserialize a scale from WIDesigner XML.
+pub fn parse_scale_xml(xml: &str) -> Result<Scale, quick_xml::DeError> {
+    let clean = strip_xml_namespaces(xml);
+    quick_xml::de::from_str(&clean)
+}
+
+/// Deserialize a temperament from WIDesigner XML.
+pub fn parse_temperament_xml(xml: &str) -> Result<Temperament, quick_xml::DeError> {
+    let clean = strip_xml_namespaces(xml);
+    quick_xml::de::from_str(&clean)
+}
+
+/// Deserialize a scale symbol list from WIDesigner XML.
+pub fn parse_scale_symbol_list_xml(xml: &str) -> Result<ScaleSymbolList, quick_xml::DeError> {
+    let clean = strip_xml_namespaces(xml);
+    quick_xml::de::from_str(&clean)
+}
+
+/// Deserialize a fingering pattern from WIDesigner XML.
+///
+/// FingeringPattern uses the same structure as Tuning but with a different
+/// root element and fingerings that lack `<note>` elements.
+pub fn parse_fingering_pattern_xml(xml: &str) -> Result<Tuning, quick_xml::DeError> {
+    let clean = strip_xml_namespaces(xml);
+    // Replace <fingeringPattern> root with <tuning> so serde matches
+    let clean = clean
+        .replacen("<fingeringPattern>", "<tuning>", 1)
+        .replacen("<fingeringPattern ", "<tuning ", 1)
+        .replace("</fingeringPattern>", "</tuning>");
     quick_xml::de::from_str(&clean)
 }
 
@@ -340,6 +374,161 @@ mod tests {
                     f.note.name,
                 );
                 assert_eq!(f.open_holes.len(), 6, "{label} fingering {i}: expected 6 hole states");
+            }
+        }
+    }
+
+    // ── Scale / Temperament / ScaleSymbolList / FingeringPattern ──
+
+    const SCALE_XML: &str = include_str!(
+        "../../../../oracle/v2.6.0/NafStudy/scales/A4_ET_NAT_chromatic_scale.xml"
+    );
+    const TEMPERAMENT_XML: &str = include_str!(
+        "../../../../oracle/v2.6.0/NafStudy/temperaments/NAF_ET_chromatic_temperament.xml"
+    );
+    const FINGERING_PATTERN_XML: &str = include_str!(
+        "../../../../oracle/v2.6.0/NafStudy/fingerings/Wood_Wind_NAF_6-hole_fingering.xml"
+    );
+
+    #[test]
+    fn parse_scale_xml() {
+        let scale = super::parse_scale_xml(SCALE_XML).expect("parse failed");
+        assert_eq!(scale.name, "A4_chromatic_ET_scale");
+        assert_eq!(scale.notes.len(), 15);
+        assert_eq!(scale.notes[0].name, "A4");
+        assert_abs_diff_eq!(scale.notes[0].frequency, 440.0, epsilon = 1e-10);
+        assert_eq!(scale.notes[11].name, "A5");
+        assert_abs_diff_eq!(scale.notes[11].frequency, 880.0, epsilon = 1e-10);
+    }
+
+    #[test]
+    fn parse_temperament_xml() {
+        let temp = super::parse_temperament_xml(TEMPERAMENT_XML).expect("parse failed");
+        assert_eq!(temp.name, "NAF 12-Tone Equal Temperament");
+        assert_eq!(temp.ratios.len(), 16);
+        assert_abs_diff_eq!(temp.ratios[0], 1.0, epsilon = 1e-15);
+        assert_abs_diff_eq!(temp.ratios[12], 2.0, epsilon = 1e-15);
+    }
+
+    #[test]
+    fn parse_fingering_pattern_xml() {
+        let pattern =
+            super::parse_fingering_pattern_xml(FINGERING_PATTERN_XML).expect("parse failed");
+        assert_eq!(pattern.name, "6-hole Wood Wind Fingering");
+        assert_eq!(pattern.number_of_holes, 6);
+        assert_eq!(pattern.fingerings.len(), 14);
+        // FingeringPattern fingerings have no note name
+        assert!(pattern.fingerings[0].note.name.is_empty());
+        assert!(pattern.fingerings[0].note.frequency.is_none());
+        // First fingering: all holes closed
+        assert_eq!(
+            pattern.fingerings[0].open_holes,
+            vec![false, false, false, false, false, false]
+        );
+        // Last fingering check
+        assert_eq!(pattern.fingerings[13].optimization_weight, Some(1));
+    }
+
+    #[test]
+    fn equal_temperament_12_factory() {
+        let tet = Temperament::equal_temperament_12();
+        assert_eq!(tet.ratios.len(), 37);
+        assert_abs_diff_eq!(tet.ratios[0], 1.0, epsilon = 1e-15);
+        assert_abs_diff_eq!(tet.ratios[12], 2.0, epsilon = 1e-12);
+        assert_abs_diff_eq!(tet.ratios[24], 4.0, epsilon = 1e-12);
+        assert_abs_diff_eq!(tet.ratios[36], 8.0, epsilon = 1e-12);
+    }
+
+    #[test]
+    fn just_intonation_12_factory() {
+        let ji = Temperament::just_intonation_12();
+        assert_eq!(ji.ratios.len(), 37);
+        assert_abs_diff_eq!(ji.ratios[0], 1.0, epsilon = 1e-15);
+        assert_abs_diff_eq!(ji.ratios[7], 3.0 / 2.0, epsilon = 1e-15); // perfect fifth
+        assert_abs_diff_eq!(ji.ratios[12], 2.0, epsilon = 1e-15); // octave
+        assert_abs_diff_eq!(ji.ratios[36], 8.0, epsilon = 1e-15); // 3 octaves
+    }
+
+    #[test]
+    fn scale_from_temperament_round_trip() {
+        let temp = super::parse_temperament_xml(TEMPERAMENT_XML).unwrap();
+        let symbols = ScaleSymbolList::scientific_sharps();
+
+        let scale = scale_from_temperament(&temp, &symbols, "A4", 440.0, "Test Scale")
+            .expect("generation failed");
+
+        assert_eq!(scale.notes.len(), 16); // 16 ratios in NAF temperament
+        assert_eq!(scale.notes[0].name, "A4");
+        assert_abs_diff_eq!(scale.notes[0].frequency, 440.0, epsilon = 1e-10);
+        // A#4 = 440 * 2^(1/12)
+        assert_abs_diff_eq!(
+            scale.notes[1].frequency,
+            440.0 * 2.0_f64.powf(1.0 / 12.0),
+            epsilon = 1e-6,
+        );
+    }
+
+    #[test]
+    fn tuning_from_scale_and_pattern() {
+        let scale = super::parse_scale_xml(SCALE_XML).unwrap();
+        let pattern = super::parse_fingering_pattern_xml(FINGERING_PATTERN_XML).unwrap();
+
+        let tuning = super::tuning_from_scale_and_pattern(&scale, &pattern, "Generated Tuning");
+
+        assert_eq!(tuning.name, "Generated Tuning");
+        assert_eq!(tuning.number_of_holes, 6);
+        assert_eq!(tuning.fingerings.len(), 14);
+        // First fingering should get first scale note (A4 = 440 Hz)
+        assert_eq!(tuning.fingerings[0].note.name, "A4");
+        assert_abs_diff_eq!(
+            tuning.fingerings[0].note.frequency.unwrap(),
+            440.0,
+            epsilon = 1e-10,
+        );
+        // Hole pattern preserved
+        assert_eq!(
+            tuning.fingerings[0].open_holes,
+            vec![false, false, false, false, false, false]
+        );
+    }
+
+    #[test]
+    fn parse_all_naf_scales() {
+        let scales: &[(&str, &str)] = &[
+            ("A4", include_str!("../../../../oracle/v2.6.0/NafStudy/scales/A4_ET_NAT_chromatic_scale.xml")),
+            ("C4", include_str!("../../../../oracle/v2.6.0/NafStudy/scales/C4_ET_NAF_chromatic_scale.xml")),
+            ("D4", include_str!("../../../../oracle/v2.6.0/NafStudy/scales/D4_ET_NAF_chromatic_scale.xml")),
+            ("E4", include_str!("../../../../oracle/v2.6.0/NafStudy/scales/E4_ET_NAF_chromatic_scale.xml")),
+            ("F4", include_str!("../../../../oracle/v2.6.0/NafStudy/scales/F4_ET_NAF_chromatic_scale.xml")),
+            ("F#5", include_str!("../../../../oracle/v2.6.0/NafStudy/scales/F#5_ET_NAF_chromatic_scale.xml")),
+            ("G4", include_str!("../../../../oracle/v2.6.0/NafStudy/scales/G4_ET_NAF_chromatic_scale.xml")),
+        ];
+
+        for (label, xml) in scales {
+            let scale = super::parse_scale_xml(xml)
+                .unwrap_or_else(|e| panic!("Parse {label} scale failed: {e}"));
+            assert!(!scale.notes.is_empty(), "{label}: expected at least one note");
+            for note in &scale.notes {
+                assert!(!note.name.is_empty(), "{label}: note name empty");
+                assert!(note.frequency > 0.0, "{label}: frequency must be positive");
+            }
+        }
+    }
+
+    #[test]
+    fn parse_all_naf_temperaments() {
+        let temperaments: &[(&str, &str)] = &[
+            ("ET", include_str!("../../../../oracle/v2.6.0/NafStudy/temperaments/NAF_ET_chromatic_temperament.xml")),
+            ("JI", include_str!("../../../../oracle/v2.6.0/NafStudy/temperaments/NAF_JI_chromatic_temperament.xml")),
+        ];
+
+        for (label, xml) in temperaments {
+            let temp = super::parse_temperament_xml(xml)
+                .unwrap_or_else(|e| panic!("Parse {label} temperament failed: {e}"));
+            assert!(!temp.ratios.is_empty(), "{label}: expected at least one ratio");
+            assert_abs_diff_eq!(temp.ratios[0], 1.0, epsilon = 1e-15,);
+            for (i, &r) in temp.ratios.iter().enumerate() {
+                assert!(r >= 1.0, "{label}: ratio[{i}] = {r} < 1.0");
             }
         }
     }

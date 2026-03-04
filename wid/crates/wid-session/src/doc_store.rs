@@ -1,7 +1,7 @@
 //! Document storage for session-managed instrument, tuning, and constraint files.
 
 use crate::types::{DocId, DocKind};
-use wid_types::{Constraints, InstrumentRaw, Tuning};
+use wid_types::{Constraints, InstrumentRaw, Scale, ScaleSymbolList, Temperament, Tuning};
 
 /// A stored document with its parsed content and original XML.
 #[derive(Debug, Clone)]
@@ -18,6 +18,9 @@ pub enum DocContent {
     Instrument(InstrumentRaw),
     Tuning(Tuning),
     Constraints(Constraints),
+    Scale(Scale),
+    Temperament(Temperament),
+    ScaleSymbolList(ScaleSymbolList),
 }
 
 /// Manages all documents within a session.
@@ -142,6 +145,30 @@ impl DocStore {
                 doc.content = DocContent::Tuning(tuning);
                 Some(())
             }
+            _ => None,
+        }
+    }
+
+    /// Get the scale content for a given doc ID.
+    pub fn get_scale(&self, id: DocId) -> Option<&Scale> {
+        match &self.get(id)?.content {
+            DocContent::Scale(s) => Some(s),
+            _ => None,
+        }
+    }
+
+    /// Get the temperament content for a given doc ID.
+    pub fn get_temperament(&self, id: DocId) -> Option<&Temperament> {
+        match &self.get(id)?.content {
+            DocContent::Temperament(t) => Some(t),
+            _ => None,
+        }
+    }
+
+    /// Get the scale symbol list content for a given doc ID.
+    pub fn get_scale_symbol_list(&self, id: DocId) -> Option<&ScaleSymbolList> {
+        match &self.get(id)?.content {
+            DocContent::ScaleSymbolList(s) => Some(s),
             _ => None,
         }
     }

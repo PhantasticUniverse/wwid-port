@@ -18,6 +18,7 @@ pub struct Tuning {
 /// A single fingering: which note is targeted and which holes are open.
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct Fingering {
+    #[serde(default)]
     pub note: Note,
     #[serde(rename = "openHole", default)]
     pub open_holes: Vec<bool>,
@@ -28,8 +29,9 @@ pub struct Fingering {
 }
 
 /// A note with optional frequency bounds.
-#[derive(Debug, Clone, Deserialize, Serialize)]
+#[derive(Debug, Clone, Default, Deserialize, Serialize)]
 pub struct Note {
+    #[serde(default)]
     pub name: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub frequency: Option<f64>,
