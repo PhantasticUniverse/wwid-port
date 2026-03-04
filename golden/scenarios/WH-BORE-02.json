@@ -1,0 +1,16 @@
+{
+  "id": "WH-BORE-02",
+  "studyKind": "Whistle",
+  "description": "BoreDiameterFromTop optimization on SamplePVC-Whistle (2D BOBYQA). Tests bore diameter ratio optimization from top downward with auto-detected boundary via getLowestPoint('Head').",
+  "driver": "com.widgolden.BoreOptDriver",
+  "inputs": {
+    "instrument": "../../oracle/v2.6.0/WhistleStudy/instruments/SamplePVC-Whistle.xml",
+    "tuning": "../../oracle/v2.6.0/WhistleStudy/tunings/SamplePVC-tuning.xml",
+    "constraints": null
+  },
+  "optimizer": "BoreDiameterFromTopObjectiveFunction",
+  "calculator": "WhistleCalculator",
+  "tuner": "LinearVInstrumentTuner(blowingLevel=5)",
+  "evaluator": "CentDeviationEvaluator",
+  "notes": "SamplePVC-Whistle has 3 bore points. getLowestPoint('Head') falls back to heuristic (no named points) → n_changed = 2, n_dims = 2 → BOBYQA. Bounds: lower=[0.999, 0.5], upper=[1.0, 1.0]. First ratio constrained near 1.0 per WhistleStudyModel convention."
+}

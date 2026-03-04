@@ -1,0 +1,14 @@
+{
+  "id": "NAF-GRP-01",
+  "studyKind": "NAF",
+  "inputs": {
+    "instrument": "../../oracle/v2.6.0/NafStudy/instruments/0.75-bore_6-hole_NAF_starter.xml",
+    "tuning": "../../oracle/v2.6.0/NafStudy/tunings/F#4_ET_6-hole_NAF_chromatic_tuning.xml",
+    "constraints": "../../oracle/v2.6.0/constraints/NafStudyModel/HoleGroupFromTopObjectiveFunction/6/2-group_1.25_max_spacing.xml"
+  },
+  "actions": [
+    {"type": "EVAL_TUNING"},
+    {"type": "OPTIMIZE", "objectiveFunction": "HoleGroupFromTopObjectiveFunction"},
+    {"type": "EVAL_TUNING"}
+  ]
+}

@@ -308,13 +308,11 @@ public class ScenarioRunner {
         double[] initialGeometry = objective.getGeometryPoint().clone();
         double initialNorm = objective.value(initialPoint);
 
-        // Reset evaluation count after initial norm calculation
         int nrDims = objective.getNrDimensions();
         int maxEval = objective.getMaxEvaluations();
         double initTrust = objective.getInitialTrustRegionRadius(initialPoint);
         double stopTrust = objective.getStoppingTrustRegionRadius();
 
-        // Run BOBYQA optimizer
         org.apache.commons.math3.optim.nonlinear.scalar.noderiv.BOBYQAOptimizer optimizer =
                 new org.apache.commons.math3.optim.nonlinear.scalar.noderiv.BOBYQAOptimizer(
                         2 * nrDims + 1, initTrust, stopTrust);
@@ -447,14 +445,53 @@ public class ScenarioRunner {
             InstrumentCalculator calc,
             Tuning tun,
             EvaluatorInterface eval) {
-        switch (name) {
-            case "FippleFactorObjectiveFunction":
-                return new FippleFactorObjectiveFunction(calc, tun, eval);
-            case "HoleFromTopObjectiveFunction":
-                return new HoleFromTopObjectiveFunction(calc, tun, eval,
-                        BoreLengthAdjustmentInterface.BoreLengthAdjustmentType.PRESERVE_BORE);
-            default:
-                throw new IllegalArgumentException("Unknown objective function: " + name);
+        try {
+            switch (name) {
+                case "FippleFactorObjectiveFunction":
+                    return new FippleFactorObjectiveFunction(calc, tun, eval);
+                case "HoleFromTopObjectiveFunction":
+                    return new HoleFromTopObjectiveFunction(calc, tun, eval,
+                            BoreLengthAdjustmentInterface.BoreLengthAdjustmentType.PRESERVE_BORE);
+                case "NafHoleSizeObjectiveFunction":
+                    return new NafHoleSizeObjectiveFunction(calc, tun, eval);
+                case "HoleGroupFromTopObjectiveFunction":
+                    return new HoleGroupFromTopObjectiveFunction(calc, tun, eval,
+                            getHoleGroups(),
+                            BoreLengthAdjustmentInterface.BoreLengthAdjustmentType.PRESERVE_BORE);
+                case "SingleTaperNoHoleGroupingFromTopObjectiveFunction":
+                    return new SingleTaperNoHoleGroupingFromTopObjectiveFunction(calc, tun, eval);
+                case "SingleTaperHoleGroupFromTopObjectiveFunction":
+                    return new SingleTaperHoleGroupFromTopObjectiveFunction(calc, tun, eval,
+                            getHoleGroups(),
+                            BoreLengthAdjustmentInterface.BoreLengthAdjustmentType.PRESERVE_TAPER);
+                default:
+                    throw new IllegalArgumentException("Unknown objective function: " + name);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to create objective function: " + name, e);
         }
+    }
+
+    /// Extract hole groups from constraints, or use default for 6-hole NAF.
+    private int[][] getHoleGroups() {
+        if (constraints != null) {
+            int[][] groups = constraints.getHoleGroupsArray();
+            if (groups != null) {
+                return groups;
+            }
+        }
+        // Default 6-hole NAF groups
+        int nHoles = instrument.getHole().size();
+        if (nHoles == 6) {
+            return new int[][]{{0, 1, 2}, {3, 4, 5}};
+        } else if (nHoles == 7) {
+            return new int[][]{{0, 1, 2}, {3, 4, 5}, {6}};
+        }
+        // Fallback: each hole in its own group
+        int[][] groups = new int[nHoles][];
+        for (int i = 0; i < nHoles; i++) {
+            groups[i] = new int[]{i};
+        }
+        return groups;
     }
 }

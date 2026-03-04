@@ -19,7 +19,7 @@ use wid_eval::{CalculatorParams, calculate_error_vector};
 use wid_physics::PhysicalParameters;
 use wid_types::{Constraints, InstrumentRaw, Tuning};
 
-use crate::{OptimizationResult, calc_norm, fingering_weights};
+use crate::{OptimizationResult, calc_norm, compute_trust_radius, fingering_weights};
 
 /// Constants matching Java `ObjectiveFunctionOptimizer`.
 const DIRECT_CONVERGENCE_STANDALONE: f64 = 7.0e-8;
@@ -37,34 +37,6 @@ pub struct GlobalOptResult {
     pub direct_evaluations: usize,
     /// Function calls used by the BOBYQA stage.
     pub bobyqa_evaluations: usize,
-}
-
-/// Compute initial and stopping trust region radii from bounds.
-///
-/// Matches Java `BaseObjectiveFunction.getInitialTrustRegionRadius()`:
-/// - initial = max(0.1 * max_bound_range, 0.5 * min_nonzero_bound_range)
-/// - stopping = 1e-8 * initial
-fn compute_trust_radius(lower: &[f64], upper: &[f64]) -> (f64, f64) {
-    let mut max_range: f64 = 0.0;
-    let mut min_radius: f64 = 1.0e-6;
-
-    for i in 0..lower.len() {
-        let diff = upper[i] - lower[i];
-        if diff > 1.0e-7 && 0.5 * diff < min_radius {
-            min_radius = 0.5 * diff;
-        }
-        if diff > max_range {
-            max_range = diff;
-        }
-    }
-
-    let initial = if min_radius > 0.1 * max_range {
-        min_radius
-    } else {
-        0.1 * max_range
-    };
-    let stopping = 1.0e-8 * initial;
-    (initial, stopping)
 }
 
 /// Two-stage global optimization: DIRECT-C global search then BOBYQA refinement.
@@ -614,6 +586,7 @@ mod golden_tests {
             objective_function_name: "GlobalHoleObjectiveFunction".to_string(),
             number_of_holes: 6,
             constraint_list: constraints,
+            hole_groups: None,
         }
     }
 
@@ -639,6 +612,7 @@ mod golden_tests {
             objective_function_name: "GlobalHolePositionObjectiveFunction".to_string(),
             number_of_holes: 6,
             constraint_list: constraints,
+            hole_groups: None,
         }
     }
 

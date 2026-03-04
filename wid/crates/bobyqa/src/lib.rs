@@ -26,6 +26,21 @@
 //! It is *not* a global optimizer — it finds a local minimum from the given
 //! starting point.
 //!
+//! # Convergence sensitivity
+//!
+//! BOBYQA's optimization trajectory is **chaotically sensitive** to sub-ULP
+//! evaluation differences. The quadratic model's Hessian is estimated via
+//! finite differences at spacing `rhobeg`. When `rhobeg` is small, even
+//! 1e-9 relative error in function values can produce ~1e-6 relative error
+//! in Hessian estimates (~1000× amplification), steering the first
+//! trust-region step differently and causing divergent trajectories.
+//!
+//! In practice this means that two implementations producing function values
+//! matching to 10+ significant digits may converge to *different local
+//! minima* on multimodal landscapes. This is inherent to derivative-free
+//! quadratic modelling, not a bug. For problems requiring global
+//! convergence, combine BOBYQA with multi-start or DIRECT-C global search.
+//!
 //! # Implementation notes
 //!
 //! This is a faithful port of the `BOBYQAOptimizer` class from

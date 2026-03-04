@@ -11,6 +11,12 @@ pub const FIPPLE_FACTOR: &str = "FippleFactorObjectiveFunction";
 pub const NAF_HOLE_SIZE: &str = "NafHoleSizeObjectiveFunction";
 pub const HOLE_FROM_TOP: &str = "HoleFromTopObjectiveFunction";
 pub const HOLE_GROUP_FROM_TOP: &str = "HoleGroupFromTopObjectiveFunction";
+pub const TAPER_NO_GROUPING: &str = "SingleTaperNoHoleGroupingFromTopObjectiveFunction";
+pub const TAPER_NO_GROUPING_HEMI: &str =
+    "SingleTaperNoHoleGroupingFromTopHemiHeadObjectiveFunction";
+pub const TAPER_HOLE_GROUP: &str = "SingleTaperHoleGroupFromTopObjectiveFunction";
+pub const TAPER_HOLE_GROUP_HEMI: &str =
+    "SingleTaperHoleGroupFromTopHemiHeadObjectiveFunction";
 
 /// Returns the list of available NAF optimizers.
 pub fn available_optimizers() -> Vec<OptimizerInfo> {
@@ -35,6 +41,26 @@ pub fn available_optimizers() -> Vec<OptimizerInfo> {
             display_name: "Hole size only".to_string(),
             objective_function_name: NAF_HOLE_SIZE.to_string(),
         },
+        OptimizerInfo {
+            key: TAPER_HOLE_GROUP.to_string(),
+            display_name: "Taper, grouped-hole".to_string(),
+            objective_function_name: TAPER_HOLE_GROUP.to_string(),
+        },
+        OptimizerInfo {
+            key: TAPER_HOLE_GROUP_HEMI.to_string(),
+            display_name: "Taper, grouped-hole, hemispherical".to_string(),
+            objective_function_name: TAPER_HOLE_GROUP_HEMI.to_string(),
+        },
+        OptimizerInfo {
+            key: TAPER_NO_GROUPING.to_string(),
+            display_name: "Taper, no hole grouping".to_string(),
+            objective_function_name: TAPER_NO_GROUPING.to_string(),
+        },
+        OptimizerInfo {
+            key: TAPER_NO_GROUPING_HEMI.to_string(),
+            display_name: "Taper, no hole grouping, hemispherical".to_string(),
+            objective_function_name: TAPER_NO_GROUPING_HEMI.to_string(),
+        },
     ]
 }
 
@@ -46,6 +72,7 @@ pub fn available_optimizers() -> Vec<OptimizerInfo> {
 pub fn create_default_constraints(
     objective_function_name: &str,
     number_of_holes: u32,
+    _inst: Option<&wid_types::InstrumentRaw>,
 ) -> Constraints {
     let display_name = display_name_for(objective_function_name);
     let constraints = constraint_template(objective_function_name, number_of_holes);
@@ -56,6 +83,7 @@ pub fn create_default_constraints(
         objective_function_name: objective_function_name.to_string(),
         number_of_holes,
         constraint_list: constraints,
+        hole_groups: None,
     }
 }
 
@@ -66,9 +94,10 @@ pub fn create_default_constraints(
 pub fn create_blank_constraints(
     objective_function_name: &str,
     number_of_holes: u32,
+    inst: Option<&wid_types::InstrumentRaw>,
 ) -> Constraints {
     // For NAF, blank and default are identical (both have 0.0 bounds)
-    create_default_constraints(objective_function_name, number_of_holes)
+    create_default_constraints(objective_function_name, number_of_holes, inst)
 }
 
 /// Returns the display name for an objective function.
@@ -78,6 +107,10 @@ fn display_name_for(objective_function_name: &str) -> &'static str {
         NAF_HOLE_SIZE => "Hole size only",
         HOLE_FROM_TOP => "Hole size & position",
         HOLE_GROUP_FROM_TOP => "Grouped-hole position & size",
+        TAPER_NO_GROUPING => "Taper, no hole grouping",
+        TAPER_NO_GROUPING_HEMI => "Taper, no hole grouping, hemispherical",
+        TAPER_HOLE_GROUP => "Taper, grouped-hole",
+        TAPER_HOLE_GROUP_HEMI => "Taper, grouped-hole, hemispherical",
         _ => "Unknown",
     }
 }
@@ -96,6 +129,12 @@ fn constraint_template(
         HOLE_FROM_TOP => hole_from_top_constraints(n_holes),
         NAF_HOLE_SIZE => hole_size_constraints(n_holes),
         HOLE_GROUP_FROM_TOP => hole_group_from_top_constraints(n_holes),
+        TAPER_NO_GROUPING | TAPER_NO_GROUPING_HEMI => {
+            taper_no_grouping_constraints(n_holes)
+        }
+        TAPER_HOLE_GROUP | TAPER_HOLE_GROUP_HEMI => {
+            taper_hole_group_constraints(n_holes)
+        }
         _ => Vec::new(),
     }
 }
@@ -159,22 +198,7 @@ fn hole_from_top_constraints(n_holes: u32) -> Vec<Constraint> {
     }
 
     // Size constraints (hole diameters, top to bottom)
-    for i in (1..=n_holes).rev() {
-        let name = if i == n_holes {
-            format!("Hole {} (top) diameter", n_holes)
-        } else if i == 1 {
-            "Hole 1 (bottom) diameter".to_string()
-        } else {
-            format!("Hole {} diameter", i)
-        };
-        constraints.push(Constraint {
-            display_name: name,
-            category: "Hole size".to_string(),
-            constraint_type: ConstraintType::DIMENSIONAL,
-            lower_bound: None,
-            upper_bound: None,
-        });
-    }
+    append_hole_size_constraints(&mut constraints, n_holes);
 
     constraints
 }
@@ -182,22 +206,7 @@ fn hole_from_top_constraints(n_holes: u32) -> Vec<Constraint> {
 /// NafHoleSize constraints: just hole diameters.
 fn hole_size_constraints(n_holes: u32) -> Vec<Constraint> {
     let mut constraints = Vec::new();
-    for i in (1..=n_holes).rev() {
-        let name = if i == n_holes {
-            format!("Hole {} (top) diameter", n_holes)
-        } else if i == 1 {
-            "Hole 1 (bottom) diameter".to_string()
-        } else {
-            format!("Hole {} diameter", i)
-        };
-        constraints.push(Constraint {
-            display_name: name,
-            category: "Hole size".to_string(),
-            constraint_type: ConstraintType::DIMENSIONAL,
-            lower_bound: None,
-            upper_bound: None,
-        });
-    }
+    append_hole_size_constraints(&mut constraints, n_holes);
     constraints
 }
 
@@ -206,6 +215,55 @@ fn hole_group_from_top_constraints(n_holes: u32) -> Vec<Constraint> {
     let mut constraints = Vec::new();
 
     // Position constraints
+    append_group_position_constraints(&mut constraints, n_holes);
+
+    // Size constraints
+    append_hole_size_constraints(&mut constraints, n_holes);
+
+    constraints
+}
+
+/// SingleTaperNoHoleGroupingFromTop constraints: hole position + size + taper.
+fn taper_no_grouping_constraints(n_holes: u32) -> Vec<Constraint> {
+    // Same position + size as HoleFromTop, plus 3 taper dims
+    let mut constraints = hole_from_top_constraints(n_holes);
+    append_taper_constraints(&mut constraints);
+    constraints
+}
+
+/// SingleTaperHoleGroupFromTop constraints: grouped position + size + taper.
+fn taper_hole_group_constraints(n_holes: u32) -> Vec<Constraint> {
+    let mut constraints = Vec::new();
+    append_group_position_constraints(&mut constraints, n_holes);
+    append_hole_size_constraints(&mut constraints, n_holes);
+    append_taper_constraints(&mut constraints);
+    constraints
+}
+
+// ── Shared constraint builders ──────────────────────────────────
+
+/// Append hole diameter constraints (top to bottom).
+fn append_hole_size_constraints(constraints: &mut Vec<Constraint>, n_holes: u32) {
+    for i in (1..=n_holes).rev() {
+        let name = if i == n_holes {
+            format!("Hole {} (top) diameter", n_holes)
+        } else if i == 1 {
+            "Hole 1 (bottom) diameter".to_string()
+        } else {
+            format!("Hole {} diameter", i)
+        };
+        constraints.push(Constraint {
+            display_name: name,
+            category: "Hole size".to_string(),
+            constraint_type: ConstraintType::DIMENSIONAL,
+            lower_bound: None,
+            upper_bound: None,
+        });
+    }
+}
+
+/// Append grouped position constraints (bore_end + top_ratio + group spacings).
+fn append_group_position_constraints(constraints: &mut Vec<Constraint>, n_holes: u32) {
     constraints.push(Constraint {
         display_name: "Bore length".to_string(),
         category: "Hole position".to_string(),
@@ -226,7 +284,7 @@ fn hole_group_from_top_constraints(n_holes: u32) -> Vec<Constraint> {
             upper_bound: None,
         });
 
-        // Group spacing (for 6-hole NAF: upper group spacing + lower group spacing + inter-group gap)
+        // Group spacings (for 6-hole: upper spacing, inter-group gap, lower spacing)
         constraints.push(Constraint {
             display_name: "Upper group spacing".to_string(),
             category: "Hole position".to_string(),
@@ -249,33 +307,45 @@ fn hole_group_from_top_constraints(n_holes: u32) -> Vec<Constraint> {
             upper_bound: None,
         });
     }
+}
 
-    // Size constraints
-    for i in (1..=n_holes).rev() {
-        let name = if i == n_holes {
-            format!("Hole {} (top) diameter", n_holes)
-        } else if i == 1 {
-            "Hole 1 (bottom) diameter".to_string()
-        } else {
-            format!("Hole {} diameter", i)
-        };
-        constraints.push(Constraint {
-            display_name: name,
-            category: "Hole size".to_string(),
-            constraint_type: ConstraintType::DIMENSIONAL,
-            lower_bound: None,
-            upper_bound: None,
-        });
-    }
-
-    constraints
+/// Append single taper constraints (3 dimensionless bounds).
+fn append_taper_constraints(constraints: &mut Vec<Constraint>) {
+    constraints.push(Constraint {
+        display_name: "Taper ratio".to_string(),
+        category: "Single bore taper".to_string(),
+        constraint_type: ConstraintType::DIMENSIONLESS,
+        lower_bound: None,
+        upper_bound: None,
+    });
+    constraints.push(Constraint {
+        display_name: "Taper start".to_string(),
+        category: "Single bore taper".to_string(),
+        constraint_type: ConstraintType::DIMENSIONLESS,
+        lower_bound: None,
+        upper_bound: None,
+    });
+    constraints.push(Constraint {
+        display_name: "Taper length".to_string(),
+        category: "Single bore taper".to_string(),
+        constraint_type: ConstraintType::DIMENSIONLESS,
+        lower_bound: None,
+        upper_bound: None,
+    });
 }
 
 /// Check if an optimizer key is a valid NAF optimizer.
 pub fn is_valid_optimizer(key: &str) -> bool {
     matches!(
         key,
-        FIPPLE_FACTOR | NAF_HOLE_SIZE | HOLE_FROM_TOP | HOLE_GROUP_FROM_TOP
+        FIPPLE_FACTOR
+            | NAF_HOLE_SIZE
+            | HOLE_FROM_TOP
+            | HOLE_GROUP_FROM_TOP
+            | TAPER_NO_GROUPING
+            | TAPER_NO_GROUPING_HEMI
+            | TAPER_HOLE_GROUP
+            | TAPER_HOLE_GROUP_HEMI
     )
 }
 

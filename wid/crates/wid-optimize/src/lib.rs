@@ -16,9 +16,12 @@ pub mod fipple;
 pub mod flute_calib;
 pub mod hole_combined;
 pub mod hole_from_top;
+pub mod hole_group_from_top;
 pub mod hole_position;
 pub mod hole_size;
 pub mod reed_calib;
+pub mod bore;
+pub mod single_taper;
 pub mod whistle_calib;
 pub mod window_height;
 
@@ -86,6 +89,41 @@ pub struct ReedCalibrationResult {
     pub final_beta: Option<f64>,
     pub initial_norm: f64,
     pub final_norm: f64,
+}
+
+/// Compute BOBYQA initial and stopping trust region radii from bounds.
+///
+/// Matches Java `BaseObjectiveFunction.getInitialTrustRegionRadius()`:
+/// - initial = max(0.1 * max_bound_range, min_half_bound_range)
+/// - stopping = 1e-8 * initial
+pub fn compute_trust_radius(lower: &[f64], upper: &[f64]) -> (f64, f64) {
+    let mut max_range: f64 = 0.0;
+    let mut min_radius: f64 = 1.0e-6;
+
+    for i in 0..lower.len() {
+        let diff = upper[i] - lower[i];
+        if diff > 1.0e-7 && 0.5 * diff < min_radius {
+            min_radius = 0.5 * diff;
+        }
+        if diff > max_range {
+            max_range = diff;
+        }
+    }
+
+    let initial = if min_radius > 0.1 * max_range {
+        min_radius
+    } else {
+        0.1 * max_range
+    };
+    let stopping = 1.0e-8 * initial;
+    (initial, stopping)
+}
+
+/// Compute max evaluations matching Java `HoleObjectiveFunction` pattern.
+///
+/// Java: `maxEvaluations = 20000 + (getNrDimensions() - 1) * 5000`
+pub fn max_evaluations(n_dims: usize) -> usize {
+    20000 + n_dims.saturating_sub(1) * 5000
 }
 
 /// Result of a hole geometry optimization.

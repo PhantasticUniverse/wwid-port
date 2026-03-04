@@ -1,0 +1,16 @@
+{
+  "id": "WH-BORE-01",
+  "studyKind": "Whistle",
+  "description": "BoreDiameterFromBottom optimization on SamplePVC-Whistle (1D Brent). Tests bore diameter ratio optimization from bottom upward with auto-detected boundary via getTopOfBody()+1.",
+  "driver": "com.widgolden.BoreOptDriver",
+  "inputs": {
+    "instrument": "../../oracle/v2.6.0/WhistleStudy/instruments/SamplePVC-Whistle.xml",
+    "tuning": "../../oracle/v2.6.0/WhistleStudy/tunings/SamplePVC-tuning.xml",
+    "constraints": null
+  },
+  "optimizer": "BoreDiameterFromBottomObjectiveFunction",
+  "calculator": "WhistleCalculator",
+  "tuner": "LinearVInstrumentTuner(blowingLevel=5)",
+  "evaluator": "CentDeviationEvaluator",
+  "notes": "SamplePVC-Whistle has 3 bore points. getTopOfBody() returns 1 (no named bore points; falls back to lowest bore point above topmost hole). n_unchanged = 1+1 = 2, n_dims = 3-2 = 1 → Brent optimizer. Bounds: [0.5, 1.0] (diameter ratio, dimensionless)."
+}

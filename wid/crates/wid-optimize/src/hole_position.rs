@@ -73,9 +73,8 @@ fn optimize_hole_position_impl(
 
     let initial_norm = evaluate_norm(instrument, &tuning.fingerings, &weights, params, calc_params);
 
-    let initial_trust = 10.0;
-    let stopping_trust = 1e-8;
-    let max_eval = 20000 + n_dims.saturating_sub(1) * 5000;
+    let (initial_trust, stopping_trust) = crate::compute_trust_radius(&lower_bounds, &upper_bounds);
+    let max_eval = crate::max_evaluations(n_dims);
     let n_interp = 2 * n_dims + 1;
 
     let mut work_inst = instrument.clone();
@@ -183,6 +182,7 @@ mod tests {
             objective_function_name: "HolePositionObjectiveFunction".to_string(),
             number_of_holes: 6,
             constraint_list: constraints,
+            hole_groups: None,
         }
     }
 
@@ -278,6 +278,7 @@ mod flute_tests {
             objective_function_name: "HolePositionObjectiveFunction".to_string(),
             number_of_holes: 6,
             constraint_list: constraints,
+            hole_groups: None,
         }
     }
 

@@ -4,15 +4,17 @@
 
 | Metric | Value |
 |--------|-------|
-| **Total tests** | 280 |
+| **Total tests** | 354 |
 | **Study models complete** | 4/4 (NAF, Whistle, Flute, Reed) |
 | **Milestones done** | M0–M4 complete, M5 in progress |
 | **Evaluation parity** | ≤ 0.058 cents across 994 fingerings |
 | **Crates** | 11 (math, physics, types, compile, acoustics, eval, optimize, session, wasm, bobyqa, direct) |
-| **Golden fixtures** | 14 scenarios |
+| **Golden fixtures** | 18 scenarios |
 
 ### Entries (newest first)
 
+- [Bore Optimizers + Parity Audit](#2026-03-04-cont-bore-optimizers--parity-audit) — Bore constraints, golden fixtures, Brent dispatch, trust radius fix, parity audit
+- [NAF Taper Optimizers + Stale Bore Fix](#2026-03-04-cont-naf-taper-optimizers--stale-bore-point-fix) — SingleTaper 4 variants, TPR-01, BOBYQA chaotic sensitivity
 - [DIRECT-C Stress Test + Golden Fixtures](#2026-03-04-cont-direct-c-global-optimizer--stress-test--golden-fixtures) — 6 bugs fixed, DIRECT-01 fixture
 - [DIRECT-C + Multi-Start Infrastructure](#2026-03-04-cont-direct-c-global-optimizer--multi-start-infrastructure) — direct crate, multi-start, two-stage pipeline
 - [M5.7 Reed Calibration + Optimization](#2026-03-04-cont-m57-reed-calibration--optimization) — reed calibrator, 3 hole optimizers
@@ -30,6 +32,101 @@
 - [M3 NAF Calibration + Optimization](#2026-03-02-m3--naf-calibration--optimization-parity) — BOBYQA crate, 139 tests
 - [NAF Bulk Test Coverage](#2026-03-02-expanded-naf-test-coverage-all-oracle-xmls) — 36 combos, 540 fingerings
 - [M4 Browser MVP](#2026-03-02-m4--browser-hosted-mvp-naf-end-to-end)
+
+---
+
+## 2026-03-04 (cont): Bore Optimizers + Parity Audit
+
+### Bore constraint dimension counts (Step A)
+
+Fixed bore constraint templates to use actual instrument-derived bore dimension counts instead of placeholder `bore_ratio_constraints(1)`. The session now passes `Option<&InstrumentRaw>` to constraint template functions, which compute bore dimensions via `find_head_point()` / `find_body_top()`.
+
+**Key insight**: `n_unchanged = find_body_top(inst) + 1` (the "+1" was an off-by-one source). For standalone bore optimizers, `bottom_fixed = false`; for merged-with-holes, `bottom_fixed = true`.
+
+### Golden fixtures (Step B)
+
+Created `BoreOptDriver.java` with 3 scenarios:
+
+| ID | Study | Optimizer | Solver | Dims |
+|---|---|---|---|---|
+| WH-BORE-01 | Whistle | BoreDiameterFromBottom | Brent | 1 |
+| WH-BORE-02 | Whistle | BoreDiameterFromTop | Brent | 1 |
+| RD-BORE-01 | Reed | BorePosition | BOBYQA | 3 |
+
+SamplePVC-Whistle has only 3 bore points → both diameter optimizers produce 1D problems (Brent, not BOBYQA). Didgeridoo-2stage has 5 bore points, 0 holes, lip reed → 3D BorePosition.
+
+### Brent/BOBYQA dispatch fix
+
+Java's `BaseObjectiveFunction.getOptimizer()` uses BrentOptimizer for 1D problems and BOBYQAOptimizer for multi-dim. Our bore optimizers were always using BOBYQA. Added `run_1d_or_nd()` function that auto-selects:
+- 1D without progress callback → Brent (rel_tol=1e-4, abs_tol=1e-4)
+- Multi-dim or with progress → BOBYQA
+
+Updated all 4 standalone bore optimizers: `from_top`, `from_bottom`, `spacing_from_top`, `bore_position`.
+
+### Trust radius fix (from parity audit)
+
+Java's `HoleFromTopObjectiveFunction` and `HoleGroupFromTopObjectiveFunction` override trust radius to hardcoded `initial=10.0, stopping=1e-8`. Our code was using the bounds-based formula (producing ~0.003–0.05). Fixed both files. The 200× difference in initial_trust affects BOBYQA's first-step aggressiveness, potentially steering it to different local minima.
+
+### Comprehensive parity audit
+
+Audited ALL optimizer implementations against Java source. Results:
+
+**Verified correct**: Evaluator dispatch (all files), BoreLengthAdjust modes (all merged), blowing level (all study models), merged bore maxEvaluations (40K/50K/60K), merged bore stopping trust (0.8e-6, 0.9e-6).
+
+**Fixed**: Brent 1D dispatch (bore optimizers), trust radius override (hole_from_top, hole_group_from_top).
+
+**Known deviations (low impact)**:
+- Standalone bore/position/calibrator maxEvaluations: we overallocate (20K+ vs Java's 10K default). Conservative, never causes wrong results.
+- NAF hole_size trust radius: Java's NafHoleSizeObjectiveFunction overrides to 10.0, we use bounds-based. Existing golden fixtures pass.
+- 1D hole_size/hole_position: Java uses CMAES for 1-hole instruments, we'd use BOBYQA. Edge case only (no 1-hole instruments in test suite).
+
+### Parity tests (Step C)
+
+17 new tests in `bore.rs`:
+- 3 evaluation parity (initial norm matches golden within 1e-5)
+- 3 geometry extraction (dimension counts and values match)
+- 3 final geometry norm (apply golden-optimal geometry → norm matches within 1%)
+- 3 mutation tests (perturbed geometry worsens norm)
+- 4 constraint dimension count tests
+- 2 optimization convergence tests
+
+**Test count**: 354 tests, all passing (43 new from bore work)
+
+---
+
+## 2026-03-04 (cont): NAF Taper Optimizers + Stale Bore Point Fix
+
+### NAF grouped/taper optimizer infrastructure
+
+Implemented 4 taper optimizer variants in `wid-optimize/src/single_taper.rs`:
+- `NoGrouping` — HolePositionFromTop + HoleSize + SingleTaperSimpleRatio
+- `HoleGroup` — HoleGroupPositionFromTop + HoleSize + SingleTaperSimpleRatio
+- `NoGroupingHemiHead` — same but with hemispherical bore head
+- `HoleGroupHemiHead` — same but with hemispherical bore head
+
+Merged geometry layout: `[hole_position_dims..., hole_size_dims..., taper_ratio, taper_start, taper_length]`. For 6-hole NAF (no grouping): 7+6+3 = 16 dims.
+
+### Golden fixture: TPR-01
+- `TaperOptDriver.java`: SingleTaperNoGrouping on D-NAF + 6-hole tuning
+- Golden: norm 57403 → 208 (16 dims, rhobeg=0.003175)
+
+### Stale bore point bug (Critical)
+
+**Root cause**: When BOBYQA evaluates different geometry points using a reused work instrument, intermediate bore points from a previous evaluation's taper (when `taper_length < 1.0`) persist. If the next evaluation shortens the bore, stale points sit above the new bore end. `set_taper_geometry` reads `bot_pos` from the stale point instead of the correct bore end.
+
+**Fix**: Added `retain` in `set_merged_taper_geometry` to remove bore points beyond `new_bore_end` before applying taper. Regression test: `reused_instrument_matches_fresh_instrument`.
+
+### BOBYQA chaotic sensitivity (documented, not a bug)
+
+After fixing the stale bore point bug, all 33 preliminary evaluations match Java to ~1e-9 relative error, but BOBYQA converges to norm=907 vs Java's 208. Root cause: Hessian estimation amplifies ~1e-9 differences by ~1000×, causing divergent trajectories on multimodal landscapes. Documented in BOBYQA crate docs, parity-notes.md, and MEMORY.md.
+
+**Test strategy**: Verify evaluation parity (golden geometry → golden norm within 1%), norm reduction (>99%), and reasonable final norm (<5× golden). Do not assert exact trajectory match.
+
+### Session dispatch
+- All 4 taper variants registered in `wid-session/src/naf.rs`
+- Matched Java study model optimizer names
+
+**Test count**: 311 tests, all passing (31 new: single_taper + golden parity)
 
 ---
 

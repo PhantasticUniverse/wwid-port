@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ns2:instrument xmlns:ns2="http://www.wwidesigner.com/Instrument">
+    <name>3/4" bore, 6-hole NAF start</name>
+    <description>Base NAF file for creating a flute in the key of A4 or thereabouts, with an 18:1 bore length to diameter ratio.</description>
+    <lengthType>in</lengthType>
+    <mouthpiece>
+        <position>0.0045720172821879955</position>
+        <fipple>
+            <windowLength>0.0045720172821879955</windowLength>
+            <windowWidth>0.00952501543050833</windowWidth>
+            <fippleFactor>0.75</fippleFactor>
+            <windwayHeight>8.128030723889773E-4</windwayHeight>
+        </fipple>
+    </mouthpiece>
+    <borePoint>
+        <borePosition>0.0</borePosition>
+        <boreDiameter>0.021263710039762913</boreDiameter>
+    </borePoint>
+    <borePoint>
+        <borePosition>0.12640708679123003</borePosition>
+        <boreDiameter>0.021263710039762913</boreDiameter>
+    </borePoint>
+    <borePoint>
+        <borePosition>0.36223245352475</borePosition>
+        <boreDiameter>0.019050030861016594</boreDiameter>
+    </borePoint>
+    <borePoint>
+        <borePosition>0.37658815374602567</borePosition>
+        <boreDiameter>0.019050030861016594</boreDiameter>
+    </borePoint>
+    <hole>
+        <name>Hole 6</name>
+        <borePosition>0.09757605139814741</borePosition>
+        <diameter>0.005753734237890987</diameter>
+        <height>0.004775218050285239</height>
+    </hole>
+    <hole>
+        <name>Hole 5</name>
+        <borePosition>0.1293260513981474</borePosition>
+        <diameter>0.006572178543031116</diameter>
+        <height>0.004775218050285239</height>
+    </hole>
+    <hole>
+        <name>Hole 4</name>
+        <borePosition>0.1570999248979133</borePosition>
+        <diameter>0.006360865786699626</diameter>
+        <height>0.004775218050285239</height>
+    </hole>
+    <hole>
+        <name>Hole 3</name>
+        <borePosition>0.1918179742155599</borePosition>
+        <diameter>0.0065376873277153144</diameter>
+        <height>0.004775218050285239</height>
+    </hole>
+    <hole>
+        <name>Hole 2</name>
+        <borePosition>0.2235679742155599</borePosition>
+        <diameter>0.006676894855682869</diameter>
+        <height>0.004775218050285239</height>
+    </hole>
+    <hole>
+        <name>Hole 1</name>
+        <borePosition>0.2553179742155599</borePosition>
+        <diameter>0.006589137945265113</diameter>
+        <height>0.004775218050285239</height>
+    </hole>
+    <termination>
+        <flangeDiameter>0.028575046291524995</flangeDiameter>
+    </termination>
+</ns2:instrument>

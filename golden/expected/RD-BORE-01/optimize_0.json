@@ -1,0 +1,10 @@
+{
+  "initialNorm" : 234.7815305042882,
+  "finalNorm" : 199.003946410246,
+  "evaluations" : 59,
+  "initialGeometry" : [ 1.554138879519837, 0.5009095173215202, 1.5033467813416743E-4 ],
+  "finalGeometry" : [ 1.5501908768558668, 0.500918651829363, 1.471520119881214E-4 ],
+  "optimizer" : "BorePositionObjectiveFunction",
+  "solverType" : "BOBYQA",
+  "nrDimensions" : 3
+}

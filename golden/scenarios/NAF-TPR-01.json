@@ -1,0 +1,14 @@
+{
+  "id": "NAF-TPR-01",
+  "studyKind": "NAF",
+  "inputs": {
+    "instrument": "../../oracle/v2.6.0/NafStudy/instruments/0.75-bore_6-hole_NAF_starter.xml",
+    "tuning": "../../oracle/v2.6.0/NafStudy/tunings/F#4_ET_6-hole_NAF_chromatic_tuning.xml",
+    "constraints": "../../oracle/v2.6.0/constraints/NafStudyModel/SingleTaperNoHoleGroupingFromTopObjectiveFunction/6/1.25_max_hole_spacing.xml"
+  },
+  "actions": [
+    {"type": "EVAL_TUNING"},
+    {"type": "OPTIMIZE", "objectiveFunction": "SingleTaperNoHoleGroupingFromTopObjectiveFunction"},
+    {"type": "EVAL_TUNING"}
+  ]
+}

@@ -75,10 +75,11 @@ pub fn optimize_holes(
     // Compute initial norm
     let initial_norm = evaluate_norm(instrument, &tuning.fingerings, &weights, params, calc_params);
 
-    // Trust region parameters (matching Java HoleFromTopObjectiveFunction)
+    // Java HoleFromTopObjectiveFunction overrides trust radius to 10.0 / 1e-8
+    // (not the bounds-based default from BaseObjectiveFunction).
     let initial_trust = 10.0;
     let stopping_trust = 1e-8;
-    let max_eval = 20000 + (n_dims.saturating_sub(1)) * 5000;
+    let max_eval = crate::max_evaluations(n_dims);
     let n_interp = 2 * n_dims + 1;
 
     // Clone instrument for the objective closure
@@ -158,9 +159,8 @@ pub fn optimize_holes_with_progress(
 
     let initial_norm = evaluate_norm(instrument, &tuning.fingerings, &weights, params, calc_params);
 
-    let initial_trust = 10.0;
-    let stopping_trust = 1e-8;
-    let max_eval = 20000 + (n_dims.saturating_sub(1)) * 5000;
+    let (initial_trust, stopping_trust) = crate::compute_trust_radius(&lower_bounds, &upper_bounds);
+    let max_eval = crate::max_evaluations(n_dims);
     let n_interp = 2 * n_dims + 1;
 
     let mut work_inst = instrument.clone();

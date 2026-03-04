@@ -59,9 +59,8 @@ pub fn calibrate_reed(
 
     let n_dims = 2;
     let n_interp = 2 * n_dims + 1;
-    let initial_trust = 10.0;
-    let stopping_trust = 1e-8;
-    let max_eval = 20000 + (n_dims - 1) * 5000;
+    let (initial_trust, stopping_trust) = crate::compute_trust_radius(&lower_bounds, &upper_bounds);
+    let max_eval = crate::max_evaluations(n_dims);
 
     let mut work_inst = instrument.clone();
     let fingerings = tuning.fingerings.clone();

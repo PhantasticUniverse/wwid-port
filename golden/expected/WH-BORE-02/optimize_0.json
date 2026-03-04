@@ -1,0 +1,10 @@
+{
+  "initialNorm" : 24135.597275207845,
+  "finalNorm" : 24135.597275207845,
+  "evaluations" : 2,
+  "initialGeometry" : [ 0.8403361344537815 ],
+  "finalGeometry" : [ 0.999 ],
+  "optimizer" : "BoreDiameterFromTopObjectiveFunction",
+  "solverType" : "Brent",
+  "nrDimensions" : 1
+}

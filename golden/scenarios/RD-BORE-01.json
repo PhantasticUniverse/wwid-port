@@ -1,0 +1,16 @@
+{
+  "id": "RD-BORE-01",
+  "studyKind": "Reed",
+  "description": "BorePosition optimization on Didgeridoo-2stage (3D BOBYQA). Tests bore position optimization with bottomPointUnchanged=false (standalone). First dimension is absolute bottom position (DIMENSIONAL), remaining are fractional positions (DIMENSIONLESS).",
+  "driver": "com.widgolden.BoreOptDriver",
+  "inputs": {
+    "instrument": "../../oracle/v2.6.0/ReedStudy/instruments/Didgeridoo-2stage-D2-D3.xml",
+    "tuning": "../../oracle/v2.6.0/ReedStudy/tunings/Didgeridoo-D2-D3-tuning.xml",
+    "constraints": "../../oracle/v2.6.0/constraints/ReedStudyModel/BorePositionObjectiveFunction/DidgeridooConstraints-2stage.xml"
+  },
+  "optimizer": "BorePositionObjectiveFunction",
+  "calculator": "SimpleReedCalculator",
+  "tuner": "SimpleInstrumentTuner",
+  "evaluator": "CentDeviationEvaluator",
+  "notes": "Didgeridoo-2stage has 5 bore points, 0 holes, lip reed. getTopOfBody() returns 1 → n_unchanged = 2, n_dims = 5-2-0 = 3 (bottomPointUnchanged=false). Oracle constraints: [0.508,2.54] (DIMENSIONAL bottom pos), [0.01,0.99] (DIMENSIONLESS frac), [0.0,0.001] (DIMENSIONLESS frac). No BoreLengthAdjust needed (holes=0)."
+}

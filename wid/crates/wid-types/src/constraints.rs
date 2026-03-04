@@ -21,6 +21,42 @@ pub struct Constraints {
     pub number_of_holes: u32,
     #[serde(rename = "constraint", default)]
     pub constraint_list: Vec<Constraint>,
+    /// Hole groups for grouped-hole optimizers (e.g. `[[0,1,2],[3,4,5]]`).
+    ///
+    /// Stored in constraints XML so that the optimizer can reconstruct
+    /// group structure when re-loading saved constraints.
+    #[serde(rename = "holeGroups", default, skip_serializing_if = "Option::is_none")]
+    pub hole_groups: Option<HoleGroupsXml>,
+}
+
+/// XML wrapper for hole groups: `<holeGroups><holeGroup><holeIdx>0</holeIdx>...</holeGroup></holeGroups>`.
+#[derive(Debug, Clone, Deserialize, Serialize)]
+pub struct HoleGroupsXml {
+    #[serde(rename = "holeGroup", default)]
+    pub groups: Vec<HoleGroupXml>,
+}
+
+/// A single hole group containing hole indices.
+#[derive(Debug, Clone, Deserialize, Serialize)]
+pub struct HoleGroupXml {
+    #[serde(rename = "holeIdx", default)]
+    pub indices: Vec<u32>,
+}
+
+impl Constraints {
+    /// Get hole groups as a `Vec<Vec<u32>>` if present.
+    pub fn hole_groups_array(&self) -> Option<Vec<Vec<u32>>> {
+        self.hole_groups.as_ref().map(|hg| {
+            hg.groups.iter().map(|g| g.indices.clone()).collect()
+        })
+    }
+
+    /// Set hole groups from a `Vec<Vec<u32>>`.
+    pub fn set_hole_groups(&mut self, groups: Vec<Vec<u32>>) {
+        self.hole_groups = Some(HoleGroupsXml {
+            groups: groups.into_iter().map(|indices| HoleGroupXml { indices }).collect(),
+        });
+    }
 }
 
 /// A single optimization constraint with bounds.
