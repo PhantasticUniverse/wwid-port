@@ -55,20 +55,20 @@ Legend:
 | Hole size + position    |        ✅ | WH-OPT/opt_hole | M5.4 | (2N+1)-dim merged BOBYQA |
 | Hole spacing (global)   |        ✅ | —            | M5        | DIRECT-C→BOBYQA, session dispatched |
 | Hole size+spacing (global)|      ✅ | —            | M5        | DIRECT-C→BOBYQA, session dispatched |
-| Basic taper             |        ✅ | —            | M5        | 2D BOBYQA |
+| Basic taper             |        ✅ | WH-TAPER-01  | M5        | 2D BOBYQA |
 | Bore diameter from top  |        ✅ | WH-BORE-02   | M5        | N-dim, auto Brent for 1D |
 | Bore diameter from bottom|       ✅ | WH-BORE-01   | M5        | N-dim, auto Brent for 1D |
-| Bore spacing from top   |        ✅ | —            | M5        | Upper bound clamping |
-| Stopper position        |        ✅ | —            | M5        | 1D Brent, preserveTaper flag |
-| Headjoint               |        ✅ | —            | M5        | Stopper + bore dia from top, 40K evals |
-| Hole + taper            |        ✅ | —            | M5        | MOVE_BOTTOM, 20K evals |
-| Hole + bore dia top     |        ✅ | —            | M5        | PRESERVE_TAPER, 50K evals |
-| Hole + bore dia bottom  |        ✅ | —            | M5        | MOVE_BOTTOM, 50K evals |
-| Hole + bore spacing     |        ✅ | —            | M5        | PRESERVE_TAPER, 0.9e-6 stopping |
-| Hole + bore position    |        ✅ | —            | M5        | PRESERVE_BELL, 0.9e-6 stopping |
-| Hole + bore from bottom |        ✅ | —            | M5        | PRESERVE_BELL, 60K evals |
-| Hole + headjoint        |        ✅ | —            | M5        | PRESERVE_TAPER, 50K evals |
-| Global hole + bore (2)  |        ✅ | —            | M5        | DIRECT-C→BOBYQA |
+| Bore spacing from top   |        ✅ | WH-BORE-SPACING-01 | M5   | Upper bound clamping |
+| Stopper position        |        ✅ | —            | M5        | 1D Brent, same code as FL-STOPPER-01 |
+| Headjoint               |        ✅ | —            | M5        | Same code as FL-HEADJOINT-01 |
+| Hole + taper            |        ✅ | WH-MERGED-04 | M5        | MOVE_BOTTOM, 20K evals |
+| Hole + bore dia top     |        ✅ | WH-MERGED-01 | M5        | PRESERVE_TAPER, 50K evals |
+| Hole + bore dia bottom  |        ✅ | WH-MERGED-02 | M5        | MOVE_BOTTOM, 50K evals |
+| Hole + bore spacing     |        ✅ | WH-MERGED-03 | M5        | PRESERVE_TAPER, 0.9e-6 stopping |
+| Hole + bore position    |        ✅ | —            | M5        | Same code as RD-MERGED-02 |
+| Hole + bore from bottom |        ✅ | —            | M5        | Same code as RD-MERGED-03 |
+| Hole + headjoint        |        ✅ | WH-MERGED-05 | M5        | PRESERVE_TAPER, 50K evals |
+| Global hole + bore (2)  |        ✅ | —            | M5        | DIRECT-C→BOBYQA, engine tested by DIRECT-01 |
 
 ---
 
@@ -83,11 +83,14 @@ Legend:
 | Hole size                   |        ✅ | FL-OPT/opt_hole_size | M5.5 | N-dim BOBYQA (reused from Whistle) |
 | Hole position               |        ✅ | FL-OPT/opt_hole_position | M5.5 | (N+1)-dim BOBYQA (reused from Whistle) |
 | Hole size + position        |        ✅ | FL-OPT/opt_hole | M5.5 | (2N+1)-dim merged BOBYQA (reused from Whistle) |
-| Stopper position        |        ✅ | —            | M5        | 1D Brent, preserveTaper flag |
-| Headjoint               |        ✅ | —            | M5        | Stopper + bore dia from top |
-| Bore diameter/spacing   |        ✅ | —            | M5        | Inherited from Whistle |
-| Hole + bore (4 merged)  |        ✅ | —            | M5        | 15-20 dims, various modes |
-| Global hole + bore (2)  |        ✅ | —            | M5        | DIRECT-C→BOBYQA |
+| Stopper position        |        ✅ | FL-STOPPER-01 | M5       | 1D Brent, preserveTaper flag |
+| Headjoint               |        ✅ | FL-HEADJOINT-01 | M5     | Stopper + bore dia from top |
+| Bore diameter/spacing   |        ✅ | FL-TAPER-01  | M5        | BasicTaperObjectiveFunction |
+| Hole + bore (merged 1)  |        ✅ | FL-MERGED-01 | M5        | BoreDiameterFromBottom |
+| Hole + bore (merged 2)  |        ✅ | FL-MERGED-02 | M5        | BoreSpacingFromTop |
+| Hole + bore (merged 3)  |        ✅ | FL-MERGED-03 | M5        | BasicTaper |
+| Hole + bore (merged 4)  |        ✅ | FL-MERGED-04 | M5        | Headjoint |
+| Global hole + bore (2)  |        ✅ | —            | M5        | DIRECT-C→BOBYQA, engine tested by DIRECT-01 |
 
 ---
 
@@ -98,15 +101,15 @@ Legend:
 | Evaluation parity            |        ✅ | RD-BULK-EVAL, RD-ZSAMPLE | M5.6 | 7 combos, 72 fingerings, 0.000011 cents |
 | Reed mouthpiece model        |        ✅ | — | M5.6 | SimpleReed: X = alpha × 1e-3 × freq + beta |
 | Reed calibrator (alpha/beta) |        ✅ | RD-CAL/calib_joint | M5.7 | 2D BOBYQA, CentDeviationEvaluator |
-| Hole size                    |        ✅ | — | M5.7 | N-dim BOBYQA (reused from Whistle) |
-| Hole position                |        ✅ | — | M5.7 | (N+1)-dim BOBYQA (reused from Whistle) |
-| Hole size + position         |        ✅ | — | M5.7 | (2N+1)-dim merged BOBYQA (reused from Whistle) |
-| Hole size+spacing (global)   |        ✅ | — | M5        | DIRECT-C→BOBYQA, session dispatched |
-| Bore diameter from bottom    |        ✅ | — | M5        | N-dim BOBYQA, auto Brent for 1D |
-| Bore position                |        ✅ | RD-BORE-01 | M5        | Mixed dims (1 abs + fractions) |
-| Bore from bottom (merged)    |        ✅ | — | M5        | Position + diameter, 40K evals |
-| Hole + bore (3 merged)       |        ✅ | — | M5        | PRESERVE_BELL mode |
-| Global hole + bore dia       |        ✅ | — | M5        | DIRECT-C→BOBYQA |
+| Hole size + position         |        ✅ | RD-OPT-01 | M5.7 | (2N+1)-dim merged BOBYQA |
+| Hole size+spacing (global)   |        ✅ | — | M5        | DIRECT-C→BOBYQA, engine tested by DIRECT-01 |
+| Bore diameter from bottom    |        ✅ | RD-BORE-02 | M5   | N-dim BOBYQA, auto Brent for 1D |
+| Bore position                |        ✅ | RD-BORE-01 | M5   | Mixed dims (1 abs + fractions) |
+| Bore from bottom (merged)    |        ✅ | RD-BORE-03 | M5   | Position + diameter, 40K evals |
+| Hole + bore dia bottom       |        ✅ | RD-MERGED-01 | M5 | BoreDiameterFromBottom |
+| Hole + bore position         |        ✅ | RD-MERGED-02 | M5 | BorePosition |
+| Hole + bore from bottom      |        ✅ | RD-MERGED-03 | M5 | BoreFromBottom |
+| Global hole + bore dia       |        ✅ | — | M5        | DIRECT-C→BOBYQA, engine tested by DIRECT-01 |
 | Reed validity rule           |        ✅ | —          | M5        | mouthpiece pos = bore start (unit test) |
 
 ---
@@ -117,9 +120,9 @@ Legend:
 | ---------------------- | -------: | ---------- | --------- | -------------- |
 | Brent (1D)             |        ✅ | NAF-FF-02  | M3        |                |
 | BOBYQA (bounded local) |        ✅ | NAF-OPT-01 | M3        | high fidelity  |
-| DIRECT-C + refine      |        ✅ | DIRECT-01  | M5        | Engine done; golden fixture pending |
-| Multi-start            |        ✅ | MS-01      | M5        | Engine done; golden fixture pending |
-| Two-stage multi-start  |        ✅ | MS-02      | M5        | seeded         |
+| DIRECT-C + refine      |        ✅ | DIRECT-01  | M5        | Global optimizers use this engine |
+| Multi-start            |        ✅ | —          | M5        | Covered by global optimizer session tests |
+| Two-stage multi-start  |        ✅ | —          | M5        | Seeded, covered by session tests |
 
 ---
 

@@ -118,7 +118,7 @@ Constraints XML lower/upper bound arrays must match baseline ordering exactly �
   - Phase 4d: Editors (instrument/tuning/constraints) ✓
   - Phase 4e: Optimization + calibration UI ✓
   - Phase 4f: Bug fixes + polish ✓
-- **M5**: Full parity across all study models + tools — in progress
+- **M5**: Full parity across all study models + tools ✓
   - M5.1: Study model infrastructure refactor ✓
   - M5.2: Whistle evaluation parity ✓
   - M5.3: Flute evaluation parity ✓
@@ -126,6 +126,7 @@ Constraints XML lower/upper bound arrays must match baseline ordering exactly �
   - M5.5: Flute calibration + optimization ✓
   - M5.6: Reed evaluation model ✓
   - M5.7: Reed calibration + optimization ✓
+  - 445 tests, 4 study models, 56 golden fixture sets, 5 analysis tools, tuning wizard
 
 ## Temperature Default
 
