@@ -1,0 +1,10 @@
+{
+  "initialNorm" : 6828.869779215168,
+  "finalNorm" : 6771.325325734495,
+  "evaluations" : 8,
+  "initialGeometry" : [ 0.005200000000000009 ],
+  "finalGeometry" : [ 0.004471353422256782 ],
+  "optimizer" : "StopperPositionObjectiveFunction",
+  "solverType" : "Brent",
+  "nrDimensions" : 1
+}

@@ -247,6 +247,13 @@ fn constraint_template(
         BORE_DIAMETER_FROM_TOP => bore_ratio_constraints(n_from_top()),
         BORE_DIAMETER_FROM_BOTTOM => bore_ratio_constraints(n_from_bottom()),
         BORE_SPACING_FROM_TOP => bore_spacing_constraints(n_from_top()),
+        // Standalone headjoint: stopper position + bore diameter ratios from top
+        // (used by Flute, dispatched here via crate::whistle::create_default_constraints)
+        "HeadjointObjectiveFunction" => {
+            let mut c = vec![stopper_constraint()];
+            c.extend(bore_ratio_constraints(n_from_top()));
+            c
+        }
         // Merged bore
         HOLE_AND_TAPER => {
             let mut c = hole_constraints(n_holes);

@@ -147,9 +147,10 @@ fn run_1d_or_nd(
     stopping_trust_override: Option<f64>,
     on_progress: Option<&mut dyn FnMut(BobyqaProgress) -> bool>,
 ) -> Option<bobyqa_impl::BobyqaResult> {
-    if lower.len() == 1 && on_progress.is_none() {
+    if lower.len() == 1 {
         // 1D → Brent optimizer (matches Java BrentOptimizer dispatch).
-        // Wrap the slice-based objective as a univariate function.
+        // Always use Brent for 1D regardless of progress callback,
+        // since BOBYQA doesn't reliably handle 1D optimization.
         let start = initial[0].clamp(lower[0], upper[0]);
         let mut buf = [0.0f64; 1];
         let brent_result = brent_minimize(
@@ -162,8 +163,7 @@ fn run_1d_or_nd(
             evaluations: 0,
         })
     } else {
-        // Multi-dim → BOBYQA (also used for 1D with progress callbacks,
-        // since BobyqaProgress is BOBYQA-specific)
+        // Multi-dim → BOBYQA
         run_bobyqa(f, initial, lower, upper, max_eval, stopping_trust_override, on_progress)
     }
 }

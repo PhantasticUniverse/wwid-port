@@ -1,0 +1,10 @@
+{
+  "initialNorm" : 6828.869779215167,
+  "finalNorm" : 6816.873495683496,
+  "evaluations" : 88,
+  "initialGeometry" : [ 1.0, 1.0 ],
+  "finalGeometry" : [ 0.8380537057570921, 0.989189930645098 ],
+  "optimizer" : "BasicTaperObjectiveFunction",
+  "solverType" : "BOBYQA",
+  "nrDimensions" : 2
+}

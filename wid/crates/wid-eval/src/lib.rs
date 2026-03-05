@@ -324,7 +324,8 @@ pub fn calculate_error_vector(
                             1200.0
                         }
                     } else {
-                        1200.0
+                        // No target frequency — don't include in optimization (Java: 0.0).
+                        0.0
                     }
                 })
                 .collect()
@@ -349,7 +350,8 @@ pub fn calculate_error_vector(
                             1200.0
                         }
                     } else {
-                        1200.0
+                        // No target frequency — don't include in optimization (Java: 0.0).
+                        0.0
                     }
                 })
                 .collect()
@@ -366,7 +368,8 @@ pub fn calculate_error_vector(
                             1200.0
                         }
                     } else {
-                        1200.0
+                        // No target frequency — don't include in optimization (Java: 0.0).
+                        0.0
                     }
                 })
                 .collect()

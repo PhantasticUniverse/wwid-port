@@ -1,0 +1,10 @@
+{
+  "initialNorm" : 6828.869779215168,
+  "finalNorm" : 3922.4931495239957,
+  "evaluations" : 37,
+  "initialGeometry" : [ 0.005200000000000009, 1.0 ],
+  "finalGeometry" : [ -8.673617379884035E-19, 1.0469337064193434 ],
+  "optimizer" : "HeadjointObjectiveFunction",
+  "solverType" : "BOBYQA",
+  "nrDimensions" : 2
+}
