@@ -1,9 +1,9 @@
 import { Show } from "solid-js";
 import type { OptProgress, OptimizeResult, CalibResult } from "../../types/session";
 
-/** Type guard: CalibResult has initial_fipple_factor, OptimizeResult does not. */
+/** Type guard: CalibResult has initial_norm but NOT new_instrument_id. */
 function isCalibResult(r: OptimizeResult | CalibResult): r is CalibResult {
-  return "initial_fipple_factor" in r;
+  return !("new_instrument_id" in r);
 }
 
 export interface OptimizeDialogProps {
@@ -86,19 +86,33 @@ function ResultView(props: OptimizeDialogProps) {
         {props.isFipple ? "Calibration Complete" : "Optimization Complete"}
       </h2>
 
-      <Show when={props.isFipple && isCalibResult(result())}>
+      <Show when={isCalibResult(result())}>
         {(_) => {
           const r = result() as CalibResult;
           return (
             <div class="text-sm flex flex-col gap-1" style={{ color: "var(--color-text)" }}>
-              <Row label="Fipple factor" before={r.initial_fipple_factor.toFixed(4)} after={r.final_fipple_factor.toFixed(4)} />
+              {r.initial_fipple_factor != null && r.final_fipple_factor != null && (
+                <Row label="Fipple factor" before={r.initial_fipple_factor.toFixed(4)} after={r.final_fipple_factor.toFixed(4)} />
+              )}
+              {r.initial_window_height != null && r.final_window_height != null && (
+                <Row label="Window height" before={r.initial_window_height.toFixed(6)} after={r.final_window_height.toFixed(6)} />
+              )}
+              {r.initial_airstream_length != null && r.final_airstream_length != null && (
+                <Row label="Airstream length" before={r.initial_airstream_length.toFixed(6)} after={r.final_airstream_length.toFixed(6)} />
+              )}
+              {r.initial_alpha != null && r.final_alpha != null && (
+                <Row label="Alpha" before={r.initial_alpha.toFixed(6)} after={r.final_alpha.toFixed(6)} />
+              )}
+              {r.initial_beta != null && r.final_beta != null && (
+                <Row label="Beta" before={r.initial_beta.toFixed(6)} after={r.final_beta.toFixed(6)} />
+              )}
               <Row label="Norm" before={r.initial_norm.toFixed(4)} after={r.final_norm.toFixed(4)} />
             </div>
           );
         }}
       </Show>
 
-      <Show when={!props.isFipple && !isCalibResult(result())}>
+      <Show when={!isCalibResult(result())}>
         {(_) => {
           const r = result() as OptimizeResult;
           return (

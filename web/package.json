@@ -10,6 +10,7 @@
     "wasm": "cd ../wid && cargo build --target wasm32-unknown-unknown --release -p wid-wasm && wasm-bindgen target/wasm32-unknown-unknown/release/wid_wasm.wasm --out-dir crates/wid-wasm/pkg --target web"
   },
   "dependencies": {
+    "chart.js": "^4.5.1",
     "solid-js": "^1.9.0"
   },
   "devDependencies": {

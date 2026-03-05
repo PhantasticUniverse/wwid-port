@@ -56,10 +56,18 @@ export interface OptimizeResult {
   evaluations: number;
 }
 
-/** Result of fipple factor calibration (mirrors Rust CalibResult). */
+/** Result of calibration (mirrors Rust CalibResult — all fields optional except norm). */
 export interface CalibResult {
-  initial_fipple_factor: number;
-  final_fipple_factor: number;
+  initial_fipple_factor?: number;
+  final_fipple_factor?: number;
+  initial_window_height?: number;
+  final_window_height?: number;
+  initial_airstream_length?: number;
+  final_airstream_length?: number;
+  initial_alpha?: number;
+  final_alpha?: number;
+  initial_beta?: number;
+  final_beta?: number;
   initial_norm: number;
   final_norm: number;
 }

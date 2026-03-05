@@ -65,15 +65,29 @@ const canTune = createMemo(() => {
   return sel.instrument_id !== null && sel.tuning_id !== null;
 });
 
-const FIPPLE_FACTOR = "FippleFactorObjectiveFunction";
+const CALIBRATOR_KEYS = new Set([
+  "FippleFactorObjectiveFunction",
+  "WhistleCalibrationObjectiveFunction",
+  "WindowHeightObjectiveFunction",
+  "BetaObjectiveFunction",
+  "FluteCalibrationObjectiveFunction",
+  "AirstreamLengthObjectiveFunction",
+  "ReedCalibratorObjectiveFunction",
+]);
 
-const isFippleSelected = createMemo(() => selection().optimizer_key === FIPPLE_FACTOR);
+const isCalibratorSelected = createMemo(() => {
+  const key = selection().optimizer_key;
+  return key !== null && CALIBRATOR_KEYS.has(key);
+});
+
+// Keep legacy alias for backward compat in UI
+const isFippleSelected = isCalibratorSelected;
 
 const canOptimize = createMemo(() => {
   const sel = selection();
   if (!canTune() || sel.optimizer_key === null) return false;
-  // Fipple calibration doesn't require constraints
-  if (sel.optimizer_key === FIPPLE_FACTOR) return true;
+  // Calibrators don't require constraints
+  if (CALIBRATOR_KEYS.has(sel.optimizer_key)) return true;
   return sel.constraints_id !== null;
 });
 
@@ -329,14 +343,23 @@ async function runOptimize(): Promise<OptimizeResult | CalibResult | null> {
     setOptProgress(null);
     setError(null);
 
-    if (isFippleSelected()) {
-      // Fipple calibration — sync command, modifies instrument in-place
+    if (isCalibratorSelected()) {
+      // Calibration — sync command, modifies instrument in-place
       const result = await compute.run<CalibResult>("calibrate");
       setCalibrationCount((c) => c + 1);
-      log(
-        `Calibration complete: fipple factor ${result.initial_fipple_factor.toFixed(4)} → ${result.final_fipple_factor.toFixed(4)}, ` +
-          `norm ${result.initial_norm.toFixed(4)} → ${result.final_norm.toFixed(4)}`
-      );
+      const parts: string[] = [];
+      if (result.initial_fipple_factor != null && result.final_fipple_factor != null)
+        parts.push(`fipple factor ${result.initial_fipple_factor.toFixed(4)} → ${result.final_fipple_factor.toFixed(4)}`);
+      if (result.initial_window_height != null && result.final_window_height != null)
+        parts.push(`window height ${result.initial_window_height.toFixed(6)} → ${result.final_window_height.toFixed(6)}`);
+      if (result.initial_airstream_length != null && result.final_airstream_length != null)
+        parts.push(`airstream length ${result.initial_airstream_length.toFixed(6)} → ${result.final_airstream_length.toFixed(6)}`);
+      if (result.initial_alpha != null && result.final_alpha != null)
+        parts.push(`alpha ${result.initial_alpha.toFixed(6)} → ${result.final_alpha.toFixed(6)}`);
+      if (result.initial_beta != null && result.final_beta != null)
+        parts.push(`beta ${result.initial_beta.toFixed(6)} → ${result.final_beta.toFixed(6)}`);
+      parts.push(`norm ${result.initial_norm.toFixed(4)} → ${result.final_norm.toFixed(4)}`);
+      log(`Calibration complete: ${parts.join(", ")}`);
       return result;
     }
 
@@ -445,6 +468,163 @@ async function switchStudyModel(kind: string) {
   await init();
 }
 
+// ── Tool actions ─────────────────────────────────────────────
+
+async function sketchInstrument() {
+  try {
+    setLoading(true);
+    setError(null);
+    return await compute.run("sketch_instrument");
+  } catch (e) {
+    setError(`Sketch failed: ${e}`);
+    return null;
+  } finally {
+    setLoading(false);
+  }
+}
+
+async function supplementaryInfo() {
+  try {
+    setLoading(true);
+    setError(null);
+    return await compute.run("supplementary_info");
+  } catch (e) {
+    setError(`Supplementary info failed: ${e}`);
+    return null;
+  } finally {
+    setLoading(false);
+  }
+}
+
+async function compareInstruments(oldId: DocId, newId: DocId) {
+  try {
+    setLoading(true);
+    setError(null);
+    return await compute.run("compare_instruments", { old_doc_id: oldId, new_doc_id: newId });
+  } catch (e) {
+    setError(`Compare failed: ${e}`);
+    return null;
+  } finally {
+    setLoading(false);
+  }
+}
+
+async function graphTuning() {
+  try {
+    setLoading(true);
+    setError(null);
+    return await compute.run("graph_tuning");
+  } catch (e) {
+    setError(`Graph tuning failed: ${e}`);
+    return null;
+  } finally {
+    setLoading(false);
+  }
+}
+
+async function noteSpectrum(fingeringIndex: number) {
+  try {
+    setLoading(true);
+    setError(null);
+    return await compute.run("note_spectrum", { fingering_index: fingeringIndex });
+  } catch (e) {
+    setError(`Note spectrum failed: ${e}`);
+    return null;
+  } finally {
+    setLoading(false);
+  }
+}
+
+// ── Wizard actions ───────────────────────────────────────────
+
+async function listTemperaments(): Promise<DocInfo[]> {
+  try {
+    return await compute.run<DocInfo[]>("list_temperaments");
+  } catch (e) {
+    setError(`List temperaments failed: ${e}`);
+    return [];
+  }
+}
+
+async function listScales(): Promise<DocInfo[]> {
+  try {
+    return await compute.run<DocInfo[]>("list_scales");
+  } catch (e) {
+    setError(`List scales failed: ${e}`);
+    return [];
+  }
+}
+
+async function listFingeringPatterns(): Promise<DocInfo[]> {
+  try {
+    return await compute.run<DocInfo[]>("list_fingering_patterns");
+  } catch (e) {
+    setError(`List fingering patterns failed: ${e}`);
+    return [];
+  }
+}
+
+async function listScaleSymbolLists(): Promise<DocInfo[]> {
+  try {
+    return await compute.run<DocInfo[]>("list_scale_symbol_lists");
+  } catch (e) {
+    setError(`List scale symbol lists failed: ${e}`);
+    return [];
+  }
+}
+
+async function generateScale(opts: {
+  temperamentId?: DocId;
+  temperament?: string;
+  symbolsId?: DocId;
+  symbols?: string;
+  refName: string;
+  refFrequency: number;
+  scaleName?: string;
+}) {
+  try {
+    setError(null);
+    const args: Record<string, unknown> = {
+      refName: opts.refName,
+      refFrequency: opts.refFrequency,
+    };
+    if (opts.scaleName) args.scaleName = opts.scaleName;
+    if (opts.temperamentId != null) args.temperamentId = opts.temperamentId;
+    else if (opts.temperament) args.temperament = opts.temperament;
+    if (opts.symbolsId != null) args.symbolsId = opts.symbolsId;
+    else if (opts.symbols) args.symbols = opts.symbols;
+
+    const result = await compute.run<{ doc_id: number; doc_kind: string; name: string }>(
+      "generate_scale",
+      args
+    );
+    log(`Generated scale: ${result.name}`);
+    return result;
+  } catch (e) {
+    setError(`Generate scale failed: ${e}`);
+    return null;
+  }
+}
+
+async function generateTuning(scaleId: DocId, patternId: DocId, name: string) {
+  try {
+    setError(null);
+    const result = await compute.run<{ doc_id: number; doc_kind: string; name: string }>(
+      "generate_tuning",
+      { scaleId, patternId, name }
+    );
+    const info: DocInfo = { doc_id: result.doc_id, name: result.name, kind: "Tuning" };
+    setTunings(produce((list) => list.push(info)));
+    await selectTuning(info.doc_id);
+    openTab(info.doc_id, "Tuning", info.name);
+    log(`Generated tuning: ${result.name}`);
+    return result;
+  } catch (e) {
+    setError(`Generate tuning failed: ${e}`);
+    return null;
+  }
+}
+
 // ── Exported store ───────────────────────────────────────────
 export const sessionStore = {
   // State
@@ -470,6 +650,7 @@ export const sessionStore = {
   canOptimize,
   canSketch,
   isFippleSelected,
+  isCalibratorSelected,
   canCreateConstraints,
 
   // Actions
@@ -491,7 +672,7 @@ export const sessionStore = {
   cancelOptimize,
   createDefaultConstraints,
   createBlankConstraints,
-  FIPPLE_FACTOR,
+  CALIBRATOR_KEYS,
 
   // Tab management
   openTab,
@@ -505,6 +686,21 @@ export const sessionStore = {
   setTuning,
   getConstraints,
   setConstraints,
+
+  // Tool actions
+  sketchInstrument,
+  supplementaryInfo,
+  compareInstruments,
+  graphTuning,
+  noteSpectrum,
+
+  // Wizard actions
+  listTemperaments,
+  listScales,
+  listFingeringPatterns,
+  listScaleSymbolLists,
+  generateScale,
+  generateTuning,
 
   // Raw compute access for advanced use
   compute,

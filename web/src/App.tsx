@@ -59,9 +59,9 @@ export default function App() {
             onChange={(e) => sessionStore.switchStudyModel(e.currentTarget.value)}
           >
             <option value="NAF">NAF</option>
-            <option value="Whistle" disabled>Whistle (coming soon)</option>
-            <option value="Flute" disabled>Flute (coming soon)</option>
-            <option value="Reed" disabled>Reed (coming soon)</option>
+            <option value="Whistle">Whistle</option>
+            <option value="Flute">Flute</option>
+            <option value="Reed">Reed</option>
           </select>
         </div>
         <div class="flex items-center gap-3">
