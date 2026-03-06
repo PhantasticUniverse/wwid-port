@@ -61,7 +61,7 @@ All 6 tool dialogs now open in popup windows: Evaluate, Supplementary, Sketch, C
 
 ## 2026-03-06: Popups + Sketch Mouthpiece
 
-Java WIDesigner opens every tool result in a separate JFrame window. Our port had Evaluate and Supplementary as popups but Sketch, Compare, Graph, and Spectrum as in-page modals. This session converts Sketch and Compare to popup windows.
+Java WIDesigner opens every tool result in a separate JFrame window. Our port had Evaluate and Supplementary as popups but Sketch, Compare, Graph, and Spectrum as in-page modals. This session converts Sketch and Compare to popup windows (Graph and Spectrum were converted in a follow-up session).
 
 ### Changes
 

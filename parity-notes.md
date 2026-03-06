@@ -324,16 +324,16 @@ Both Java and Fortran compute `sqrt(denom)` in the Z-matrix update. `denom` shou
 
 ## Visual Presentation Differences
 
-Pixel-perfect UI replication is a non-goal. The web port uses a dark theme (modern web convention) vs Java Swing's light theme. Below are intentional visual deviations with rationale.
+Pixel-perfect UI replication is a non-goal. The web port uses a dark theme (modern web convention) vs Java Swing's light theme. All 6 tool results (Evaluate, Supplementary, Sketch, Compare, Graph Tuning, Note Spectrum) open in popup windows via `window.open()`, matching Java's JFrame-per-tool behavior. Below are intentional visual deviations with rationale.
 
 ### Chart Library: JIDE (Java) vs Chart.js (web)
 Java uses JIDE Charts (proprietary, tightly integrated with Swing). We use Chart.js (open-source, well-maintained). Chart.js renders to HTML5 Canvas, not SVG — line rendering differs at sub-pixel level. Interactive behavior (tooltips, hover) is web-native.
 
 ### Graph Tuning ("Impedance Pattern")
-Java draws all curves in black/dark gray with green filled circles at peak resonances (fmax), blue open circles at zero crossings (fmin), and colored diamonds at target frequencies. We match this with gray curves + scatter overlay datasets. The chart title matches Java's "Impedance Pattern".
+Java draws all curves in black/dark gray with green filled circles at peak resonances (fmax), blue open circles at zero crossings (fmin), and colored diamonds at target frequencies. Opens in a JFrame window. We match this with gray curves + scatter overlay datasets in a popup window. The chart title matches Java's "Impedance Pattern". Axis label: "Frequency" (no "(Hz)"), matching Java.
 
 ### Note Spectrum
-Java uses green dots (gain >= 1) and red dots (gain < 1) with a black impedance line. We use continuous line segments in green/red with NaN-gap splitting, plus a dashed gain=1 reference line. The impedance line is dark gray (our dark theme equivalent of Java's black-on-white).
+Java uses green dots (gain >= 1) and red dots (gain < 1) with a black impedance line. Opens in a JFrame window. We use continuous line segments in green/red with NaN-gap splitting, plus a dashed gain=1 reference line, in a popup window with an interactive fingering selector dropdown. The impedance line is dark gray (our dark theme equivalent of Java's black-on-white).
 
 ### Sketch Diagram
 Java uses JFreeChart's XYPlot to render a top-down engineering drawing: dashed bore outline, circles for holes on the center axis, axis labels. Opens in a JFrame window. We use custom SVG in a popup window with the same engineering conventions: dashed bore polygon, outline circles for holes positioned on the center line (straddling the bore, matching Java), labeled X/Y axes with tick marks (labels "Length" / "Width" without units, matching Java), hole labels above the bore top edge. No colored fills — monochrome gray palette. Handles both cylindrical and tapered bores correctly.
@@ -345,9 +345,6 @@ Java uses JFreeChart's XYPlot to render a top-down engineering drawing: dashed b
 
 ### Compare Instruments
 Java opens comparison results in a JFrame window. Our port uses a two-step flow: an in-page selector dialog for choosing old/new instruments, then a popup window for the comparison table with Category, Field, Old, New, Diff, %Change columns. This matches Java's workflow where the user selects instruments in the GUI and results appear in a separate window.
-
-### Graph Tuning + Note Spectrum
-Java opens both the impedance pattern graph and note spectrum in JFrame windows. Our port now does the same — both open in popup windows via `window.open()`. Chart.js renders into popup canvases since they share the same JS context (same origin). The Note Spectrum popup includes an interactive fingering selector dropdown that fetches new spectrum data from the main window's WASM session. All 6 tool dialogs (Evaluate, Supplementary, Sketch, Compare, Graph, Spectrum) now open in popup windows matching Java's JFrame behavior.
 
 ### Default Constraints
 Java's "Create Default Constraints" pre-populates bounds with study-model-specific values (bore length ranges, hole diameter ranges, taper ratios). Our web port now matches this. "Create Blank Constraints" creates empty bounds (Java fills with 0.0/1.0; we use None). The constraints are used identically for optimization — this is a usability feature, not a computation difference.
