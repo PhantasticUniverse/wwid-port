@@ -321,3 +321,25 @@ Both Java and Fortran compute `sqrt(denom)` in the Z-matrix update. `denom` shou
 ## Trust Radius Overrides (Audit #2)
 
 `hole_from_top::optimize_holes_with_progress` was using bounds-based `compute_trust_radius()` instead of Java's hardcoded 10.0/1e-8. Fixed in audit #2. The sibling functions (`hole_group_from_top`, `single_taper`) use a shared `_impl` pattern that prevented this class of bug.
+
+## Visual Presentation Differences
+
+Pixel-perfect UI replication is a non-goal. The web port uses a dark theme (modern web convention) vs Java Swing's light theme. Below are intentional visual deviations with rationale.
+
+### Chart Library: JIDE (Java) vs Chart.js (web)
+Java uses JIDE Charts (proprietary, tightly integrated with Swing). We use Chart.js (open-source, well-maintained). Chart.js renders to HTML5 Canvas, not SVG — line rendering differs at sub-pixel level. Interactive behavior (tooltips, hover) is web-native.
+
+### Graph Tuning ("Impedance Pattern")
+Java draws all curves in black/dark gray with green filled circles at peak resonances (fmax), blue open circles at zero crossings (fmin), and colored diamonds at target frequencies. We match this with gray curves + scatter overlay datasets. The chart title matches Java's "Impedance Pattern".
+
+### Note Spectrum
+Java uses green dots (gain >= 1) and red dots (gain < 1) with a black impedance line. We use continuous line segments in green/red with NaN-gap splitting, plus a dashed gain=1 reference line. The impedance line is dark gray (our dark theme equivalent of Java's black-on-white).
+
+### Sketch Diagram
+Java uses JFreeChart's XYPlot to render a top-down engineering drawing: dashed bore outline, circles for holes, axis labels. We use custom SVG with the same engineering conventions: dashed bore polygon, outline circles for holes, labeled X/Y axes with tick marks. No colored fills — monochrome gray palette.
+
+### Default Constraints
+Java's "Create Default Constraints" pre-populates bounds with study-model-specific values (bore length ranges, hole diameter ranges, taper ratios). Our web port now matches this. "Create Blank Constraints" creates empty bounds (Java fills with 0.0/1.0; we use None). The constraints are used identically for optimization — this is a usability feature, not a computation difference.
+
+### Settings Dialog
+Java has a multi-tab preferences dialog (temperature, humidity, length type, DIRECT toggle, constraints directory). Our settings are minimal: temperature, humidity, DIRECT toggle. Missing settings: length type (always metric in our implementation), constraints directory (web uses in-memory document store). These are platform differences, not parity gaps.

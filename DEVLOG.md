@@ -13,6 +13,7 @@
 
 ### Entries (newest first)
 
+- [Visual Parity Improvements](#2026-03-06-visual-parity-improvements) — 5 priorities: Graph Tuning chart, Note Spectrum gain coloring, default constraints bounds, Sketch engineering style, Settings DIRECT toggle
 - [Parity Audit #4 + NAF optimizer tests](#2026-03-06-parity-audit-4--naf-optimizer-tests) — 7 code fixes, 4 NAF parity tests, BOBYQA/DIRECT docs, SUP-RD fixture regen
 - [Parity Audits #2 & #3](#2026-03-06-parity-audits-2--3) — trust radius fix, analysis tool frequency fallbacks, bore geometry dead-if cleanup
 - [Post-M5 Parity Audit + Docs Polish](#2026-03-06-post-m5-parity-audit--docs-polish) — optimizer list fix, per-model physical params, LICENSE/NOTICE, README update
@@ -37,6 +38,52 @@
 - [M3 NAF Calibration + Optimization](#2026-03-02-m3--naf-calibration--optimization-parity) — BOBYQA crate, 139 tests
 - [NAF Bulk Test Coverage](#2026-03-02-expanded-naf-test-coverage-all-oracle-xmls) — 36 combos, 540 fingerings
 - [M4 Browser MVP](#2026-03-02-m4--browser-hosted-mvp-naf-end-to-end)
+
+---
+
+## 2026-03-06: Visual Parity Improvements
+
+After comparing screenshots of Java WIDesigner v2.6.0 against the web port, addressed 5 visual gaps prioritized by user impact. All changes are presentation-only; 449 tests remain passing.
+
+### P1: Graph Tuning Chart Overhaul
+- Renamed dialog title from "Graph Tuning - Playing Ranges" to "Impedance Pattern" (matching Java)
+- Changed all impedance curves from a 17-color rainbow palette to uniform muted gray (`#6b7280`)
+- Added scatter marker overlays: green filled circles at fmax (peak resonances), blue open circles at fmin (zero crossings), colored diamonds at target frequencies (green=in-range, red=out-of-range)
+- Replaced per-fingering legend with 3-item marker legend using `usePointStyle`
+- Changed Y-axis label to "Reactance Ratio, X/R"
+- File: `web/src/components/tools/GraphTuningDialog.tsx`
+
+### P4: Note Spectrum Gain Threshold Coloring
+- Changed impedance line from blue (`#3b82f6`) to dark gray (`#9ca3af`)
+- Split single amber gain line into green (playable, gain >= 1.0) and red (damped, gain < 1.0) segments using dual datasets with NaN gaps
+- Added dashed horizontal reference line at gain = 1.0
+- Updated legend: "Gain (playable)" green, "Gain (damped)" red
+- File: `web/src/components/tools/NoteSpectrumDialog.tsx`
+
+### P2: Default Constraints Bounds Population
+- **Root cause**: `create_default_constraints()` was leaving all bounds as `None` for hole/bore optimizers. Java's "Create Default Constraints" pre-populates meaningful bounds.
+- NAF: Hardcoded bounds for 0, 6, and 7-hole instruments (bore length 0.1905..0.6985m, hole diameters 0.002..0.013m, taper ratios 0.8..1.2, etc.). Falls back to blank for other hole counts, matching Java.
+- Whistle: Dynamic bounds computed from hole count — bore length 0.200..0.600m, hole spacings 0.012..0.040m, hole diameters 0.0040..0.0091m. Bore optimizer bounds: ratios 0.5..1.0, spacing 0.001..0.010, stopper 0.00..0.03.
+- Flute: Same constants as Whistle, delegates to shared `apply_default_bounds()`.
+- Reed: Different constants — bore 0.200..1.000m, hole diameter 0.0032..0.0091m, bore ratios 1.0..1.5 (flares out), bore positions 0.1..0.9. Thumb hole spacing overrides at positions 1 and 6.
+- `create_blank_constraints()` now produces genuinely blank constraints (all `None` bounds), named "Blank" instead of "Default".
+- Files: `wid/crates/wid-session/src/{naf,whistle,flute,reed}.rs`, `lib.rs` (test update)
+
+### P3: Sketch Diagram Engineering Style
+- Changed bore profile from filled blue polygon to dashed gray outline (`stroke-dasharray="6,3"`, no fill)
+- Changed tone holes from amber rectangles (chimney view) to outline circles (top-view, diameter proportional)
+- Changed mouthpiece from purple text label to small gray rectangle marker
+- Added X-axis (Length) and Y-axis (Width) with tick marks and labels
+- Used monochrome gray palette throughout
+- Kept summary table (Bore Length, Holes, Mouthpiece, Flange) as-is
+- File: `web/src/components/tools/SketchDialog.tsx`
+
+### P5: Settings DIRECT Optimizer Toggle
+- Added "Use DIRECT optimizer (slow & thorough)" checkbox to Settings dialog
+- Default: checked (matching Java's default behavior)
+- When unchecked, filters out optimizer list entries with "Global" prefix
+- Persisted via `localStorage` key `wid_use_direct`
+- Files: `web/src/components/layout/SettingsDialog.tsx`, `StudyPanel.tsx`
 
 ---
 

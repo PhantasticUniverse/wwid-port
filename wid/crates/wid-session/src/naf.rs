@@ -66,16 +66,17 @@ pub fn available_optimizers() -> Vec<OptimizerInfo> {
 
 /// Create default constraints for a given optimizer and hole count.
 ///
-/// "Default" constraints have the correct structure (constraint names,
-/// categories, types) but all bounds are set to 0.0 (unset).
-/// This matches the Java `StudyModel.getDefaultConstraints()` behavior.
+/// "Default" constraints have pre-populated bounds matching Java defaults.
+/// NAF has hardcoded bounds for 0, 6, and 7 holes; other hole counts
+/// fall back to blank bounds.
 pub fn create_default_constraints(
     objective_function_name: &str,
     number_of_holes: u32,
     _inst: Option<&wid_types::InstrumentRaw>,
 ) -> Constraints {
     let display_name = display_name_for(objective_function_name);
-    let constraints = constraint_template(objective_function_name, number_of_holes);
+    let mut constraints = constraint_template(objective_function_name, number_of_holes);
+    apply_default_bounds(&mut constraints, objective_function_name, number_of_holes);
 
     Constraints {
         name: "Default".to_string(),
@@ -87,17 +88,23 @@ pub fn create_default_constraints(
     }
 }
 
-/// Create blank constraints — same structure as default, all bounds 0.0.
-///
-/// In the Java baseline, "blank" and "default" produce the same output
-/// for NAF study model constraints.
+/// Create blank constraints — same structure, all bounds None.
 pub fn create_blank_constraints(
     objective_function_name: &str,
     number_of_holes: u32,
-    inst: Option<&wid_types::InstrumentRaw>,
+    _inst: Option<&wid_types::InstrumentRaw>,
 ) -> Constraints {
-    // For NAF, blank and default are identical (both have 0.0 bounds)
-    create_default_constraints(objective_function_name, number_of_holes, inst)
+    let display_name = display_name_for(objective_function_name);
+    let constraints = constraint_template(objective_function_name, number_of_holes);
+
+    Constraints {
+        name: "Blank".to_string(),
+        objective_display_name: display_name.to_string(),
+        objective_function_name: objective_function_name.to_string(),
+        number_of_holes,
+        constraint_list: constraints,
+        hole_groups: None,
+    }
 }
 
 /// Returns the display name for an objective function.
@@ -118,8 +125,7 @@ fn display_name_for(objective_function_name: &str) -> &'static str {
 /// Generate the constraint template for a given optimizer and hole count.
 ///
 /// The constraint structure (names, categories, types) matches the Java
-/// baseline exactly. Bounds are all None (serializes as absent in XML,
-/// defaults to 0.0 in lower_bounds/upper_bounds extraction).
+/// baseline exactly. Bounds are all None (populated separately for defaults).
 fn constraint_template(
     objective_function_name: &str,
     n_holes: u32,
@@ -136,6 +142,120 @@ fn constraint_template(
             taper_hole_group_constraints(n_holes)
         }
         _ => Vec::new(),
+    }
+}
+
+/// Apply default bounds from Java NafStudyModel hardcoded arrays.
+///
+/// NAF has specific defaults for 0, 6, and 7 holes only.
+/// For other hole counts, Java falls back to blank constraints.
+fn apply_default_bounds(constraints: &mut [Constraint], optimizer: &str, n_holes: u32) {
+    let bounds: Option<(Vec<f64>, Vec<f64>)> = match optimizer {
+        FIPPLE_FACTOR => Some((vec![0.2], vec![1.5])),
+
+        NAF_HOLE_SIZE => match n_holes {
+            0 => Some((vec![], vec![])),
+            6 => Some((
+                vec![0.002032, 0.003175, 0.003175, 0.003175, 0.003175, 0.003175],
+                vec![0.0127, 0.0127, 0.0127, 0.0127, 0.0127, 0.0127],
+            )),
+            7 => Some((
+                vec![0.002032, 0.003175, 0.003175, 0.003175, 0.003175, 0.002032, 0.002032],
+                vec![0.0127, 0.0127, 0.0127, 0.0127, 0.0127, 0.00635, 0.00635],
+            )),
+            _ => None,
+        },
+
+        HOLE_FROM_TOP => match n_holes {
+            0 => Some((vec![0.1905], vec![0.6985])),
+            6 => Some((
+                vec![0.1905, 0.25, 0.02032, 0.02032, 0.02032, 0.02032, 0.02032,
+                     0.002032, 0.003175, 0.003175, 0.003175, 0.003175, 0.003175],
+                vec![0.6985, 0.50, 0.03175, 0.03175, 0.0762, 0.03175, 0.03175,
+                     0.0127, 0.0127, 0.0127, 0.0127, 0.0127, 0.0127],
+            )),
+            7 => Some((
+                vec![0.1905, 0.25, 0.02032, 0.02032, 0.02032, 0.02032, 0.02032, 0.0,
+                     0.002032, 0.003175, 0.003175, 0.003175, 0.003175, 0.002032, 0.002032],
+                vec![0.6985, 0.50, 0.03175, 0.03175, 0.0762, 0.03175, 0.03175, 0.003175,
+                     0.0127, 0.0127, 0.0127, 0.0127, 0.0127, 0.00635, 0.00635],
+            )),
+            _ => None,
+        },
+
+        HOLE_GROUP_FROM_TOP => match n_holes {
+            0 => Some((vec![0.1905], vec![0.6985])),
+            6 => Some((
+                vec![0.1905, 0.25, 0.02032, 0.02032, 0.02032,
+                     0.002032, 0.003175, 0.003175, 0.003175, 0.003175, 0.003175],
+                vec![0.6985, 0.5, 0.03175, 0.0762, 0.03175,
+                     0.0127, 0.0127, 0.0127, 0.0127, 0.0127, 0.0127],
+            )),
+            7 => Some((
+                vec![0.1905, 0.25, 0.02032, 0.02032, 0.02032, 0.0,
+                     0.002032, 0.003175, 0.003175, 0.003175, 0.003175, 0.002032, 0.002032],
+                vec![0.6985, 0.5, 0.03175, 0.0762, 0.03175, 0.003175,
+                     0.0127, 0.0127, 0.0127, 0.0127, 0.0127, 0.00635, 0.00635],
+            )),
+            _ => None,
+        },
+
+        TAPER_NO_GROUPING | TAPER_NO_GROUPING_HEMI => match n_holes {
+            0 => Some((
+                vec![0.1905, 0.8, 0.0, 0.0],
+                vec![0.6985, 1.2, 1.0, 1.0],
+            )),
+            6 => Some((
+                vec![0.1905, 0.25, 0.02032, 0.02032, 0.02032, 0.02032, 0.02032,
+                     0.002032, 0.003175, 0.003175, 0.003175, 0.003175, 0.003175,
+                     0.8, 0.0, 0.0],
+                vec![0.6985, 0.50, 0.03175, 0.03175, 0.0762, 0.03175, 0.03175,
+                     0.0127, 0.0127, 0.0127, 0.0127, 0.0127, 0.0127,
+                     1.2, 1.0, 1.0],
+            )),
+            7 => Some((
+                vec![0.1905, 0.25, 0.02032, 0.02032, 0.02032, 0.02032, 0.02032, 0.0,
+                     0.002032, 0.003175, 0.003175, 0.003175, 0.003175, 0.002032, 0.002032,
+                     0.8, 0.0, 0.0],
+                vec![0.6985, 0.50, 0.03175, 0.03175, 0.0762, 0.03175, 0.03175, 0.003175,
+                     0.0127, 0.0127, 0.0127, 0.0127, 0.0127, 0.00635, 0.00635,
+                     1.2, 1.0, 1.0],
+            )),
+            _ => None,
+        },
+
+        TAPER_HOLE_GROUP | TAPER_HOLE_GROUP_HEMI => match n_holes {
+            0 => Some((
+                vec![0.1905, 0.8, 0.0, 0.0],
+                vec![0.6985, 1.2, 1.0, 1.0],
+            )),
+            6 => Some((
+                vec![0.1905, 0.25, 0.02032, 0.02032, 0.02032,
+                     0.002032, 0.003175, 0.003175, 0.003175, 0.003175, 0.003175,
+                     0.8, 0.0, 0.0],
+                vec![0.6985, 0.5, 0.03175, 0.0762, 0.03175,
+                     0.0127, 0.0127, 0.0127, 0.0127, 0.0127, 0.0127,
+                     1.2, 1.0, 1.0],
+            )),
+            7 => Some((
+                vec![0.1905, 0.25, 0.02032, 0.02032, 0.02032, 0.0,
+                     0.002032, 0.003175, 0.003175, 0.003175, 0.003175, 0.002032, 0.002032,
+                     0.8, 0.0, 0.0],
+                vec![0.6985, 0.5, 0.03175, 0.0762, 0.03175, 0.003175,
+                     0.0127, 0.0127, 0.0127, 0.0127, 0.0127, 0.00635, 0.00635,
+                     1.2, 1.0, 1.0],
+            )),
+            _ => None,
+        },
+
+        _ => None,
+    };
+
+    if let Some((lower, upper)) = bounds {
+        for (c, (lo, hi)) in constraints.iter_mut().zip(lower.into_iter().zip(upper)) {
+            c.lower_bound = Some(lo);
+            c.upper_bound = Some(hi);
+        }
     }
 }
 

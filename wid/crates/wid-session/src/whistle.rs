@@ -29,6 +29,12 @@ pub const HOLE_AND_HEADJOINT: &str = "HoleAndHeadjointObjectiveFunction";
 pub const GLOBAL_HOLE_AND_TAPER: &str = "GlobalHoleAndBasicTaperObjectiveFunction";
 pub const GLOBAL_HOLE_AND_BORE_DIAMETER_FROM_BOTTOM: &str = "GlobalHoleAndBoreDiameterFromBottomObjectiveFunction";
 
+// Whistle-specific constants matching Java WhistleStudyModel
+const MIN_BORE_LENGTH: f64 = 0.200;
+const MAX_BORE_LENGTH: f64 = 0.600;
+const MIN_HOLE_DIAMETER: f64 = 0.0040;
+const MAX_HOLE_DIAMETER: f64 = 0.0091;
+
 /// Returns the list of available Whistle optimizers.
 pub fn available_optimizers() -> Vec<OptimizerInfo> {
     vec![
@@ -146,16 +152,25 @@ pub fn optimizer_needs_constraints(key: &str) -> bool {
 /// Create default constraints for a given optimizer and hole count.
 ///
 /// Calibrator constraints have pre-filled default bounds matching Java defaults.
-/// Hole optimizer constraints have blank bounds (all None).
-/// When `inst` is provided, bore optimizer constraint counts are derived from
-/// the instrument's bore geometry (via `find_head_point`/`find_body_top`).
+/// Hole/bore optimizer constraints have dynamically computed bounds matching
+/// Java WhistleStudyModel's DEFAULT_CONSTRAINTS_INTENT code path.
 pub fn create_default_constraints(
     objective_function_name: &str,
     number_of_holes: u32,
     inst: Option<&InstrumentRaw>,
 ) -> Constraints {
     let display_name = display_name_for(objective_function_name);
-    let constraints = constraint_template(objective_function_name, number_of_holes, inst);
+    let mut constraints = constraint_template(objective_function_name, number_of_holes, inst);
+    apply_default_bounds(
+        &mut constraints,
+        objective_function_name,
+        number_of_holes,
+        inst,
+        MIN_BORE_LENGTH,
+        MAX_BORE_LENGTH,
+        MIN_HOLE_DIAMETER,
+        MAX_HOLE_DIAMETER,
+    );
 
     Constraints {
         name: "Default".to_string(),
@@ -167,13 +182,23 @@ pub fn create_default_constraints(
     }
 }
 
-/// Create blank constraints — same as default for Whistle.
+/// Create blank constraints — same structure, all bounds None.
 pub fn create_blank_constraints(
     objective_function_name: &str,
     number_of_holes: u32,
     inst: Option<&InstrumentRaw>,
 ) -> Constraints {
-    create_default_constraints(objective_function_name, number_of_holes, inst)
+    let display_name = display_name_for(objective_function_name);
+    let constraints = constraint_template(objective_function_name, number_of_holes, inst);
+
+    Constraints {
+        name: "Blank".to_string(),
+        objective_display_name: display_name.to_string(),
+        objective_function_name: objective_function_name.to_string(),
+        number_of_holes,
+        constraint_list: constraints,
+        hole_groups: None,
+    }
 }
 
 fn display_name_for(objective_function_name: &str) -> &'static str {
@@ -280,6 +305,215 @@ fn constraint_template(
         _ => Vec::new(),
     }
 }
+
+// ── Default bounds (matching Java WhistleStudyModel) ────────────
+
+/// Apply default bounds to constraints, matching Java's
+/// DEFAULT_CONSTRAINTS_INTENT code path.
+///
+/// Called by Whistle, Flute (via delegation), and Reed (with different constants).
+pub(crate) fn apply_default_bounds(
+    constraints: &mut [Constraint],
+    optimizer: &str,
+    n_holes: u32,
+    inst: Option<&InstrumentRaw>,
+    min_bore: f64,
+    max_bore: f64,
+    min_hole: f64,
+    max_hole: f64,
+) {
+    let n = n_holes as usize;
+
+    let n_from_top = || inst.map_or(1, |i| wid_compile::find_head_point(i, "Head").max(1));
+    let n_from_bottom = || {
+        inst.map_or(1, |i| {
+            let n_unchanged = wid_compile::find_body_top(i) + 1;
+            (i.bore_points.len().saturating_sub(n_unchanged)).max(1)
+        })
+    };
+
+    match optimizer {
+        // Calibrators already have bounds set in their constraint builders
+        WINDOW_HEIGHT | BETA | WHISTLE_CALIB
+        | "AirstreamLengthObjectiveFunction"
+        | "FluteCalibrationObjectiveFunction"
+        | "ReedCalibratorObjectiveFunction" => {}
+
+        // Bore length only (standalone, used by Reed)
+        "BareBoreLengthOnly" => {
+            set_bounds(constraints, 0, min_bore, max_bore);
+        }
+
+        // Hole size only
+        HOLE_SIZE | "NafHoleSizeObjectiveFunction" => {
+            for i in 0..n {
+                set_bounds(constraints, i, min_hole, max_hole);
+            }
+        }
+
+        // Hole position (N+1 dims)
+        HOLE_POSITION | GLOBAL_HOLE_POSITION => {
+            apply_hole_position_bounds(constraints, 0, n, min_bore, max_bore);
+        }
+
+        // Hole position + size (2N+1 dims)
+        HOLE | GLOBAL_HOLE => {
+            apply_hole_bounds(constraints, n, min_bore, max_bore, min_hole, max_hole);
+        }
+
+        // Basic taper (2 dims)
+        BASIC_TAPER => {
+            set_bounds(constraints, 0, 0.01, 0.5);
+            set_bounds(constraints, 1, 0.3, 2.0);
+        }
+
+        // Bore diameter ratios from top
+        BORE_DIAMETER_FROM_TOP => {
+            let nd = n_from_top();
+            for i in 0..nd {
+                set_bounds(constraints, i, if i == 0 { 0.999 } else { 0.5 }, 1.0);
+            }
+        }
+
+        // Bore diameter ratios from bottom
+        BORE_DIAMETER_FROM_BOTTOM => {
+            let nd = n_from_bottom();
+            for i in 0..nd {
+                set_bounds(constraints, i, 0.5, 1.0);
+            }
+        }
+
+        // Bore spacing from top
+        BORE_SPACING_FROM_TOP => {
+            let nd = n_from_top();
+            for i in 0..nd {
+                set_bounds(constraints, i, 0.001, 0.010);
+            }
+        }
+
+        // Headjoint: stopper + bore ratios from top
+        "HeadjointObjectiveFunction" => {
+            let nd = n_from_top();
+            set_bounds(constraints, 0, 0.00, 0.03);  // stopper
+            if nd > 0 {
+                set_bounds(constraints, 1, 0.90, 1.0); // first bore ratio
+            }
+            for i in 2..=nd {
+                set_bounds(constraints, i, 0.5, 1.0);
+            }
+        }
+
+        // Stopper position only
+        "StopperPositionObjectiveFunction" => {
+            set_bounds(constraints, 0, 0.00, 0.03);
+        }
+
+        // Holes + basic taper
+        HOLE_AND_TAPER | GLOBAL_HOLE_AND_TAPER => {
+            apply_hole_bounds(constraints, n, min_bore, max_bore, min_hole, max_hole);
+            let taper_start = 2 * n + 1;
+            set_bounds(constraints, taper_start, 0.1, 0.5);
+            set_bounds(constraints, taper_start + 1, 0.3, 1.1);
+        }
+
+        // Holes + bore diameter from top
+        HOLE_AND_BORE_DIAMETER_FROM_TOP => {
+            apply_hole_bounds(constraints, n, min_bore, max_bore, min_hole, max_hole);
+            let bore_start = 2 * n + 1;
+            let nd = n_from_top();
+            set_bounds(constraints, bore_start, 0.999, 1.0);
+            for i in 1..nd {
+                set_bounds(constraints, bore_start + i, 0.5, 1.0);
+            }
+        }
+
+        // Holes + bore diameter from bottom
+        HOLE_AND_BORE_DIAMETER_FROM_BOTTOM | GLOBAL_HOLE_AND_BORE_DIAMETER_FROM_BOTTOM => {
+            apply_hole_bounds(constraints, n, min_bore, max_bore, min_hole, max_hole);
+            let bore_start = 2 * n + 1;
+            let nd = n_from_bottom();
+            for i in 0..nd {
+                set_bounds(constraints, bore_start + i, 0.5, 1.0);
+            }
+        }
+
+        // Holes + bore spacing
+        HOLE_AND_BORE_SPACING => {
+            apply_hole_bounds(constraints, n, min_bore, max_bore, min_hole, max_hole);
+            let bore_start = 2 * n + 1;
+            let nd = n_from_top();
+            for i in 0..nd {
+                set_bounds(constraints, bore_start + i, 0.001, 0.010);
+            }
+        }
+
+        // Holes + headjoint
+        HOLE_AND_HEADJOINT => {
+            apply_hole_bounds(constraints, n, min_bore, max_bore, min_hole, max_hole);
+            let hj_start = 2 * n + 1;
+            let nd = n_from_top();
+            set_bounds(constraints, hj_start, 0.00, 0.03); // stopper
+            if nd > 0 {
+                set_bounds(constraints, hj_start + 1, 0.90, 1.0);
+            }
+            for i in 2..=nd {
+                set_bounds(constraints, hj_start + i, 0.5, 1.0);
+            }
+        }
+
+        _ => {}
+    }
+}
+
+/// Apply hole position bounds to constraints starting at `offset`.
+/// Layout: [bore_length, spacing1, spacing2, ..., spacingN]
+fn apply_hole_position_bounds(
+    constraints: &mut [Constraint],
+    offset: usize,
+    n: usize,
+    min_bore: f64,
+    max_bore: f64,
+) {
+    set_bounds(constraints, offset, min_bore, max_bore);
+    for j in 1..n {
+        set_bounds(constraints, offset + j, 0.012, 0.040);
+    }
+    if n > 0 {
+        set_bounds(constraints, offset + n, 0.012, 0.200);
+    }
+    // Java: if (numberOfHoles >= 5) upperBound[numberOfHoles - 3] = 0.100
+    if n >= 5 {
+        if let Some(c) = constraints.get_mut(offset + n - 3) {
+            c.upper_bound = Some(0.100);
+        }
+    }
+}
+
+/// Apply merged hole bounds: position (N+1) + size (N) = 2N+1.
+fn apply_hole_bounds(
+    constraints: &mut [Constraint],
+    n: usize,
+    min_bore: f64,
+    max_bore: f64,
+    min_hole: f64,
+    max_hole: f64,
+) {
+    // Position part
+    apply_hole_position_bounds(constraints, 0, n, min_bore, max_bore);
+    // Size part
+    for i in 0..n {
+        set_bounds(constraints, n + 1 + i, min_hole, max_hole);
+    }
+}
+
+fn set_bounds(constraints: &mut [Constraint], idx: usize, lo: f64, hi: f64) {
+    if let Some(c) = constraints.get_mut(idx) {
+        c.lower_bound = Some(lo);
+        c.upper_bound = Some(hi);
+    }
+}
+
+// ── Constraint template builders ────────────────────────────────
 
 /// Basic taper constraints: head fraction + foot ratio.
 fn basic_taper_constraints() -> Vec<Constraint> {

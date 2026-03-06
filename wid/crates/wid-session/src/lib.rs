@@ -2390,14 +2390,17 @@ mod tests {
         assert_eq!(constraints.number_of_holes, 6);
         assert_eq!(constraints.constraint_list.len(), 13);
 
-        // All bounds should be None/0.0 for default constraints
+        // Default constraints should have pre-populated bounds (matching Java)
         let lb = constraints.lower_bounds();
         let ub = constraints.upper_bounds();
         assert_eq!(lb.len(), 13);
         assert_eq!(ub.len(), 13);
+        // NAF HoleFromTop 6-hole defaults: bore length 0.1905..0.6985, etc.
+        assert!((lb[0] - 0.1905).abs() < 1e-10);
+        assert!((ub[0] - 0.6985).abs() < 1e-10);
+        // All upper bounds should be non-zero
         for i in 0..13 {
-            assert_eq!(lb[i], 0.0);
-            assert_eq!(ub[i], 0.0);
+            assert!(ub[i] > 0.0, "upper bound[{}] should be non-zero", i);
         }
     }
 

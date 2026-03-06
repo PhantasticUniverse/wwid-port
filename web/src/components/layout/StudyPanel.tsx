@@ -7,6 +7,7 @@ import GraphTuningDialog from "../tools/GraphTuningDialog";
 import NoteSpectrumDialog from "../tools/NoteSpectrumDialog";
 import WizardDialog from "../tools/WizardDialog";
 import { openSupplementaryPopup } from "../tools/SupplementaryPopup";
+import { getUseDirect } from "./SettingsDialog";
 import type { OptimizeResult, CalibResult, TuningResult } from "../../types/session";
 
 export default function StudyPanel() {
@@ -22,6 +23,13 @@ export default function StudyPanel() {
   const [lastEval, setLastEval] = createSignal<TuningResult | null>(null);
 
   const canCompare = createMemo(() => sessionStore.instruments.length >= 2);
+
+  // Filter Global optimizers when DIRECT is disabled in settings
+  const filteredOptimizers = createMemo(() => {
+    const opts = sessionStore.optimizers();
+    if (getUseDirect()) return opts;
+    return opts.filter((o) => !o.key.startsWith("Global"));
+  });
 
   async function handleOptimize() {
     setOptResult(null);
@@ -103,7 +111,7 @@ export default function StudyPanel() {
           >
             Optimizers
           </h2>
-          <For each={sessionStore.optimizers()}>
+          <For each={filteredOptimizers()}>
             {(opt) => (
               <button
                 class="w-full text-left px-2 py-1 rounded text-sm transition-colors"

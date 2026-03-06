@@ -31,6 +31,12 @@ pub const HOLE_AND_HEADJOINT: &str = "HoleAndHeadjointObjectiveFunction";
 pub const GLOBAL_HOLE_AND_TAPER: &str = "GlobalHoleAndBasicTaperObjectiveFunction";
 pub const GLOBAL_HOLE_AND_BORE_DIAMETER_FROM_BOTTOM: &str = "GlobalHoleAndBoreDiameterFromBottomObjectiveFunction";
 
+// Flute uses same bore/hole constants as Whistle
+const MIN_BORE_LENGTH: f64 = 0.200;
+const MAX_BORE_LENGTH: f64 = 0.600;
+const MIN_HOLE_DIAMETER: f64 = 0.0040;
+const MAX_HOLE_DIAMETER: f64 = 0.0091;
+
 /// Returns the list of available Flute optimizers.
 pub fn available_optimizers() -> Vec<OptimizerInfo> {
     vec![
@@ -154,7 +160,19 @@ pub fn create_default_constraints(
     inst: Option<&wid_types::InstrumentRaw>,
 ) -> Constraints {
     let display_name = display_name_for(objective_function_name);
-    let constraints = constraint_template(objective_function_name, number_of_holes, inst);
+    let mut constraints = constraint_template(objective_function_name, number_of_holes, inst);
+
+    // Apply default bounds — Flute uses same constants as Whistle
+    crate::whistle::apply_default_bounds(
+        &mut constraints,
+        objective_function_name,
+        number_of_holes,
+        inst,
+        MIN_BORE_LENGTH,
+        MAX_BORE_LENGTH,
+        MIN_HOLE_DIAMETER,
+        MAX_HOLE_DIAMETER,
+    );
 
     Constraints {
         name: "Default".to_string(),
@@ -166,13 +184,23 @@ pub fn create_default_constraints(
     }
 }
 
-/// Create blank constraints — same as default for Flute.
+/// Create blank constraints — same structure, all bounds None.
 pub fn create_blank_constraints(
     objective_function_name: &str,
     number_of_holes: u32,
     inst: Option<&wid_types::InstrumentRaw>,
 ) -> Constraints {
-    create_default_constraints(objective_function_name, number_of_holes, inst)
+    let display_name = display_name_for(objective_function_name);
+    let constraints = constraint_template(objective_function_name, number_of_holes, inst);
+
+    Constraints {
+        name: "Blank".to_string(),
+        objective_display_name: display_name.to_string(),
+        objective_function_name: objective_function_name.to_string(),
+        number_of_holes,
+        constraint_list: constraints,
+        hole_groups: None,
+    }
 }
 
 fn display_name_for(objective_function_name: &str) -> &'static str {
@@ -221,7 +249,8 @@ fn constraint_template(
         | HOLE_AND_TAPER | HOLE_AND_BORE_DIAMETER_FROM_BOTTOM
         | HOLE_AND_BORE_SPACING | HOLE_AND_HEADJOINT
         | GLOBAL_HOLE_AND_TAPER | GLOBAL_HOLE_AND_BORE_DIAMETER_FROM_BOTTOM => {
-            crate::whistle::create_default_constraints(objective_function_name, n_holes, inst)
+            // Get template structure from Whistle (bounds will be applied separately)
+            crate::whistle::create_blank_constraints(objective_function_name, n_holes, inst)
                 .constraint_list
         }
         _ => Vec::new(),
@@ -273,8 +302,8 @@ fn flute_calib_constraints() -> Vec<Constraint> {
 /// Hole position constraints: bore length + inter-hole spacings (N+1 total).
 /// Same ordering as Whistle — reused hole optimizer infrastructure.
 fn hole_position_constraints(n_holes: u32) -> Vec<Constraint> {
-    // Reuse Whistle's hole_position_constraints — identical structure
-    crate::whistle::create_default_constraints(
+    // Reuse Whistle's template (blank, no bounds)
+    crate::whistle::create_blank_constraints(
         crate::whistle::HOLE_POSITION,
         n_holes,
         None,
@@ -284,7 +313,7 @@ fn hole_position_constraints(n_holes: u32) -> Vec<Constraint> {
 
 /// Hole size constraints: diameters only (N total).
 fn hole_size_constraints(n_holes: u32) -> Vec<Constraint> {
-    crate::whistle::create_default_constraints(
+    crate::whistle::create_blank_constraints(
         crate::whistle::HOLE_SIZE,
         n_holes,
         None,

@@ -58,6 +58,21 @@ export default function NoteSpectrumDialog(props: {
     if (!d || !canvasRef) return;
     chartInstance?.destroy();
 
+    // Split gain data into playable (>=1) and damped (<1) segments
+    // We create two datasets with NaN gaps so each only draws its portion
+    const gainPlayable = d.points.map((p) => ({
+      x: p.freq,
+      y: p.loop_gain >= 1.0 ? p.loop_gain : NaN,
+    }));
+    const gainDamped = d.points.map((p) => ({
+      x: p.freq,
+      y: p.loop_gain < 1.0 ? p.loop_gain : NaN,
+    }));
+
+    // Find x range for the gain=1 reference line
+    const freqMin = d.points.length > 0 ? d.points[0].freq : 0;
+    const freqMax = d.points.length > 0 ? d.points[d.points.length - 1].freq : 1000;
+
     const config: ChartConfiguration = {
       type: "line",
       data: {
@@ -65,18 +80,42 @@ export default function NoteSpectrumDialog(props: {
           {
             label: "Im(Z)/Re(Z)",
             data: d.points.map((p) => ({ x: p.freq, y: p.impedance_ratio })),
-            borderColor: "#3b82f6",
+            borderColor: "#9ca3af",
             backgroundColor: "transparent",
             borderWidth: 1.5,
             pointRadius: 0,
             yAxisID: "y",
           },
           {
-            label: "Loop Gain",
-            data: d.points.map((p) => ({ x: p.freq, y: p.loop_gain })),
-            borderColor: "#f59e0b",
+            label: "Gain (playable)",
+            data: gainPlayable,
+            borderColor: "#22c55e",
             backgroundColor: "transparent",
-            borderWidth: 1.5,
+            borderWidth: 2,
+            pointRadius: 0,
+            yAxisID: "y1",
+            spanGaps: false,
+          },
+          {
+            label: "Gain (damped)",
+            data: gainDamped,
+            borderColor: "#ef4444",
+            backgroundColor: "transparent",
+            borderWidth: 2,
+            pointRadius: 0,
+            yAxisID: "y1",
+            spanGaps: false,
+          },
+          {
+            label: "",
+            data: [
+              { x: freqMin, y: 1.0 },
+              { x: freqMax, y: 1.0 },
+            ],
+            borderColor: "#6b728080",
+            backgroundColor: "transparent",
+            borderWidth: 1,
+            borderDash: [6, 3],
             pointRadius: 0,
             yAxisID: "y1",
           },
@@ -96,22 +135,27 @@ export default function NoteSpectrumDialog(props: {
           y: {
             type: "linear",
             position: "left",
-            title: { display: true, text: "Im(Z)/Re(Z)", color: "#3b82f6" },
-            ticks: { color: "#3b82f6" },
+            title: { display: true, text: "Im(Z)/Re(Z)", color: "#9ca3af" },
+            ticks: { color: "#9ca3af" },
             grid: { color: "#1a1d27" },
           },
           y1: {
             type: "linear",
             position: "right",
-            title: { display: true, text: "Loop Gain", color: "#f59e0b" },
-            ticks: { color: "#f59e0b" },
+            title: { display: true, text: "Loop Gain", color: "#8b8fa3" },
+            ticks: { color: "#8b8fa3" },
             grid: { drawOnChartArea: false },
           },
         },
         plugins: {
           legend: {
             position: "top",
-            labels: { color: "#e4e6ef", boxWidth: 12, font: { size: 11 } },
+            labels: {
+              color: "#e4e6ef",
+              boxWidth: 12,
+              font: { size: 11 },
+              filter: (item) => item.text !== "",
+            },
           },
           tooltip: {
             callbacks: {

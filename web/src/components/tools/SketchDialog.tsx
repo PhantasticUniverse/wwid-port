@@ -78,9 +78,13 @@ export default function SketchDialog(props: { onClose: () => void }) {
 
 function SketchContent(props: { data: SketchData }) {
   const d = props.data;
-  const PADDING = 30;
+  const PADDING = 40;
+  const TICK_LEN = 5;
   const SVG_WIDTH = 580;
-  const SVG_HEIGHT = 320;
+  const SVG_HEIGHT = 340;
+
+  // Units abbreviation
+  const unit = d.length_type === "Millimetres" ? "mm" : d.length_type === "Inches" ? "in" : d.length_type;
 
   // Compute scale: map bore length to SVG horizontal, max diameter to SVG vertical
   const maxDia = Math.max(
@@ -88,8 +92,10 @@ function SketchContent(props: { data: SketchData }) {
     ...d.bore_points.map((p) => p.diameter),
     ...d.holes.map((h) => h.diameter),
   );
-  const scaleX = (SVG_WIDTH - 2 * PADDING) / d.bore_length;
-  const scaleY = (SVG_HEIGHT - 2 * PADDING) / (maxDia * 1.5);
+  const drawW = SVG_WIDTH - 2 * PADDING;
+  const drawH = SVG_HEIGHT - 2 * PADDING;
+  const scaleX = drawW / d.bore_length;
+  const scaleY = drawH / (maxDia * 1.5);
   const scale = Math.min(scaleX, scaleY);
 
   const centerY = SVG_HEIGHT / 2;
@@ -97,7 +103,7 @@ function SketchContent(props: { data: SketchData }) {
   const toYTop = (dia: number) => centerY - (dia / 2) * scale;
   const toYBot = (dia: number) => centerY + (dia / 2) * scale;
 
-  // Build bore polygon points (top edge left→right, bottom edge right→left)
+  // Build bore polygon points (top edge left->right, bottom edge right->left)
   const topEdge = d.bore_points.map((p) => `${toX(p.position)},${toYTop(p.diameter)}`).join(" ");
   const botEdge = [...d.bore_points]
     .reverse()
@@ -108,8 +114,10 @@ function SketchContent(props: { data: SketchData }) {
   // Mouthpiece label
   const mpLabel = d.mouthpiece.type;
 
-  // Units abbreviation
-  const unit = d.length_type === "Millimetres" ? "mm" : d.length_type === "Inches" ? "in" : d.length_type;
+  // Axis tick generation
+  const xTicks = generateTicks(0, d.bore_length, 5);
+  const halfMaxDia = maxDia * 0.75;
+  const yTicks = generateTicks(-halfMaxDia, halfMaxDia, 4);
 
   return (
     <div>
@@ -120,7 +128,91 @@ function SketchContent(props: { data: SketchData }) {
         viewBox={`0 0 ${SVG_WIDTH} ${SVG_HEIGHT}`}
         style={{ background: "var(--color-surface-alt)", "border-radius": "6px" }}
       >
-        {/* Center axis */}
+        {/* X-axis (Length) */}
+        <line
+          x1={PADDING}
+          y1={SVG_HEIGHT - PADDING}
+          x2={PADDING + d.bore_length * scale}
+          y2={SVG_HEIGHT - PADDING}
+          stroke="#6b7280"
+          stroke-width="1"
+        />
+        {xTicks.map((v) => (
+          <g>
+            <line
+              x1={toX(v)}
+              y1={SVG_HEIGHT - PADDING}
+              x2={toX(v)}
+              y2={SVG_HEIGHT - PADDING + TICK_LEN}
+              stroke="#6b7280"
+              stroke-width="1"
+            />
+            <text
+              x={toX(v)}
+              y={SVG_HEIGHT - PADDING + TICK_LEN + 10}
+              text-anchor="middle"
+              font-size="9"
+              fill="#9ca3af"
+            >
+              {formatTick(v)}
+            </text>
+          </g>
+        ))}
+        <text
+          x={PADDING + (d.bore_length * scale) / 2}
+          y={SVG_HEIGHT - 4}
+          text-anchor="middle"
+          font-size="10"
+          fill="#9ca3af"
+        >
+          Length ({unit})
+        </text>
+
+        {/* Y-axis (Width) */}
+        <line
+          x1={PADDING}
+          y1={toYTop(maxDia * 1.3)}
+          x2={PADDING}
+          y2={toYBot(maxDia * 1.3)}
+          stroke="#6b7280"
+          stroke-width="1"
+        />
+        {yTicks.map((v) => {
+          const yPos = centerY - v * scale;
+          return (
+            <g>
+              <line
+                x1={PADDING - TICK_LEN}
+                y1={yPos}
+                x2={PADDING}
+                y2={yPos}
+                stroke="#6b7280"
+                stroke-width="1"
+              />
+              <text
+                x={PADDING - TICK_LEN - 2}
+                y={yPos + 3}
+                text-anchor="end"
+                font-size="9"
+                fill="#9ca3af"
+              >
+                {formatTick(Math.abs(v))}
+              </text>
+            </g>
+          );
+        })}
+        <text
+          x={10}
+          y={centerY}
+          text-anchor="middle"
+          font-size="10"
+          fill="#9ca3af"
+          transform={`rotate(-90, 10, ${centerY})`}
+        >
+          Width ({unit})
+        </text>
+
+        {/* Center axis (dashed) */}
         <line
           x1={PADDING}
           y1={centerY}
@@ -131,12 +223,13 @@ function SketchContent(props: { data: SketchData }) {
           stroke-dasharray="4,3"
         />
 
-        {/* Bore profile */}
+        {/* Bore profile — dashed outline, no fill (engineering style) */}
         <polygon
           points={borePolygon}
-          fill="#3b82f620"
-          stroke="#3b82f6"
+          fill="none"
+          stroke="#9ca3af"
           stroke-width="1.5"
+          stroke-dasharray="6,3"
         />
 
         {/* Flange at the end */}
@@ -146,39 +239,38 @@ function SketchContent(props: { data: SketchData }) {
             y1={toYTop(d.flange_diameter)}
             x2={toX(d.bore_length)}
             y2={toYBot(d.flange_diameter)}
-            stroke="#60a5fa"
+            stroke="#9ca3af"
             stroke-width="2"
           />
         )}
 
-        {/* Tone holes */}
+        {/* Tone holes — circles (top-view, diameter proportional) */}
         {d.holes.map((hole, i) => {
-          // Find bore diameter at hole position (interpolate)
-          const boreDia = interpolateBore(d.bore_points, hole.position);
           const hx = toX(hole.position);
-          const holeHalfW = (hole.diameter / 2) * scale;
-          const chimneyH = hole.height * scale;
+          const boreDia = interpolateBore(d.bore_points, hole.position);
           const boreTopY = centerY - (boreDia / 2) * scale;
+          const holeRadius = (hole.diameter / 2) * scale;
+          // Position circle above bore wall
+          const cy = boreTopY - holeRadius - 2;
 
           return (
             <g>
-              {/* Hole chimney extending upward from bore wall */}
-              <rect
-                x={hx - holeHalfW}
-                y={boreTopY - chimneyH}
-                width={holeHalfW * 2}
-                height={chimneyH}
-                fill="#f59e0b30"
-                stroke="#f59e0b"
-                stroke-width="1"
+              {/* Hole circle */}
+              <circle
+                cx={hx}
+                cy={cy}
+                r={Math.max(holeRadius, 3)}
+                fill="none"
+                stroke="#d1d5db"
+                stroke-width="1.5"
               />
               {/* Hole label */}
               <text
                 x={hx}
-                y={boreTopY - chimneyH - 4}
+                y={cy - Math.max(holeRadius, 3) - 4}
                 text-anchor="middle"
                 font-size="9"
-                fill="#f59e0b"
+                fill="#9ca3af"
               >
                 {hole.name ?? `H${i + 1}`}
               </text>
@@ -186,25 +278,34 @@ function SketchContent(props: { data: SketchData }) {
           );
         })}
 
-        {/* Mouthpiece indicator */}
-        <text
-          x={toX(d.mouthpiece.position)}
-          y={SVG_HEIGHT - 8}
-          text-anchor="middle"
-          font-size="10"
-          fill="#a78bfa"
-        >
-          {mpLabel}
-        </text>
-        <line
-          x1={toX(d.mouthpiece.position)}
-          y1={toYBot(interpolateBore(d.bore_points, d.mouthpiece.position))}
-          x2={toX(d.mouthpiece.position)}
-          y2={SVG_HEIGHT - 16}
-          stroke="#a78bfa"
-          stroke-width="1"
-          stroke-dasharray="2,2"
-        />
+        {/* Mouthpiece indicator — small rectangle */}
+        {(() => {
+          const mpX = toX(d.mouthpiece.position);
+          const mpDia = interpolateBore(d.bore_points, d.mouthpiece.position);
+          const mpY = toYBot(mpDia) + 4;
+          return (
+            <g>
+              <rect
+                x={mpX - 4}
+                y={mpY}
+                width={8}
+                height={6}
+                fill="none"
+                stroke="#9ca3af"
+                stroke-width="1"
+              />
+              <text
+                x={mpX}
+                y={mpY + 18}
+                text-anchor="middle"
+                font-size="9"
+                fill="#9ca3af"
+              >
+                {mpLabel}
+              </text>
+            </g>
+          );
+        })()}
       </svg>
 
       {/* Summary table */}
@@ -236,4 +337,28 @@ function interpolateBore(points: SketchBorePoint[], pos: number): number {
     }
   }
   return points[points.length - 1].diameter;
+}
+
+/** Generate nice tick values for an axis range. */
+function generateTicks(min: number, max: number, approxCount: number): number[] {
+  const range = max - min;
+  if (range <= 0) return [min];
+  const rawStep = range / approxCount;
+  const mag = Math.pow(10, Math.floor(Math.log10(rawStep)));
+  const norm = rawStep / mag;
+  const niceStep = norm < 1.5 ? mag : norm < 3 ? 2 * mag : norm < 7 ? 5 * mag : 10 * mag;
+  const ticks: number[] = [];
+  let v = Math.ceil(min / niceStep) * niceStep;
+  while (v <= max + niceStep * 0.01) {
+    ticks.push(v);
+    v += niceStep;
+  }
+  return ticks;
+}
+
+/** Format tick value: drop trailing zeros. */
+function formatTick(v: number): string {
+  if (v === 0) return "0";
+  if (Math.abs(v) >= 1) return v.toFixed(1).replace(/\.0$/, "");
+  return v.toFixed(3).replace(/0+$/, "").replace(/\.$/, "");
 }

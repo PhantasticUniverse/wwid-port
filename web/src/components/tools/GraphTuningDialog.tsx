@@ -17,13 +17,20 @@ interface GraphTuningResult {
   curves: TuningCurve[];
 }
 
-// Distinct colors for up to 20 series
-const COLORS = [
-  "#3b82f6", "#ef4444", "#22c55e", "#f59e0b", "#a855f7",
-  "#06b6d4", "#ec4899", "#84cc16", "#f97316", "#6366f1",
-  "#14b8a6", "#e11d48", "#65a30d", "#d946ef", "#0ea5e9",
-  "#fb923c", "#8b5cf6", "#10b981", "#f43f5e", "#facc15",
-];
+/** Find the Y value in a curve nearest to a given X frequency. */
+function nearestY(points: [number, number][], targetX: number): number | null {
+  if (points.length === 0) return null;
+  let best = points[0];
+  let bestDist = Math.abs(points[0][0] - targetX);
+  for (const p of points) {
+    const dist = Math.abs(p[0] - targetX);
+    if (dist < bestDist) {
+      bestDist = dist;
+      best = p;
+    }
+  }
+  return best[1];
+}
 
 export default function GraphTuningDialog(props: { onClose: () => void }) {
   const [data, setData] = createSignal<GraphTuningResult | null>(null);
@@ -48,19 +55,89 @@ export default function GraphTuningDialog(props: { onClose: () => void }) {
     const d = data();
     if (!d || !canvasRef) return;
 
-    const datasets = d.curves.map((curve, i) => ({
-      label: curve.note_name,
+    // Line datasets: one per curve, all muted gray, hidden from legend
+    const lineDatasets = d.curves.map((curve) => ({
+      label: "",
       data: curve.points.map(([freq, ratio]) => ({ x: freq, y: ratio })),
-      borderColor: COLORS[i % COLORS.length],
+      borderColor: "#6b7280",
       backgroundColor: "transparent",
-      borderWidth: 1.5,
+      borderWidth: 1,
       pointRadius: 0,
       tension: 0.1,
     }));
 
+    // Collect marker points from each curve
+    const fmaxPts: { x: number; y: number }[] = [];
+    const fminPts: { x: number; y: number }[] = [];
+    const targetIn: { x: number; y: number }[] = [];
+    const targetOut: { x: number; y: number }[] = [];
+
+    for (const curve of d.curves) {
+      if (curve.freq_max != null && curve.freq_max > 0) {
+        const y = nearestY(curve.points, curve.freq_max);
+        if (y != null) fmaxPts.push({ x: curve.freq_max, y });
+      }
+      if (curve.freq_min != null && curve.freq_min > 0) {
+        const y = nearestY(curve.points, curve.freq_min);
+        if (y != null) fminPts.push({ x: curve.freq_min, y });
+      }
+      if (curve.target_freq > 0) {
+        const y = nearestY(curve.points, curve.target_freq);
+        if (y != null) {
+          const inRange =
+            curve.freq_min != null &&
+            curve.freq_max != null &&
+            curve.target_freq >= curve.freq_min &&
+            curve.target_freq <= curve.freq_max;
+          (inRange ? targetIn : targetOut).push({ x: curve.target_freq, y });
+        }
+      }
+    }
+
+    // Scatter overlay datasets (markers only, no connecting lines)
+    const markerDatasets = [
+      fmaxPts.length > 0 && {
+        label: "Peak (fmax)",
+        data: fmaxPts,
+        borderColor: "#22c55e",
+        backgroundColor: "#22c55e",
+        pointRadius: 5,
+        pointStyle: "circle" as const,
+        showLine: false,
+      },
+      fminPts.length > 0 && {
+        label: "Zero (fmin)",
+        data: fminPts,
+        borderColor: "#3b82f6",
+        backgroundColor: "transparent",
+        pointRadius: 5,
+        pointStyle: "circle" as const,
+        borderWidth: 2,
+        showLine: false,
+      },
+      targetIn.length > 0 && {
+        label: "Target (in range)",
+        data: targetIn,
+        borderColor: "#22c55e",
+        backgroundColor: "#22c55e",
+        pointRadius: 6,
+        pointStyle: "rectRot" as const,
+        showLine: false,
+      },
+      targetOut.length > 0 && {
+        label: "Target (out of range)",
+        data: targetOut,
+        borderColor: "#ef4444",
+        backgroundColor: "#ef4444",
+        pointRadius: 6,
+        pointStyle: "rectRot" as const,
+        showLine: false,
+      },
+    ].filter(Boolean) as any[];
+
     chartInstance = new Chart(canvasRef, {
       type: "line",
-      data: { datasets },
+      data: { datasets: [...lineDatasets, ...markerDatasets] },
       options: {
         responsive: true,
         maintainAspectRatio: false,
@@ -74,19 +151,26 @@ export default function GraphTuningDialog(props: { onClose: () => void }) {
           },
           y: {
             type: "linear",
-            title: { display: true, text: "Im(Z) / Re(Z)", color: "#8b8fa3" },
+            title: { display: true, text: "Reactance Ratio, X/R", color: "#8b8fa3" },
             ticks: { color: "#8b8fa3" },
             grid: { color: "#1a1d27" },
           },
         },
         plugins: {
           legend: {
-            position: "right",
-            labels: { color: "#e4e6ef", boxWidth: 12, font: { size: 11 } },
+            position: "top",
+            labels: {
+              color: "#e4e6ef",
+              boxWidth: 12,
+              font: { size: 11 },
+              usePointStyle: true,
+              filter: (item) => item.text !== "",
+            },
           },
           tooltip: {
             callbacks: {
-              label: (ctx) => `${ctx.dataset.label}: ${(ctx.parsed.y).toFixed(3)} @ ${(ctx.parsed.x).toFixed(1)} Hz`,
+              label: (ctx) =>
+                `${ctx.dataset.label || "curve"}: ${ctx.parsed.y.toFixed(3)} @ ${ctx.parsed.x.toFixed(1)} Hz`,
             },
           },
         },
@@ -111,7 +195,7 @@ export default function GraphTuningDialog(props: { onClose: () => void }) {
           "max-height": "90vh",
         }}
       >
-        <h2 class="text-lg font-semibold mb-3">Graph Tuning — Playing Ranges</h2>
+        <h2 class="text-lg font-semibold mb-3">Impedance Pattern</h2>
 
         <Show when={loading()}>
           <div class="text-sm py-8 text-center" style={{ color: "var(--color-text-muted)" }}>

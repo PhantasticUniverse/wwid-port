@@ -7,6 +7,7 @@ export default function SettingsDialog(props: {
   const p = sessionStore.params();
   const [temp, setTemp] = createSignal(p?.temperature ?? 20.0);
   const [humidity, setHumidity] = createSignal(p?.humidity ?? 45.0);
+  const [useDirect, setUseDirect] = createSignal(getUseDirect());
 
   return (
     <div
@@ -60,6 +61,18 @@ export default function SettingsDialog(props: {
               onInput={(e) => setHumidity(parseFloat(e.currentTarget.value) || 0)}
             />
           </div>
+
+          <div class="flex items-center justify-between">
+            <label class="text-sm" style={{ color: "var(--color-text)" }}>
+              Use DIRECT optimizer (slow &amp; thorough):
+            </label>
+            <input
+              type="checkbox"
+              checked={useDirect()}
+              onChange={(e) => setUseDirect(e.currentTarget.checked)}
+              class="w-4 h-4"
+            />
+          </div>
         </div>
 
         <div class="flex justify-end gap-2 mt-6">
@@ -75,6 +88,7 @@ export default function SettingsDialog(props: {
             style={{ background: "var(--color-accent)", color: "white" }}
             onClick={async () => {
               await sessionStore.updateParams(temp(), humidity());
+              setUseDirectPref(useDirect());
               props.onClose();
             }}
           >
@@ -84,4 +98,16 @@ export default function SettingsDialog(props: {
       </div>
     </div>
   );
+}
+
+/** Read DIRECT preference from localStorage. Default: true (matching Java). */
+export function getUseDirect(): boolean {
+  const stored = localStorage.getItem("wid_use_direct");
+  if (stored === null) return true;
+  return stored === "true";
+}
+
+/** Persist DIRECT preference. */
+function setUseDirectPref(value: boolean) {
+  localStorage.setItem("wid_use_direct", String(value));
 }
