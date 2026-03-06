@@ -346,6 +346,9 @@ Java uses JFreeChart's XYPlot to render a top-down engineering drawing: dashed b
 ### Compare Instruments
 Java opens comparison results in a JFrame window. Our port uses a two-step flow: an in-page selector dialog for choosing old/new instruments, then a popup window for the comparison table with Category, Field, Old, New, Diff, %Change columns. This matches Java's workflow where the user selects instruments in the GUI and results appear in a separate window.
 
+### Graph Tuning + Note Spectrum
+Java opens both the impedance pattern graph and note spectrum in JFrame windows. Our port now does the same — both open in popup windows via `window.open()`. Chart.js renders into popup canvases since they share the same JS context (same origin). The Note Spectrum popup includes an interactive fingering selector dropdown that fetches new spectrum data from the main window's WASM session. All 6 tool dialogs (Evaluate, Supplementary, Sketch, Compare, Graph, Spectrum) now open in popup windows matching Java's JFrame behavior.
+
 ### Default Constraints
 Java's "Create Default Constraints" pre-populates bounds with study-model-specific values (bore length ranges, hole diameter ranges, taper ratios). Our web port now matches this. "Create Blank Constraints" creates empty bounds (Java fills with 0.0/1.0; we use None). The constraints are used identically for optimization — this is a usability feature, not a computation difference.
 

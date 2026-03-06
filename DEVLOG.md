@@ -13,6 +13,7 @@
 
 ### Entries (newest first)
 
+- [All Tools → Popups](#2026-03-06-all-tools--popups) — Graph Tuning and Note Spectrum converted to popup windows (completing the popup migration for all 6 tool dialogs)
 - [Popups + Sketch Mouthpiece](#2026-03-06-popups--sketch-mouthpiece) — Sketch and Compare converted to popup windows; fipple window/windway + embouchure ellipse rendering; axis labels without units
 - [UI/UX Clarity Pass](#2026-03-06-uiux-clarity-pass) — 7 fixes + graph Y-axis exact markers, settings additions (length type, spectrum multiplier)
 - [Visual Parity Improvements](#2026-03-06-visual-parity-improvements) — 5 priorities: Graph Tuning chart, Note Spectrum gain coloring, default constraints bounds, Sketch engineering style, Settings DIRECT toggle
@@ -43,9 +44,24 @@
 
 ---
 
+## 2026-03-06: All Tools → Popups
+
+Completed the popup migration: Graph Tuning and Note Spectrum are now popup windows, matching Java's JFrame behavior for all 6 tool dialogs. Chart.js renders into popup canvases via same-origin JS context sharing.
+
+**Changes:**
+- Created `GraphTuningPopup.ts` — Chart.js impedance pattern in popup window (900×560)
+- Created `NoteSpectrumPopup.ts` — Chart.js dual-axis spectrum in popup window with interactive fingering selector dropdown
+- Deleted `GraphTuningDialog.tsx` and `NoteSpectrumDialog.tsx` (replaced by popups)
+- Updated `Toolbar.tsx` — removed `showGraph`/`showSpectrum` modal signals, both buttons now call `handleGraph()`/`handleSpectrum()` which open popups directly
+- Axis label parity: "Frequency" (no "(Hz)") matching Java
+
+All 6 tool dialogs now open in popup windows: Evaluate, Supplementary, Sketch, Compare, Graph, Spectrum.
+
+---
+
 ## 2026-03-06: Popups + Sketch Mouthpiece
 
-Java WIDesigner opens every tool result in a separate JFrame window. Our port had Evaluate and Supplementary as popups but Sketch, Compare, Graph, and Spectrum as in-page modals. This session converts Sketch and Compare to popup windows (Graph/Spectrum kept as modals due to Chart.js canvas interaction).
+Java WIDesigner opens every tool result in a separate JFrame window. Our port had Evaluate and Supplementary as popups but Sketch, Compare, Graph, and Spectrum as in-page modals. This session converts Sketch and Compare to popup windows.
 
 ### Changes
 

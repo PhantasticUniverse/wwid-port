@@ -2,11 +2,11 @@ import { Show, createSignal, createMemo } from "solid-js";
 import { sessionStore } from "../../stores/session";
 import OptimizeDialog from "../tools/OptimizeDialog";
 import CompareDialog from "../tools/CompareDialog";
-import GraphTuningDialog from "../tools/GraphTuningDialog";
-import NoteSpectrumDialog from "../tools/NoteSpectrumDialog";
 import WizardDialog from "../tools/WizardDialog";
 import { openSketchPopup } from "../tools/SketchPopup";
 import { openSupplementaryPopup } from "../tools/SupplementaryPopup";
+import { openGraphTuningPopup } from "../tools/GraphTuningPopup";
+import { openNoteSpectrumPopup } from "../tools/NoteSpectrumPopup";
 import { getUseDirect } from "./SettingsDialog";
 import type { OptimizeResult, CalibResult, TuningResult } from "../../types/session";
 
@@ -14,8 +14,6 @@ export default function Toolbar() {
   const [showOptDialog, setShowOptDialog] = createSignal(false);
   const [optResult, setOptResult] = createSignal<OptimizeResult | CalibResult | null>(null);
   const [showCompare, setShowCompare] = createSignal(false);
-  const [showGraph, setShowGraph] = createSignal(false);
-  const [showSpectrum, setShowSpectrum] = createSignal(false);
   const [showWizard, setShowWizard] = createSignal(false);
 
   const [lastEval, setLastEval] = createSignal<TuningResult | null>(null);
@@ -47,13 +45,20 @@ export default function Toolbar() {
     }
   }
 
+  async function handleGraph() {
+    const result = await sessionStore.graphTuning();
+    if (result) openGraphTuningPopup(result as any);
+  }
+
   async function handleSpectrum() {
     let evalData = lastEval();
     if (!evalData) {
       evalData = await sessionStore.evaluateTuning();
       if (evalData) setLastEval(evalData);
     }
-    if (evalData) setShowSpectrum(true);
+    if (evalData) {
+      openNoteSpectrumPopup(evalData.rows.map((r) => ({ note: r.note, target_freq: r.target_freq })));
+    }
   }
 
   const btn = "px-3 py-1 rounded text-xs font-medium transition-colors disabled:opacity-40 whitespace-nowrap";
@@ -121,7 +126,7 @@ export default function Toolbar() {
             class={btn}
             style={{ background: "var(--color-surface-alt)", color: "var(--color-text)", border: "1px solid var(--color-border)" }}
             disabled={!sessionStore.canTune()}
-            onClick={() => setShowGraph(true)}
+            onClick={handleGraph}
             title="Plot impedance playing ranges"
           >
             Graph
@@ -187,17 +192,6 @@ export default function Toolbar() {
 
       <Show when={showCompare()}>
         <CompareDialog onClose={() => setShowCompare(false)} />
-      </Show>
-
-      <Show when={showGraph()}>
-        <GraphTuningDialog onClose={() => setShowGraph(false)} />
-      </Show>
-
-      <Show when={showSpectrum() && lastEval()}>
-        <NoteSpectrumDialog
-          onClose={() => setShowSpectrum(false)}
-          notes={lastEval()!.rows.map((r) => ({ note: r.note, target_freq: r.target_freq }))}
-        />
       </Show>
 
       <Show when={showWizard()}>
