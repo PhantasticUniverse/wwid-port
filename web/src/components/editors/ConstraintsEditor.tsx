@@ -2,6 +2,43 @@ import { createSignal, createEffect, Show, For, on, createMemo } from "solid-js"
 import { createStore, reconcile } from "solid-js/store";
 import { sessionStore } from "../../stores/session";
 import type { ConstraintsData, ConstraintData } from "../../types/documents";
+import { formatDisplay } from "../shared/NumberField";
+
+/** Inline constraint bound input with display formatting. */
+function BoundInput(props: {
+  value: number | undefined;
+  onInput: (v: number | undefined) => void;
+  title?: string;
+}) {
+  const [focused, setFocused] = createSignal(false);
+  const [local, setLocal] = createSignal(props.value != null ? String(props.value) : "");
+
+  return (
+    <input
+      type={focused() ? "number" : "text"}
+      step="any"
+      class="w-full px-1 py-0.5 rounded text-xs text-right tabular-nums"
+      style={{
+        background: "var(--color-surface-alt)",
+        border: "1px solid var(--color-border)",
+        color: "var(--color-text)",
+      }}
+      value={focused() ? local() : (props.value != null ? formatDisplay(props.value, 4) : "")}
+      onFocus={() => {
+        setLocal(props.value != null ? String(props.value) : "");
+        setFocused(true);
+      }}
+      onInput={(e) => {
+        const raw = e.currentTarget.value;
+        setLocal(raw);
+        const v = parseFloat(raw);
+        props.onInput(isNaN(v) ? undefined : v);
+      }}
+      onBlur={() => setFocused(false)}
+      title={props.title}
+    />
+  );
+}
 
 const EMPTY_CONSTRAINTS: ConstraintsData = {
   constraintsName: "",
@@ -119,47 +156,17 @@ export default function ConstraintsEditor(props: { docId: number }) {
                           {item.c.type}
                         </td>
                         <td class="py-1 px-2">
-                          <input
-                            type="number"
-                            step="any"
-                            class="w-full px-1 py-0.5 rounded text-xs text-right tabular-nums"
-                            style={{
-                              background: "var(--color-surface-alt)",
-                              border: "1px solid var(--color-border)",
-                              color: "var(--color-text)",
-                            }}
-                            value={item.c.lowerBound ?? ""}
-                            onInput={(e) => {
-                              const v = parseFloat(e.currentTarget.value);
-                              setData(
-                                "constraint",
-                                item.index,
-                                "lowerBound",
-                                isNaN(v) ? undefined : v
-                              );
-                            }}
+                          <BoundInput
+                            value={item.c.lowerBound}
+                            onInput={(v) => setData("constraint", item.index, "lowerBound", v)}
+                            title="Lower optimization bound"
                           />
                         </td>
                         <td class="py-1 px-2">
-                          <input
-                            type="number"
-                            step="any"
-                            class="w-full px-1 py-0.5 rounded text-xs text-right tabular-nums"
-                            style={{
-                              background: "var(--color-surface-alt)",
-                              border: "1px solid var(--color-border)",
-                              color: "var(--color-text)",
-                            }}
-                            value={item.c.upperBound ?? ""}
-                            onInput={(e) => {
-                              const v = parseFloat(e.currentTarget.value);
-                              setData(
-                                "constraint",
-                                item.index,
-                                "upperBound",
-                                isNaN(v) ? undefined : v
-                              );
-                            }}
+                          <BoundInput
+                            value={item.c.upperBound}
+                            onInput={(v) => setData("constraint", item.index, "upperBound", v)}
+                            title="Upper optimization bound"
                           />
                         </td>
                       </tr>

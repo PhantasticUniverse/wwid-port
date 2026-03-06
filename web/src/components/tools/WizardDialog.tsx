@@ -1,4 +1,4 @@
-import { Show, For, createSignal, onMount } from "solid-js";
+import { Show, For, createSignal, onMount, onCleanup } from "solid-js";
 import { sessionStore } from "../../stores/session";
 
 interface DocEntry {
@@ -32,6 +32,9 @@ export default function WizardDialog(props: { onClose: () => void }) {
   const [error, setError] = createSignal<string | null>(null);
 
   onMount(async () => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") props.onClose(); };
+    document.addEventListener("keydown", onKey);
+    onCleanup(() => document.removeEventListener("keydown", onKey));
     const temps = await sessionStore.listTemperaments();
     setTemperaments(temps);
     const pats = await sessionStore.listFingeringPatterns();

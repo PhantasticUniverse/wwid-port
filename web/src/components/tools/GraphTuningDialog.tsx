@@ -39,6 +39,9 @@ export default function GraphTuningDialog(props: { onClose: () => void }) {
   let chartInstance: Chart | undefined;
 
   onMount(async () => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") props.onClose(); };
+    document.addEventListener("keydown", onKey);
+    onCleanup(() => document.removeEventListener("keydown", onKey));
     const result = await sessionStore.graphTuning();
     if (result) {
       setData(result as GraphTuningResult);

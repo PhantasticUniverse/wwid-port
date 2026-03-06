@@ -19,8 +19,8 @@ export default function ConsolePanel() {
         Console
       </div>
       <div
-        class="px-3 py-1 font-mono text-xs leading-relaxed"
-        style={{ color: "var(--color-text-muted)" }}
+        class="px-3 py-1 font-mono text-sm leading-relaxed"
+        style={{ color: "var(--color-text)", opacity: "0.7" }}
       >
         <For each={sessionStore.consoleLogs}>{(line) => <div>{line}</div>}</For>
       </div>

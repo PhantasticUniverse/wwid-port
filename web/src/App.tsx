@@ -57,6 +57,7 @@ export default function App() {
             }}
             value={sessionStore.studyKind()}
             onChange={(e) => sessionStore.switchStudyModel(e.currentTarget.value)}
+            title="Choose instrument study model"
           >
             <option value="NAF">NAF</option>
             <option value="Whistle">Whistle</option>
@@ -68,6 +69,7 @@ export default function App() {
           <label
             class="px-3 py-1.5 rounded text-sm font-medium cursor-pointer transition-colors"
             style={{ background: "var(--color-accent)", color: "white" }}
+            title="Open instrument, tuning, or constraints XML files"
           >
             Open File
             <input type="file" accept=".xml" multiple class="hidden" onChange={handleFileOpen} />

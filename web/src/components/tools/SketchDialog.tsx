@@ -1,4 +1,4 @@
-import { Show, createSignal, onMount } from "solid-js";
+import { Show, createSignal, onMount, onCleanup } from "solid-js";
 import { sessionStore } from "../../stores/session";
 
 interface SketchBorePoint {
@@ -34,6 +34,9 @@ export default function SketchDialog(props: { onClose: () => void }) {
   const [loading, setLoading] = createSignal(true);
 
   onMount(async () => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") props.onClose(); };
+    document.addEventListener("keydown", onKey);
+    onCleanup(() => document.removeEventListener("keydown", onKey));
     const result = await sessionStore.sketchInstrument();
     if (result) setData(result as SketchData);
     setLoading(false);

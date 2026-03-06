@@ -1,75 +1,14 @@
-import { Show, For, createSignal, createMemo } from "solid-js";
+import { Show, For, createMemo } from "solid-js";
 import { sessionStore } from "../../stores/session";
-import OptimizeDialog from "../tools/OptimizeDialog";
-import SketchDialog from "../tools/SketchDialog";
-import CompareDialog from "../tools/CompareDialog";
-import GraphTuningDialog from "../tools/GraphTuningDialog";
-import NoteSpectrumDialog from "../tools/NoteSpectrumDialog";
-import WizardDialog from "../tools/WizardDialog";
-import { openSupplementaryPopup } from "../tools/SupplementaryPopup";
 import { getUseDirect } from "./SettingsDialog";
-import type { OptimizeResult, CalibResult, TuningResult } from "../../types/session";
 
 export default function StudyPanel() {
-  const [showOptDialog, setShowOptDialog] = createSignal(false);
-  const [optResult, setOptResult] = createSignal<OptimizeResult | CalibResult | null>(null);
-  const [showSketch, setShowSketch] = createSignal(false);
-  const [showCompare, setShowCompare] = createSignal(false);
-  const [showGraph, setShowGraph] = createSignal(false);
-  const [showSpectrum, setShowSpectrum] = createSignal(false);
-  const [showWizard, setShowWizard] = createSignal(false);
-
-  // Cache last eval result for spectrum fingering list
-  const [lastEval, setLastEval] = createSignal<TuningResult | null>(null);
-
-  const canCompare = createMemo(() => sessionStore.instruments.length >= 2);
-
   // Filter Global optimizers when DIRECT is disabled in settings
   const filteredOptimizers = createMemo(() => {
     const opts = sessionStore.optimizers();
     if (getUseDirect()) return opts;
     return opts.filter((o) => !o.key.startsWith("Global"));
   });
-
-  async function handleOptimize() {
-    setOptResult(null);
-    setShowOptDialog(true);
-    const result = await sessionStore.runOptimize();
-    if (result) {
-      setOptResult(result);
-    } else {
-      setShowOptDialog(false);
-    }
-  }
-
-  async function handleEvaluate() {
-    const result = await sessionStore.evaluateTuning();
-    if (result) setLastEval(result);
-  }
-
-  async function handleSupplementary() {
-    const result = await sessionStore.supplementaryInfo();
-    if (result) {
-      const instName =
-        sessionStore.instruments.find((d) => d.doc_id === sessionStore.selection()?.instrument_id)?.name ?? "Instrument";
-      openSupplementaryPopup(result as any, instName);
-    }
-  }
-
-  async function handleSpectrum() {
-    // Need eval data for fingering list; run eval first if we don't have it cached
-    let evalData = lastEval();
-    if (!evalData) {
-      evalData = await sessionStore.evaluateTuning();
-      if (evalData) setLastEval(evalData);
-    }
-    if (evalData) setShowSpectrum(true);
-  }
-
-  // Shared button style
-  const btnClass = "px-3 py-1.5 rounded text-sm font-medium transition-colors disabled:opacity-40";
-  const btnPrimary = { background: "var(--color-accent)", color: "white" };
-  const btnSecondary = { background: "var(--color-surface-alt)", color: "var(--color-text)", border: "1px solid var(--color-border)" };
 
   return (
     <aside
@@ -127,6 +66,7 @@ export default function StudyPanel() {
                       : "var(--color-text)",
                 }}
                 onClick={() => sessionStore.selectOptimizer(opt.key)}
+                title={opt.display_name}
               >
                 {opt.display_name}
               </button>
@@ -149,161 +89,22 @@ export default function StudyPanel() {
           <div class="flex gap-2">
             <button
               class="flex-1 px-2 py-1 rounded text-xs font-medium transition-colors"
-              style={btnSecondary}
+              style={{ background: "var(--color-surface-alt)", color: "var(--color-text)", border: "1px solid var(--color-border)" }}
               onClick={() => sessionStore.createDefaultConstraints()}
+              title="Create constraints with default bounds for selected optimizer"
             >
               + Default
             </button>
             <button
               class="flex-1 px-2 py-1 rounded text-xs font-medium transition-colors"
-              style={btnSecondary}
+              style={{ background: "var(--color-surface-alt)", color: "var(--color-text)", border: "1px solid var(--color-border)" }}
               onClick={() => sessionStore.createBlankConstraints()}
+              title="Create constraints with empty bounds for selected optimizer"
             >
               + Blank
             </button>
           </div>
         </Show>
-
-        {/* ── Action buttons ─────────────────────────── */}
-        <div
-          class="mt-auto flex flex-col gap-2 pt-4 border-t"
-          style={{ "border-color": "var(--color-border)" }}
-        >
-          {/* Instrument tools */}
-          <div class="flex gap-2">
-            <button
-              class={`flex-1 ${btnClass}`}
-              style={btnPrimary}
-              disabled={!sessionStore.canSketch()}
-              onClick={() => setShowSketch(true)}
-              title={!sessionStore.canSketch() ? "Select an instrument first" : "Show instrument sketch"}
-            >
-              Sketch
-            </button>
-            <button
-              class={`flex-1 ${btnClass}`}
-              style={btnPrimary}
-              disabled={!canCompare()}
-              onClick={() => setShowCompare(true)}
-              title={!canCompare() ? "Load at least 2 instruments" : "Compare two instruments"}
-            >
-              Compare
-            </button>
-          </div>
-
-          {/* Tuning analysis */}
-          <button
-            class={btnClass}
-            style={btnPrimary}
-            disabled={!sessionStore.canTune()}
-            onClick={handleEvaluate}
-            title={!sessionStore.canTune() ? "Select an instrument and matching tuning first" : "Evaluate current tuning"}
-          >
-            Evaluate Tuning
-          </button>
-
-          <div class="flex gap-2">
-            <button
-              class={`flex-1 ${btnClass}`}
-              style={btnSecondary}
-              disabled={!sessionStore.canTune()}
-              onClick={handleSupplementary}
-              title="Supplementary acoustic info"
-            >
-              Supplementary
-            </button>
-          </div>
-
-          {/* Impedance curves */}
-          <div class="flex gap-2">
-            <button
-              class={`flex-1 ${btnClass}`}
-              style={btnSecondary}
-              disabled={!sessionStore.canTune()}
-              onClick={() => setShowGraph(true)}
-              title="Graph tuning playing ranges"
-            >
-              Graph
-            </button>
-            <button
-              class={`flex-1 ${btnClass}`}
-              style={btnSecondary}
-              disabled={!sessionStore.canTune()}
-              onClick={handleSpectrum}
-              title="Note impedance spectrum"
-            >
-              Spectrum
-            </button>
-          </div>
-
-          {/* Optimization */}
-          <button
-            class={btnClass}
-            style={btnPrimary}
-            disabled={!sessionStore.canOptimize() || sessionStore.optimizing()}
-            onClick={handleOptimize}
-            title={
-              !sessionStore.canOptimize()
-                ? sessionStore.isFippleSelected()
-                  ? "Select instrument and tuning to calibrate"
-                  : "Select instrument, tuning, optimizer, and constraints"
-                : sessionStore.isFippleSelected()
-                  ? "Calibrate fipple factor"
-                  : "Run hole optimization"
-            }
-          >
-            {sessionStore.isFippleSelected() ? "Calibrate" : "Optimize"}
-          </button>
-
-          {/* Wizard */}
-          <button
-            class={btnClass}
-            style={btnSecondary}
-            onClick={() => setShowWizard(true)}
-            title="Generate tuning from temperament + scale"
-          >
-            Tuning Wizard
-          </button>
-        </div>
-      </Show>
-
-      {/* ── Dialogs ──────────────────────────── */}
-      <OptimizeDialog
-        open={showOptDialog()}
-        isFipple={sessionStore.isFippleSelected()}
-        progress={sessionStore.optProgress()}
-        result={optResult()}
-        onCancel={() => {
-          sessionStore.cancelOptimize();
-          setShowOptDialog(false);
-        }}
-        onClose={() => {
-          setShowOptDialog(false);
-          setOptResult(null);
-        }}
-      />
-
-      <Show when={showSketch()}>
-        <SketchDialog onClose={() => setShowSketch(false)} />
-      </Show>
-
-      <Show when={showCompare()}>
-        <CompareDialog onClose={() => setShowCompare(false)} />
-      </Show>
-
-      <Show when={showGraph()}>
-        <GraphTuningDialog onClose={() => setShowGraph(false)} />
-      </Show>
-
-      <Show when={showSpectrum() && lastEval()}>
-        <NoteSpectrumDialog
-          onClose={() => setShowSpectrum(false)}
-          notes={lastEval()!.rows.map((r) => ({ note: r.note, target_freq: r.target_freq }))}
-        />
-      </Show>
-
-      <Show when={showWizard()}>
-        <WizardDialog onClose={() => setShowWizard(false)} />
       </Show>
     </aside>
   );
@@ -343,6 +144,7 @@ function DocSection(props: {
             }}
             onClick={() => props.onSelect(doc.doc_id)}
             onDblClick={() => props.onDoubleClick(doc.doc_id, doc.name)}
+            title={doc.name}
           >
             {doc.name}
           </button>

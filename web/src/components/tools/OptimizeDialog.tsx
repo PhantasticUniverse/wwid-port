@@ -1,4 +1,4 @@
-import { Show } from "solid-js";
+import { Show, createEffect, onCleanup } from "solid-js";
 import type { OptProgress, OptimizeResult, CalibResult } from "../../types/session";
 
 /** Type guard: CalibResult has initial_norm but NOT new_instrument_id. */
@@ -16,6 +16,16 @@ export interface OptimizeDialogProps {
 }
 
 export default function OptimizeDialog(props: OptimizeDialogProps) {
+  // Esc to close only when showing result (not during progress)
+  createEffect(() => {
+    if (!props.open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && props.result) props.onClose();
+    };
+    document.addEventListener("keydown", onKey);
+    onCleanup(() => document.removeEventListener("keydown", onKey));
+  });
+
   return (
     <Show when={props.open}>
       <div

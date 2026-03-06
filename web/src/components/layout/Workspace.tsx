@@ -3,6 +3,7 @@ import { sessionStore } from "../../stores/session";
 import InstrumentEditor from "../editors/InstrumentEditor";
 import TuningEditor from "../editors/TuningEditor";
 import ConstraintsEditor from "../editors/ConstraintsEditor";
+import Toolbar from "./Toolbar";
 
 export default function Workspace() {
   const activeTab = createMemo(() => {
@@ -13,6 +14,9 @@ export default function Workspace() {
 
   return (
     <main class="flex-1 flex flex-col overflow-hidden">
+      {/* Toolbar */}
+      <Toolbar />
+
       {/* Error banner */}
       <Show when={sessionStore.error()}>
         <div

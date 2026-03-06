@@ -1,9 +1,15 @@
-import { createSignal } from "solid-js";
+import { createSignal, onMount, onCleanup } from "solid-js";
 import { sessionStore } from "../../stores/session";
 
 export default function SettingsDialog(props: {
   onClose: () => void;
 }) {
+  onMount(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") props.onClose(); };
+    document.addEventListener("keydown", onKey);
+    onCleanup(() => document.removeEventListener("keydown", onKey));
+  });
+
   const p = sessionStore.params();
   const [temp, setTemp] = createSignal(p?.temperature ?? 20.0);
   const [humidity, setHumidity] = createSignal(p?.humidity ?? 45.0);

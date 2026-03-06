@@ -1,8 +1,44 @@
 import { createSignal, createEffect, Show, For, on } from "solid-js";
-import { createStore, reconcile } from "solid-js/store";
+import { createStore, reconcile, produce } from "solid-js/store";
 import { sessionStore } from "../../stores/session";
 import type { InstrumentData, LengthType } from "../../types/documents";
-import NumberField from "../shared/NumberField";
+import NumberField, { formatDisplay } from "../shared/NumberField";
+
+/** Inline table number input with display formatting (shows 4 sig digits when not focused). */
+function InlineNum(props: {
+  value: number;
+  onInput: (v: number) => void;
+  title?: string;
+}) {
+  const [focused, setFocused] = createSignal(false);
+  const [local, setLocal] = createSignal(String(props.value));
+
+  return (
+    <input
+      type={focused() ? "number" : "text"}
+      step="any"
+      class="w-full px-1 py-0.5 rounded text-xs text-right tabular-nums"
+      style={{
+        background: "var(--color-surface-alt)",
+        border: "1px solid var(--color-border)",
+        color: "var(--color-text)",
+      }}
+      value={focused() ? local() : formatDisplay(props.value, 4)}
+      onFocus={() => {
+        setLocal(String(props.value));
+        setFocused(true);
+      }}
+      onInput={(e) => {
+        const raw = e.currentTarget.value;
+        setLocal(raw);
+        const v = parseFloat(raw);
+        if (!isNaN(v)) props.onInput(v);
+      }}
+      onBlur={() => setFocused(false)}
+      title={props.title}
+    />
+  );
+}
 
 const EMPTY_INST: InstrumentData = {
   name: "",
@@ -114,6 +150,7 @@ export default function InstrumentEditor(props: { docId: number }) {
                 if (v != null) setData("mouthpiece", "position", v);
               }}
               step={0.001}
+              displayPrecision={4}
             />
             <Show when={data.mouthpiece.fipple}>
               <NumberField
@@ -123,6 +160,7 @@ export default function InstrumentEditor(props: { docId: number }) {
                   if (v != null) setData("mouthpiece", "fipple", "windowLength", v);
                 }}
                 step={0.001}
+                displayPrecision={4}
               />
               <NumberField
                 label="Window Width"
@@ -131,6 +169,7 @@ export default function InstrumentEditor(props: { docId: number }) {
                   if (v != null) setData("mouthpiece", "fipple", "windowWidth", v);
                 }}
                 step={0.001}
+                displayPrecision={4}
               />
               <NumberField
                 label="Fipple Factor"
@@ -138,6 +177,7 @@ export default function InstrumentEditor(props: { docId: number }) {
                 onChange={(v) => setData("mouthpiece", "fipple", "fippleFactor", v)}
                 step={0.01}
                 nullable
+                displayPrecision={4}
               />
               <NumberField
                 label="Window Height"
@@ -145,6 +185,7 @@ export default function InstrumentEditor(props: { docId: number }) {
                 onChange={(v) => setData("mouthpiece", "fipple", "windowHeight", v)}
                 step={0.001}
                 nullable
+                displayPrecision={4}
               />
               <NumberField
                 label="Windway Length"
@@ -152,6 +193,7 @@ export default function InstrumentEditor(props: { docId: number }) {
                 onChange={(v) => setData("mouthpiece", "fipple", "windwayLength", v)}
                 step={0.001}
                 nullable
+                displayPrecision={4}
               />
               <NumberField
                 label="Windway Height"
@@ -159,6 +201,7 @@ export default function InstrumentEditor(props: { docId: number }) {
                 onChange={(v) => setData("mouthpiece", "fipple", "windwayHeight", v)}
                 step={0.001}
                 nullable
+                displayPrecision={4}
               />
             </Show>
           </div>
@@ -175,13 +218,13 @@ export default function InstrumentEditor(props: { docId: number }) {
           <table class="w-full text-xs border-collapse">
             <thead>
               <tr style={{ "border-bottom": "1px solid var(--color-border)" }}>
-                <th class="text-left py-1 px-2" style={{ color: "var(--color-text-muted)" }}>
+                <th class="text-left py-1 px-2" style={{ color: "var(--color-text-muted)" }} title="Bore point label">
                   Name
                 </th>
-                <th class="text-right py-1 px-2" style={{ color: "var(--color-text-muted)" }}>
+                <th class="text-right py-1 px-2" style={{ color: "var(--color-text-muted)" }} title="Distance from top of bore">
                   Position
                 </th>
-                <th class="text-right py-1 px-2" style={{ color: "var(--color-text-muted)" }}>
+                <th class="text-right py-1 px-2" style={{ color: "var(--color-text-muted)" }} title="Internal bore diameter at this point">
                   Diameter
                 </th>
               </tr>
@@ -210,37 +253,15 @@ export default function InstrumentEditor(props: { docId: number }) {
                       />
                     </td>
                     <td class="py-1 px-2">
-                      <input
-                        type="number"
-                        step="any"
-                        class="w-full px-1 py-0.5 rounded text-xs text-right tabular-nums"
-                        style={{
-                          background: "var(--color-surface-alt)",
-                          border: "1px solid var(--color-border)",
-                          color: "var(--color-text)",
-                        }}
+                      <InlineNum
                         value={bp.borePosition}
-                        onInput={(e) => {
-                          const v = parseFloat(e.currentTarget.value);
-                          if (!isNaN(v)) setData("borePoint", i(), "borePosition", v);
-                        }}
+                        onInput={(v) => setData("borePoint", i(), "borePosition", v)}
                       />
                     </td>
                     <td class="py-1 px-2">
-                      <input
-                        type="number"
-                        step="any"
-                        class="w-full px-1 py-0.5 rounded text-xs text-right tabular-nums"
-                        style={{
-                          background: "var(--color-surface-alt)",
-                          border: "1px solid var(--color-border)",
-                          color: "var(--color-text)",
-                        }}
+                      <InlineNum
                         value={bp.boreDiameter}
-                        onInput={(e) => {
-                          const v = parseFloat(e.currentTarget.value);
-                          if (!isNaN(v)) setData("borePoint", i(), "boreDiameter", v);
-                        }}
+                        onInput={(v) => setData("borePoint", i(), "boreDiameter", v)}
                       />
                     </td>
                   </tr>
@@ -248,6 +269,34 @@ export default function InstrumentEditor(props: { docId: number }) {
               </For>
             </tbody>
           </table>
+          <div class="flex gap-2 mt-2">
+            <button
+              class="px-2 py-0.5 rounded text-xs transition-colors"
+              style={{ background: "var(--color-surface-alt)", color: "var(--color-text)", border: "1px solid var(--color-border)" }}
+              onClick={() => {
+                const last = data.borePoint[data.borePoint.length - 1];
+                const newPos = last ? last.borePosition + 1 : 0;
+                const newDia = last ? last.boreDiameter : 1;
+                setData("borePoint", produce((bp) => bp.push({ borePosition: newPos, boreDiameter: newDia })));
+                sync();
+              }}
+              title="Add a new bore point at the end"
+            >
+              + Add Point
+            </button>
+            <button
+              class="px-2 py-0.5 rounded text-xs transition-colors"
+              style={{ background: "var(--color-surface-alt)", color: "var(--color-text)", border: "1px solid var(--color-border)" }}
+              disabled={data.borePoint.length <= 2}
+              onClick={() => {
+                setData("borePoint", produce((bp) => bp.pop()));
+                sync();
+              }}
+              title={data.borePoint.length <= 2 ? "Minimum 2 bore points required" : "Remove the last bore point"}
+            >
+              - Remove Last
+            </button>
+          </div>
         </section>
 
         {/* Holes */}
@@ -272,19 +321,19 @@ export default function InstrumentEditor(props: { docId: number }) {
                   <th class="text-left py-1 px-2" style={{ color: "var(--color-text-muted)" }}>
                     #
                   </th>
-                  <th class="text-left py-1 px-2" style={{ color: "var(--color-text-muted)" }}>
+                  <th class="text-left py-1 px-2" style={{ color: "var(--color-text-muted)" }} title="Tone hole label">
                     Name
                   </th>
-                  <th class="text-right py-1 px-2" style={{ color: "var(--color-text-muted)" }}>
+                  <th class="text-right py-1 px-2" style={{ color: "var(--color-text-muted)" }} title="Distance from top of bore">
                     Position
                   </th>
-                  <th class="text-right py-1 px-2" style={{ color: "var(--color-text-muted)" }}>
+                  <th class="text-right py-1 px-2" style={{ color: "var(--color-text-muted)" }} title="Distance from previous hole">
                     Spacing
                   </th>
-                  <th class="text-right py-1 px-2" style={{ color: "var(--color-text-muted)" }}>
+                  <th class="text-right py-1 px-2" style={{ color: "var(--color-text-muted)" }} title="Hole opening diameter">
                     Diameter
                   </th>
-                  <th class="text-right py-1 px-2" style={{ color: "var(--color-text-muted)" }}>
+                  <th class="text-right py-1 px-2" style={{ color: "var(--color-text-muted)" }} title="Tone hole chimney height">
                     Height
                   </th>
                 </tr>
@@ -322,20 +371,9 @@ export default function InstrumentEditor(props: { docId: number }) {
                           />
                         </td>
                         <td class="py-1 px-2">
-                          <input
-                            type="number"
-                            step="any"
-                            class="w-full px-1 py-0.5 rounded text-xs text-right tabular-nums"
-                            style={{
-                              background: "var(--color-surface-alt)",
-                              border: "1px solid var(--color-border)",
-                              color: "var(--color-text)",
-                            }}
+                          <InlineNum
                             value={hole.borePosition}
-                            onInput={(e) => {
-                              const v = parseFloat(e.currentTarget.value);
-                              if (!isNaN(v)) setData("hole", i(), "borePosition", v);
-                            }}
+                            onInput={(v) => setData("hole", i(), "borePosition", v)}
                           />
                         </td>
                         <td
@@ -345,37 +383,15 @@ export default function InstrumentEditor(props: { docId: number }) {
                           {spacing()}
                         </td>
                         <td class="py-1 px-2">
-                          <input
-                            type="number"
-                            step="any"
-                            class="w-full px-1 py-0.5 rounded text-xs text-right tabular-nums"
-                            style={{
-                              background: "var(--color-surface-alt)",
-                              border: "1px solid var(--color-border)",
-                              color: "var(--color-text)",
-                            }}
+                          <InlineNum
                             value={hole.diameter}
-                            onInput={(e) => {
-                              const v = parseFloat(e.currentTarget.value);
-                              if (!isNaN(v)) setData("hole", i(), "diameter", v);
-                            }}
+                            onInput={(v) => setData("hole", i(), "diameter", v)}
                           />
                         </td>
                         <td class="py-1 px-2">
-                          <input
-                            type="number"
-                            step="any"
-                            class="w-full px-1 py-0.5 rounded text-xs text-right tabular-nums"
-                            style={{
-                              background: "var(--color-surface-alt)",
-                              border: "1px solid var(--color-border)",
-                              color: "var(--color-text)",
-                            }}
+                          <InlineNum
                             value={hole.height}
-                            onInput={(e) => {
-                              const v = parseFloat(e.currentTarget.value);
-                              if (!isNaN(v)) setData("hole", i(), "height", v);
-                            }}
+                            onInput={(v) => setData("hole", i(), "height", v)}
                           />
                         </td>
                       </tr>
@@ -385,6 +401,35 @@ export default function InstrumentEditor(props: { docId: number }) {
               </tbody>
             </table>
           </Show>
+          <div class="flex gap-2 mt-2">
+            <button
+              class="px-2 py-0.5 rounded text-xs transition-colors"
+              style={{ background: "var(--color-surface-alt)", color: "var(--color-text)", border: "1px solid var(--color-border)" }}
+              onClick={() => {
+                const last = data.hole[data.hole.length - 1];
+                const newPos = last ? last.borePosition + 1 : (data.borePoint.length > 0 ? data.borePoint[data.borePoint.length - 1].borePosition * 0.5 : 5);
+                const newDia = last ? last.diameter : 0.25;
+                const newHeight = last ? last.height : 0.2;
+                setData("hole", produce((h) => h.push({ borePosition: newPos, diameter: newDia, height: newHeight })));
+                sync();
+              }}
+              title="Add a new tone hole at the end"
+            >
+              + Add Hole
+            </button>
+            <button
+              class="px-2 py-0.5 rounded text-xs transition-colors"
+              style={{ background: "var(--color-surface-alt)", color: "var(--color-text)", border: "1px solid var(--color-border)" }}
+              disabled={data.hole.length === 0}
+              onClick={() => {
+                setData("hole", produce((h) => h.pop()));
+                sync();
+              }}
+              title={data.hole.length === 0 ? "No holes to remove" : "Remove the last hole"}
+            >
+              - Remove Last
+            </button>
+          </div>
         </section>
 
         {/* Termination */}
@@ -403,6 +448,7 @@ export default function InstrumentEditor(props: { docId: number }) {
                 if (v != null) setData("termination", "flangeDiameter", v);
               }}
               step={0.001}
+              displayPrecision={4}
             />
           </div>
         </section>

@@ -45,6 +45,9 @@ export default function NoteSpectrumDialog(props: {
   }
 
   onMount(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") props.onClose(); };
+    document.addEventListener("keydown", onKey);
+    onCleanup(() => document.removeEventListener("keydown", onKey));
     if (props.notes.length > 0) loadSpectrum(0);
   });
 

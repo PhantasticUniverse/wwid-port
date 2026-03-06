@@ -1,4 +1,4 @@
-import { Show, For, createSignal, onMount } from "solid-js";
+import { Show, For, createSignal, onMount, onCleanup } from "solid-js";
 import { sessionStore } from "../../stores/session";
 
 interface CompareRow {
@@ -36,8 +36,11 @@ export default function CompareDialog(props: { onClose: () => void }) {
     setLoading(false);
   }
 
-  // Auto-compare on mount if both are pre-selected
   onMount(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") props.onClose(); };
+    document.addEventListener("keydown", onKey);
+    onCleanup(() => document.removeEventListener("keydown", onKey));
+    // Auto-compare on mount if both are pre-selected
     if (oldId() >= 0 && newId() >= 0 && oldId() !== newId()) {
       runCompare();
     }
