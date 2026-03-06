@@ -13,6 +13,7 @@
 
 ### Entries (newest first)
 
+- [UI/UX Clarity Pass](#2026-03-06-uiux-clarity-pass) — 7 fixes: number formatting, toolbar reorganization, Esc key, row management, console readability, tooltips
 - [Visual Parity Improvements](#2026-03-06-visual-parity-improvements) — 5 priorities: Graph Tuning chart, Note Spectrum gain coloring, default constraints bounds, Sketch engineering style, Settings DIRECT toggle
 - [Parity Audit #4 + NAF optimizer tests](#2026-03-06-parity-audit-4--naf-optimizer-tests) — 7 code fixes, 4 NAF parity tests, BOBYQA/DIRECT docs, SUP-RD fixture regen
 - [Parity Audits #2 & #3](#2026-03-06-parity-audits-2--3) — trust radius fix, analysis tool frequency fallbacks, bore geometry dead-if cleanup
@@ -38,6 +39,41 @@
 - [M3 NAF Calibration + Optimization](#2026-03-02-m3--naf-calibration--optimization-parity) — BOBYQA crate, 139 tests
 - [NAF Bulk Test Coverage](#2026-03-02-expanded-naf-test-coverage-all-oracle-xmls) — 36 combos, 540 fingerings
 - [M4 Browser MVP](#2026-03-02-m4--browser-hosted-mvp-naf-end-to-end)
+
+---
+
+## 2026-03-06: UI/UX Clarity Pass
+
+After the visual parity work, a comparison against Java WIDesigner v2.6.0 showed the port was functionally complete but harder to read and use. The Java app is "boring but functional" — clean numbers, scannable tables, clear interactions. This pass addresses 7 gaps to make the port at least as usable as the original.
+
+### Fix 1: Number Display Formatting (HIGH IMPACT)
+The biggest issue: Java shows `3.959` where we showed `3.508458242868765`. Added display formatting throughout:
+- `NumberField.tsx`: new `displayPrecision` prop shows N significant digits when not focused, full precision on focus
+- `InlineNum` component for bore/hole table cells: same focus/blur pattern
+- `BoundInput` component for constraint bounds
+- All instrument editor fields and constraint bounds use 4 significant digits
+- Settings temperature rounded to 2 decimal places on init
+- Full precision preserved internally — display only
+
+### Fix 2: Esc Key to Close Dialogs
+Added document-level `keydown` listener (`onMount`/`onCleanup`) to all 7 dialogs. OptimizeDialog only allows Esc when showing result (not during progress).
+
+### Fix 3: Instrument Editor Row Management
+Added `+ Add Point` / `- Remove Last` buttons for bore profile (min 2 points) and `+ Add Hole` / `- Remove Last` for holes (min 0). Frontend-only: modifies the SolidJS store and syncs via `set_instrument`. No backend changes needed.
+
+### Fix 4: Console Readability
+Changed console text from `text-xs` (12px) to `text-sm` (14px) and from `color-text-muted` to 70% opacity `color-text`.
+
+### Fix 6: Button Organization
+Moved all 8 action buttons from sidebar bottom to a compact toolbar row above the editor. Sidebar now only has doc lists + optimizer selection (matching Java's layout pattern). New `Toolbar.tsx` component with grouped buttons and visual separators.
+
+### Fix 7: Tooltip Coverage
+Added `title` attributes to: study model selector, Open File, bore/hole table headers (Position, Diameter, Spacing, Height), constraint bound inputs, optimizer items, doc items, constraint creation buttons, all toolbar buttons with context-dependent disabled tooltips.
+
+### Settings Temperature
+Rounded temperature initial value to 2 decimal places (was showing `22.22222222222222`).
+
+449 Rust tests unaffected — all changes are display-only, layout, or event handlers.
 
 ---
 

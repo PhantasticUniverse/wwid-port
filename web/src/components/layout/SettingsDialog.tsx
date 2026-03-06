@@ -11,7 +11,7 @@ export default function SettingsDialog(props: {
   });
 
   const p = sessionStore.params();
-  const [temp, setTemp] = createSignal(p?.temperature ?? 20.0);
+  const [temp, setTemp] = createSignal(Math.round((p?.temperature ?? 20.0) * 100) / 100);
   const [humidity, setHumidity] = createSignal(p?.humidity ?? 45.0);
   const [useDirect, setUseDirect] = createSignal(getUseDirect());
 
