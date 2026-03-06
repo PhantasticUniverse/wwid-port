@@ -336,7 +336,7 @@ Java draws all curves in black/dark gray with green filled circles at peak reson
 Java uses green dots (gain >= 1) and red dots (gain < 1) with a black impedance line. We use continuous line segments in green/red with NaN-gap splitting, plus a dashed gain=1 reference line. The impedance line is dark gray (our dark theme equivalent of Java's black-on-white).
 
 ### Sketch Diagram
-Java uses JFreeChart's XYPlot to render a top-down engineering drawing: dashed bore outline, circles for holes, axis labels. We use custom SVG with the same engineering conventions: dashed bore polygon, outline circles for holes, labeled X/Y axes with tick marks. No colored fills — monochrome gray palette.
+Java uses JFreeChart's XYPlot to render a top-down engineering drawing: dashed bore outline, circles for holes on the center axis, axis labels. We use custom SVG with the same engineering conventions: dashed bore polygon, outline circles for holes positioned on the center line (straddling the bore, matching Java), labeled X/Y axes with tick marks, hole labels above the bore top edge. No colored fills — monochrome gray palette. Handles both cylindrical and tapered bores correctly.
 
 ### Default Constraints
 Java's "Create Default Constraints" pre-populates bounds with study-model-specific values (bore length ranges, hole diameter ranges, taper ratios). Our web port now matches this. "Create Blank Constraints" creates empty bounds (Java fills with 0.0/1.0; we use None). The constraints are used identically for optimization — this is a usability feature, not a computation difference.

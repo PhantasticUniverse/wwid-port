@@ -72,9 +72,11 @@ After comparing screenshots of Java WIDesigner v2.6.0 against the web port, addr
 ### P3: Sketch Diagram Engineering Style
 - Changed bore profile from filled blue polygon to dashed gray outline (`stroke-dasharray="6,3"`, no fill)
 - Changed tone holes from amber rectangles (chimney view) to outline circles (top-view, diameter proportional)
+- Positioned holes on center line straddling the bore (matching Java), labels above bore top edge
 - Changed mouthpiece from purple text label to small gray rectangle marker
 - Added X-axis (Length) and Y-axis (Width) with tick marks and labels
 - Used monochrome gray palette throughout
+- Verified with both cylindrical (NAF) and tapered (Whistle) bore instruments
 - Kept summary table (Bore Length, Holes, Mouthpiece, Flange) as-is
 - File: `web/src/components/tools/SketchDialog.tsx`
 

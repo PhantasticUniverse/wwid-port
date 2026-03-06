@@ -250,8 +250,8 @@ function SketchContent(props: { data: SketchData }) {
           const boreDia = interpolateBore(d.bore_points, hole.position);
           const boreTopY = centerY - (boreDia / 2) * scale;
           const holeRadius = (hole.diameter / 2) * scale;
-          // Position circle above bore wall
-          const cy = boreTopY - holeRadius - 2;
+          // Position circle on the center line (straddling the bore), matching Java
+          const cy = centerY;
 
           return (
             <g>
@@ -264,10 +264,10 @@ function SketchContent(props: { data: SketchData }) {
                 stroke="#d1d5db"
                 stroke-width="1.5"
               />
-              {/* Hole label */}
+              {/* Hole label — above bore top edge */}
               <text
                 x={hx}
-                y={cy - Math.max(holeRadius, 3) - 4}
+                y={boreTopY - 6}
                 text-anchor="middle"
                 font-size="9"
                 fill="#9ca3af"
