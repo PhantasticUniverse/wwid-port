@@ -123,13 +123,13 @@ However, several Java subclasses override to a hardcoded `initial=10.0, stopping
 | BaseObjectiveFunction (default) | bounds-based formula | `1e-8 * initial` | `compute_trust_radius()` — matches |
 | HoleFromTopObjectiveFunction | **10.0** | **1e-8** | **10.0 / 1e-8** — fixed to match |
 | HoleGroupFromTopObjectiveFunction | **10.0** | **1e-8** | **10.0 / 1e-8** — fixed to match |
-| NafHoleSizeObjectiveFunction | **10.0** | **1e-8** | bounds-based — **known deviation (NAF only)** |
+| NafHoleSizeObjectiveFunction | **10.0** | **1e-8** | **10.0 / 1e-8** — fixed to match |
 | SingleTaper* (all 4 variants) | **10.0** | **1e-8** | **10.0 / 1e-8** — already correct |
 | HoleSizeObjectiveFunction | bounds-based | `1e-8 * initial` | bounds-based — matches |
 | HolePositionObjectiveFunction | bounds-based | `1e-8 * initial` | bounds-based — matches |
 | HoleObjectiveFunction | bounds-based | `1e-8 * initial` | bounds-based — matches |
 
-**NAF hole_size deviation**: Java's NAF study model uses `NafHoleSizeObjectiveFunction` (a subclass of `HoleSizeObjectiveFunction`) which overrides initial trust to 10.0. Our `hole_size.rs` always uses the bounds-based formula. The practical impact is low — NAF golden fixtures pass, and the bounds-based trust radius produces reasonable values for typical NAF constraint bounds. To fully fix, we would need to thread the study kind into `optimize_hole_size()` and switch trust radius per study model, but this is deferred.
+**NAF hole_size trust radius**: Fixed — `hole_size.rs` now accepts a `naf_trust` parameter. NAF passes `true` (10.0/1e-8, matching `NafHoleSizeObjectiveFunction`), other models pass `false` (bounds-based, matching `HoleSizeObjectiveFunction` which inherits from `BaseObjectiveFunction`).
 
 **Why 10.0 matters**: For instruments with small bore diameters (e.g., 0.019m), the bounds-based formula produces initial_trust ~0.003–0.05. An initial_trust of 10.0 is ~200× larger, which makes BOBYQA's first few steps explore much more aggressively. This can lead to different local minima on multimodal landscapes. The convergence behavior differs, though both approaches eventually find good optima.
 
@@ -253,3 +253,71 @@ Java's `BaseObjectiveFunction` default is `maxEvaluations = 10000`. Individual s
 | Calibrators (Whistle/Flute/Reed) | 10000 (default) | `max_evaluations(2)` = 25000 — **overallocates** |
 
 "Overallocates" means we allow more evaluations than Java. This is conservative — the optimizer converges before hitting the limit, so the extra budget is never used. It won't cause parity issues.
+
+## Per-Study-Model Physical Parameter Defaults
+
+Java sets different default physical parameters per study model:
+
+| Study Model | Temperature | Pressure | Humidity | CO2 |
+|---|---|---|---|---|
+| NAF | 72°F (22.22°C) | 101.325 kPa | 45% | 390 ppm |
+| Whistle/Flute/Reed | 27°C | 98.4 kPa | 100% | 40000 ppm (0.04 mol/mol) |
+
+The NAF defaults come from `PhysicalParameters(72.0, TemperatureType.F)` (2-arg constructor, which uses 101.325/45%/390ppm). The Whistle/Flute/Reed defaults come from `PhysicalParameters(27.0, TemperatureType.C, 98.4, 100.0, 0.04)` (5-arg constructor in each study model's `setDefaults()`).
+
+This doesn't affect golden fixture parity — the harness always sets physical params explicitly. It only affects the default state a user sees when opening a fresh session in the GUI.
+
+## Optimizer List: addSub() vs objectiveFunctionNames
+
+Java's study models have two distinct optimizer-related data structures:
+
+1. **`objectiveFunctionNames`** (Map) — includes ALL optimizer keys for constraint generation dispatch. Used by `getDefaultConstraints()` / `getBlankConstraints()`.
+2. **`addSub()` calls** — create GUI menu items that users can actually select.
+
+These are different. For example, `WindowHeightObjectiveFunction` and `BetaObjectiveFunction` are in `objectiveFunctionNames` for Whistle (so constraints can be generated for them when used internally by the joint calibrator), but they don't have `addSub()` calls (users can't select them directly from the optimizer dropdown).
+
+Our `available_optimizers()` should only mirror `addSub()` items (what users see in the dropdown). The `is_valid_optimizer()` and constraint generation functions should still handle the full set (for internal dispatch).
+
+## Analysis Tool Frequency Target Fallbacks
+
+Java's `InstrumentTuner.getFrequencyTarget()` tries `frequency → frequencyMax → frequencyMin → 0.0`. The evaluators already implement this correctly, but the analysis tools have their own fallback chains:
+
+- **`graph_tuning`** (`PlotPlayingRanges.buildGraph()`): Uses `getFrequencyTarget()` chain (`frequency → frequencyMax → frequencyMin → 0.0`). When target is 0.0, Java's `predictedNote()` returns early with an empty note, and the graph skips that curve. Rust matches by producing an empty `points` vec and `continue`-ing.
+
+- **`note_spectrum`** (`PlayingRangeSpectrum.plot()`): Uses `frequency → frequencyMax → 1000.0` — different from `getFrequencyTarget()` because this is a display tool with its own fallback logic. Note: no `frequencyMin` in this chain, and default is 1000.0 (not 0.0 or 440.0).
+
+These are distinct from the evaluator frequency handling (which uses `frequency.or(frequency_max)` for fmax evaluators, and returns 0.0 for missing targets).
+
+## `set_bore_position` Identical Branches
+
+Both `if bottom_fixed` branches in `set_bore_position` computed `n_unchanged + d`. This was correct (not a bug) because the getter loop starts at `d=1` with `n_unchanged + (d-1)`, while the setter loop starts at `d=0` with `n_unchanged + d` — the mapping is equivalent. Round-trip tests at line 2736 confirm. Simplified to remove the dead `if`.
+
+## DIRECT max_evaluations Enforcement
+
+Java's DIRECT enforces `max_evaluations` per-evaluation: `computeObjectiveValue` calls `incrementEvaluationCount()` which throws `TooManyEvaluationsException` immediately when the limit is reached, potentially mid-rectangle-division. The exception propagates up and the caller catches it.
+
+Rust's DIRECT checks the budget at two points: (1) between rectangle divisions within `divide_potentially_optimal` (stops selecting new rectangles to divide), and (2) between iterations in the main loop. A single rectangle division can still overshoot by up to `2 * n_dimensions` evals, but this is bounded and the algorithm always completes the current rectangle cleanly, producing a valid result from a fully consistent state. Java's mid-evaluation abort can leave partially divided rectangles in the tree, though the caller only uses the best point found.
+
+## Bore Diameter Getter Minimum Guard
+
+Java's `BoreDiameterFromTopObjectiveFunction.getGeometryPoint()` and `BoreDiameterFromBottomObjectiveFunction.getGeometryPoint()` clamp the reference diameter to a minimum of `0.000001` before dividing to get the ratio. This prevents division by zero or inf when a bore point has zero diameter. Rust now matches: `prior_dia.max(0.000001)` / `next_dia.max(0.000001)`.
+
+## Bore Spacing Upper Bound Epsilon
+
+Java's `BoreSpacingFromTopObjectiveFunction.setUpperBounds()` uses an epsilon offset: `if (upperBound + 0.0001 > availableSpace)` and `scale = available / (sum + 0.0001)`. This triggers clamping slightly earlier and ensures strict feasibility. Rust now matches.
+
+## Bore Position Bottom-Hole Guard
+
+Java's `BorePositionObjectiveFunction.setLowerBounds()` ensures the bore end stays at least 12mm below the lowest hole: `if (aLowerBounds[0] < bottomHolePosition + 0.012) aLowerBounds[0] = bottomHolePosition + 0.012`. Applies when `bottomPointUnchanged == false` (standalone bore position and bore-from-bottom optimizers). Rust now matches.
+
+## Supplementary Info `usePredicted` Flag
+
+Java's base `StudyModel.calculateSupplementaryInfo()` uses `usePredicted=false`. Only `NafStudyModel` overrides to `true`. Reed, Whistle, and Flute inherit `false`. Rust now correctly uses `matches!(study_kind, StudyKind::NAF)` instead of `linear_v_tuner.is_none()` (which incorrectly gave `true` for Reed).
+
+## BOBYQA `sqrt(denom)` vs `sqrt(abs(denom))`
+
+Both Java and Fortran compute `sqrt(denom)` in the Z-matrix update. `denom` should always be positive because the algorithm selects `knew` to maximize it. The Rust port was using `sqrt(abs(denom))` which would silently produce a valid (but wrong) result if `denom` were negative, instead of propagating NaN. Fixed to match Java/Fortran. In practice this code path is never triggered on well-conditioned problems.
+
+## Trust Radius Overrides (Audit #2)
+
+`hole_from_top::optimize_holes_with_progress` was using bounds-based `compute_trust_radius()` instead of Java's hardcoded 10.0/1e-8. Fixed in audit #2. The sibling functions (`hole_group_from_top`, `single_taper`) use a shared `_impl` pattern that prevented this class of bug.

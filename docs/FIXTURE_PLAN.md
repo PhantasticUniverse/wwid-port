@@ -1,5 +1,7 @@
 # FIXTURE_PLAN.md
 
+**Status (M5 complete):** The suite has grown to **57 fixture sets** across all 4 study models (NAF, Whistle, Flute, Reed), covering evaluation, calibration, optimization, analysis tools, and tuning wizard scenarios.
+
 ## Purpose
 
 Define the golden fixture suite that makes parity measurable and prevents regressions, especially for load-bearing behaviors (NAF fipple factor).

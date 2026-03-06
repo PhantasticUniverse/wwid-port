@@ -4,15 +4,18 @@
 
 | Metric | Value |
 |--------|-------|
-| **Total tests** | 425 |
+| **Total tests** | 449 |
 | **Study models complete** | 4/4 (NAF, Whistle, Flute, Reed) |
-| **Milestones done** | M0–M4 complete, M5 in progress |
+| **Milestones done** | M0–M5 complete |
 | **Evaluation parity** | ≤ 0.058 cents across 994 fingerings |
 | **Crates** | 11 (math, physics, types, compile, acoustics, eval, optimize, session, wasm, bobyqa, direct) |
-| **Golden fixtures** | 37 expected directories, 13 scenario files |
+| **Golden fixtures** | 57 expected directories, 5 analysis tools, tuning wizard |
 
 ### Entries (newest first)
 
+- [Parity Audit #4 + NAF optimizer tests](#2026-03-06-parity-audit-4--naf-optimizer-tests) — 7 code fixes, 4 NAF parity tests, BOBYQA/DIRECT docs, SUP-RD fixture regen
+- [Parity Audits #2 & #3](#2026-03-06-parity-audits-2--3) — trust radius fix, analysis tool frequency fallbacks, bore geometry dead-if cleanup
+- [Post-M5 Parity Audit + Docs Polish](#2026-03-06-post-m5-parity-audit--docs-polish) — optimizer list fix, per-model physical params, LICENSE/NOTICE, README update
 - [Golden Fixtures + Parity Tests](#2026-03-04-cont-golden-fixtures--parity-tests) — 11 fixture sets, 12 Rust parity tests, ToolsDriver + WizardDriver
 - [Tuning Wizard + Reed Validation](#2026-03-04-cont-tuning-wizard--reed-validation) — Scale/Temperament/ScaleSymbolList types, generation, WASM dispatch, validation
 - [Bore Optimizers + Parity Audit](#2026-03-04-cont-bore-optimizers--parity-audit) — Bore constraints, golden fixtures, Brent dispatch, trust radius fix, parity audit
@@ -34,6 +37,95 @@
 - [M3 NAF Calibration + Optimization](#2026-03-02-m3--naf-calibration--optimization-parity) — BOBYQA crate, 139 tests
 - [NAF Bulk Test Coverage](#2026-03-02-expanded-naf-test-coverage-all-oracle-xmls) — 36 combos, 540 fingerings
 - [M4 Browser MVP](#2026-03-02-m4--browser-hosted-mvp-naf-end-to-end)
+
+---
+
+## 2026-03-06: Parity Audit #4 + NAF Optimizer Tests
+
+Fourth hostile parity audit with 4 specialized agents across session/WASM, compile/optimize, BOBYQA, and DIRECT subsystems.
+
+### Code Fixes (from audit #4)
+1. **`usePredicted` Reed supplementary**: Was `true`, should be `false` — Reed instruments don't use predicted frequency for supplementary info.
+2. **`set_params` preserves pressure/CO2**: Physical params setter now preserves user-modified pressure and CO2 values.
+3. **Bore diameter min-guard**: Added 0.000001m minimum bore diameter to prevent division-by-zero.
+4. **Bore spacing epsilon**: Added 0.0001m minimum spacing between bore points.
+5. **Bore position bottom-hole guard**: Added +0.012m guard for bore bottom relative to lowest hole.
+6. **BOBYQA `sqrt(abs(denom))` → `sqrt(denom)`**: Fixed Hessian estimation to match BOBYQA reference.
+7. **DIRECT budget enforcement**: Budget now enforced between rectangle divisions, preventing overrun.
+
+### Fixes in this commit (post audit #4)
+8. **Reed validation asymmetry**: Changed from symmetric `abs() > 0.0001` to asymmetric `mp_pos < bore_bottom || mp_pos > bore_bottom + 0.0001` — Java only allows mouthpiece AT or slightly ABOVE bore bottom, not below.
+9. **NAF hole size trust radius**: Added `naf_trust` parameter to `optimize_hole_size`. NAF uses hardcoded 10.0/1e-8 (matching `NafHoleSizeObjectiveFunction`), other models use bounds-based (matching `HoleSizeObjectiveFunction`).
+10. **4 NAF optimizer parity tests**: Added `naf_opt_01_parity`, `naf_opt_02_parity`, `naf_grp_01_parity`, `naf_tpr_01_parity` — session-level tests for HoleFromTop, HoleGroupFromTop, and SingleTaperNoHoleGrouping optimizers.
+
+### Visual QA Pass (Playwright)
+Walked through every UI state with Playwright browser automation, 16 screenshots captured.
+
+**Bugs found and fixed:**
+11. **Note Spectrum `fingeringIndex` mismatch**: Frontend sent `fingering_index` (snake_case) but WASM expected `fingeringIndex` (camelCase). Was causing "Missing 'fingeringIndex' argument" error. Fixed in `session.ts`.
+12. **Compare Instruments `oldDocId`/`newDocId` mismatch**: Same snake_case/camelCase issue. Fixed in `session.ts`.
+
+**Observations for future work:**
+- Default constraints behavior may differ from original Java app (needs investigation)
+- Graph tuning view looks visually different from original Java Swing charts (Chart.js vs JFreeChart styling)
+
+### Other
+- Regenerated SUP-RD golden fixture.
+- Expanded BOBYQA and DIRECT standalone crate documentation.
+- Updated all doc test counts 445→449.
+- Updated parity-notes.md trust radius table (NafHoleSize now fixed).
+
+---
+
+## 2026-03-06: Parity Audits #2 & #3
+
+Three parallel hostile audit agents compared Java vs Rust across bore geometry, acoustics pipeline, session orchestration, and analysis tools.
+
+### Audit #2 Findings
+- **Trust radius mismatch** in `hole_from_top::optimize_holes_with_progress` — was using bounds-based `compute_trust_radius()` instead of Java's hardcoded 10.0/1e-8. Fixed. Only affected web UI (session calls `_with_progress`; golden tests call non-progress version).
+
+### Audit #3 Findings
+- **`note_spectrum` frequency fallback**: Was `frequency.unwrap_or(440.0)`, Java uses `frequency → frequencyMax → 1000.0`. Fixed.
+- **`graph_tuning` frequency fallback**: Was `frequency.unwrap_or(0.0)`, Java uses `frequency → frequencyMax → frequencyMin → 0.0` with early-return on 0.0. Fixed with fallback chain + zero-frequency skip.
+- **`set_bore_position` dead `if`**: Both branches identical (`n_unchanged + d`). Correct behavior (getter/setter loop ranges differ), simplified to remove dead conditional.
+
+### False Positives Debunked
+- `set_bore_position` off-by-one: identical branches are correct due to differing loop start indices
+- Calibration missing recompile: recompile happens inside BOBYQA closure
+- XML float formatting: not a parity issue (save/load only)
+
+### Verified Clean (~30 subsystems)
+All transfer matrices, mouthpiece models, tuners, evaluators, physical parameters, compilation pipeline, calibrators, XML parsing, WASM bindings — no issues found.
+
+Combined across audits #2 and #3: 3 code fixes, 1 code smell cleanup, 3 false positives debunked, ~30 subsystems verified clean.
+
+---
+
+## 2026-03-06: Post-M5 Parity Audit + Docs Polish
+
+Exhaustive parity audit comparing Java study models against Rust session dispatch, golden fixtures, and web frontend.
+
+### Findings & Fixes
+
+**Issue 1: Optimizer list mismatch (Whistle + Flute)**
+- Whistle `available_optimizers()` listed 3 extra entries not in Java GUI: `WindowHeightObjectiveFunction`, `BetaObjectiveFunction`, `HoleAndHeadjointObjectiveFunction`. These are sub-calibrators or Flute-only optimizers — valid internally but not user-selectable.
+- Flute listed 2 extras: `AirstreamLengthObjectiveFunction`, `BetaObjectiveFunction`.
+- Fixed: removed from `available_optimizers()` vecs. Constants, dispatch, and constraint generation kept (used internally).
+- Final counts match Java: NAF=8, Whistle=16, Flute=17, Reed=12.
+
+**Issue 2: Per-study-model physical parameter defaults**
+- Java sets different defaults per study model: NAF uses 72°F/101.325kPa/45%RH/390ppm, while Whistle/Flute/Reed use 27°C/98.4kPa/100%RH/40000ppm.
+- Rust was using 72°F for all models.
+- Fixed: `StudySession::new()` now sets params per study kind.
+- No test impact (golden fixtures use explicit params).
+
+### Documentation & Licensing
+- Created `LICENSE` (Apache-2.0) and `NOTICE` (attributions for BOBYQA, DIRECT-C, CIPM-2007, WIDesigner).
+- Added `license = "Apache-2.0"` to workspace and all 9 crates missing it.
+- Updated `README.md`: test count 280→445, M5 status complete, license section links.
+- Updated `docs/FIXTURE_PLAN.md` with 57-fixture-set status note.
+- Added two new entries to `parity-notes.md`: physical param defaults, optimizer list distinction.
+- Untracked `.DS_Store` from git.
 
 ---
 
@@ -400,7 +492,7 @@ Flute calibration and optimization pipeline complete. Two new calibrators and se
 - `wid-compile/src/lib.rs` — added `get_airstream_length()` / `set_airstream_length()`
 - `CalibResult` extended with `initial_airstream_length` / `final_airstream_length` fields
 
-#### Java golden harness (pending fixture generation — requires Java 17+)
+#### Java golden harness (generated and verified — M5.5)
 
 - `FluteCalibDriver.java` — generates FL-CAL fixtures (3 calibrators)
 - `FluteOptDriver.java` — generates FL-OPT fixtures (3 hole optimizers)
@@ -430,7 +522,7 @@ Simple linear reactance model matching Java `SimpleReedMouthpieceCalculator`:
 
 Reed instruments (e.g., SampleChanter) can have headspace bore sections (bore points above mouthpiece position). In Java, the `SimpleReedMouthpieceCalculator` inherits the default `calcStateVector()` which just multiplies `calcTransferMatrix() * boreState` — headspace is extracted from the component chain during `updateComponents()` but is **never used** by the reed mouthpiece calculator. Our Rust code matches this behavior: headspace is extracted during compile and stored on `mouthpiece.headspace`, but the `SimpleReed` arm in `calc_z()` applies the reed TM directly without walking headspace. This is intentional parity.
 
-#### Java golden harness (pending fixture generation)
+#### Java golden harness (generated and verified — M5.6)
 
 - `ReedBulkEvalDriver.java` — 7 compatible reed combos (4 SampleChanter + 1 ReiswigChanter + 2 Didgeridoo)
 - `ReedZSampleDriver.java` — Z-sample for SampleChanter + A3-ClosedFingering
@@ -843,8 +935,9 @@ The web app currently shows 22.22°C in the console instead of Java's 20°C.
 - Added 6 tests at 20°C to verify model correctness at the app-visible temperature
 - Added 8 humidity variation tests (20% and 80% RH at 20°C) with monotonicity checks
 - Added `set_params()` to `StudySession` for future use
-- **TODO**: Add a preferences/settings layer (WASM or UI) that overrides to 20°C,
-  mirroring how Java's `OptimizationPreferences` overrides the core default
+- ~~**TODO**: Add a preferences/settings layer (WASM or UI) that overrides to 20°C,
+  mirroring how Java's `OptimizationPreferences` overrides the core default~~
+  **Resolved**: SettingsDialog.tsx exposes temperature + humidity (M4 Phase 4c)
 
 ### Test count
 - **179 tests** total (up from 146)

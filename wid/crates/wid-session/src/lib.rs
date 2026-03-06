@@ -72,11 +72,12 @@ pub struct StudySession {
 impl StudySession {
     /// Create a new session for the given study kind.
     ///
-    /// Defaults to 72°F, matching the Java core's `PhysicalParameters(72.0, F)`
-    /// and all golden fixture data. Note: the Java GUI's preferences system
-    /// overrides this to 20°C (`OptimizationPreferences.DEFAULT_TEMPERATURE`),
-    /// so users of the Java app see 20°C. We'll add a similar override when
-    /// we implement the settings/preferences UI.
+    /// Physical parameter defaults match Java's per-study-model constructors:
+    /// - **NAF**: 72°F, 101.325 kPa, 45% RH, 390 ppm CO2
+    /// - **Whistle/Flute/Reed**: 27°C, 98.4 kPa, 100% RH, 40000 ppm CO2
+    ///
+    /// Golden fixture data uses 72°F for all models (the harness sets params
+    /// explicitly), so this default only affects fresh sessions in the UI.
     pub fn new(study_kind: StudyKind) -> Self {
         let calc_params = match study_kind {
             StudyKind::NAF => CalculatorParams::NAF,
@@ -84,12 +85,18 @@ impl StudySession {
             StudyKind::Flute => CalculatorParams::FLUTE,
             StudyKind::Reed => CalculatorParams::REED,
         };
+        let params = match study_kind {
+            StudyKind::NAF => PhysicalParameters::new(72.0, TemperatureType::F),
+            StudyKind::Whistle | StudyKind::Flute | StudyKind::Reed => {
+                PhysicalParameters::with_all(27.0, TemperatureType::C, 98.4, 100.0, 0.04)
+            }
+        };
         StudySession {
             study_kind,
             calc_params,
             docs: DocStore::new(),
             selection: Selection::default(),
-            params: PhysicalParameters::new(72.0, TemperatureType::F),
+            params,
             next_untitled: 1,
         }
     }
@@ -553,7 +560,7 @@ impl StudySession {
                     naf::NAF_HOLE_SIZE => {
                         wid_optimize::hole_size::optimize_hole_size_with_progress(
                             &mut work_inst, &tuning, &constraints, &self.params,
-                            &self.calc_params, &mut progress_adapter,
+                            &self.calc_params, true, &mut progress_adapter,
                         )
                     }
                     naf::HOLE_GROUP_FROM_TOP => {
@@ -608,7 +615,7 @@ impl StudySession {
                     whistle::HOLE_SIZE => {
                         wid_optimize::hole_size::optimize_hole_size_with_progress(
                             &mut work_inst, &tuning, &constraints, &self.params,
-                            &self.calc_params, &mut progress_adapter,
+                            &self.calc_params, false, &mut progress_adapter,
                         )
                     }
                     whistle::HOLE_POSITION => {
@@ -720,7 +727,7 @@ impl StudySession {
                     flute::HOLE_SIZE => {
                         wid_optimize::hole_size::optimize_hole_size_with_progress(
                             &mut work_inst, &tuning, &constraints, &self.params,
-                            &self.calc_params, &mut progress_adapter,
+                            &self.calc_params, false, &mut progress_adapter,
                         )
                     }
                     flute::HOLE_POSITION => {
@@ -831,7 +838,7 @@ impl StudySession {
                     reed::HOLE_SIZE => {
                         wid_optimize::hole_size::optimize_hole_size_with_progress(
                             &mut work_inst, &tuning, &constraints, &self.params,
-                            &self.calc_params, &mut progress_adapter,
+                            &self.calc_params, false, &mut progress_adapter,
                         )
                     }
                     reed::HOLE_POSITION => {
@@ -1427,8 +1434,10 @@ impl StudySession {
 
         // Java: NafStudyModel calls buildTable(tuner, usePredicted=true)
         //       All others call buildTable(tuner, usePredicted=false)
-        // NAF/Reed use SimpleInstrumentTuner, Whistle/Flute use LinearVInstrumentTuner
-        let use_predicted = linear_v_tuner.is_none();
+        // Java: only NafStudyModel overrides calculateSupplementaryInfo with
+        // usePredicted=true. Reed/Whistle/Flute use the base StudyModel which
+        // passes usePredicted=false.
+        let use_predicted = matches!(self.study_kind, StudyKind::NAF);
 
         let mut rows = Vec::with_capacity(tuning.fingerings.len());
 
@@ -1599,7 +1608,24 @@ impl StudySession {
         let mut curves = Vec::with_capacity(tuning.fingerings.len());
 
         for fingering in &tuning.fingerings {
-            let target_freq = fingering.note.frequency.unwrap_or(0.0);
+            // Java: getFrequencyTarget() → frequency → frequencyMax → frequencyMin → 0.0
+            let target_freq = fingering.note.frequency
+                .or(fingering.note.frequency_max)
+                .or(fingering.note.frequency_min)
+                .unwrap_or(0.0);
+
+            // Skip curve entirely when target is 0.0 (matches Java's early-return)
+            if target_freq == 0.0 {
+                curves.push(types::TuningCurve {
+                    note_name: fingering.note.name.clone(),
+                    target_freq,
+                    predicted_freq: 0.0,
+                    freq_min: None,
+                    freq_max: None,
+                    points: Vec::new(),
+                });
+                continue;
+            }
 
             // Find predicted frequency
             let predicted_freq = match &linear_v_tuner {
@@ -1691,7 +1717,10 @@ impl StudySession {
             .map_err(|e| SessionError::CompileError(e.to_string()))?;
 
         let fingering = &tuning.fingerings[fingering_index];
-        let target_freq = fingering.note.frequency.unwrap_or(440.0);
+        // Java: PlayingRangeSpectrum.plot() → frequency → frequencyMax → 1000.0
+        let target_freq = fingering.note.frequency
+            .or(fingering.note.frequency_max)
+            .unwrap_or(1000.0);
         let rho = self.params.rho();
         let gain_factor = compiled.mouthpiece.gain_factor;
 
@@ -2126,9 +2155,9 @@ fn validate_instrument_geometry(inst: &InstrumentRaw) -> Vec<String> {
 
     if is_reed {
         // Reed: mouthpiece position must equal lowest bore position
-        if (mp_pos - bore_bottom).abs() > 0.0001 {
+        if mp_pos < bore_bottom || mp_pos > bore_bottom + 0.0001 {
             errors.push(format!(
-                "Reed mouthpiece position ({:.4}m) must equal lowest bore position ({:.4}m) within 0.0001m",
+                "Reed mouthpiece position ({:.4}m) must be at or slightly above lowest bore position ({:.4}m)",
                 mp_pos, bore_bottom
             ));
         }
@@ -3531,6 +3560,7 @@ mod tests {
         )).unwrap();
 
         let mut session = StudySession::new(StudyKind::Whistle);
+        session.set_params(PhysicalParameters::new(72.0, TemperatureType::F));
         let inst = session.open_xml(WHISTLE_INST_XML).unwrap();
         let tuning = session.open_xml(WHISTLE_TUNING_PVC_XML).unwrap();
         session.select_instrument(inst.doc_id);
@@ -3560,6 +3590,7 @@ mod tests {
         )).unwrap();
 
         let mut session = StudySession::new(StudyKind::Flute);
+        session.set_params(PhysicalParameters::new(72.0, TemperatureType::F));
         let inst = session.open_xml(FLUTE_INST_XML).unwrap();
         let tuning = session.open_xml(FLUTE_TUNING_XML).unwrap();
         session.select_instrument(inst.doc_id);
@@ -3586,6 +3617,7 @@ mod tests {
         )).unwrap();
 
         let mut session = StudySession::new(StudyKind::Reed);
+        session.set_params(PhysicalParameters::new(72.0, TemperatureType::F));
         let inst = session.open_xml(REED_INST_XML).unwrap();
         let tuning = session.open_xml(REED_TUNING_XML).unwrap();
         session.select_instrument(inst.doc_id);
@@ -3614,6 +3646,7 @@ mod tests {
         )).unwrap();
 
         let mut session = StudySession::new(StudyKind::Whistle);
+        session.set_params(PhysicalParameters::new(72.0, TemperatureType::F));
         let inst = session.open_xml(WHISTLE_INST_XML).unwrap();
         let tuning = session.open_xml(WHISTLE_TUNING_PVC_XML).unwrap();
         session.select_instrument(inst.doc_id);
@@ -3666,6 +3699,7 @@ mod tests {
         )).unwrap();
 
         let mut session = StudySession::new(StudyKind::Whistle);
+        session.set_params(PhysicalParameters::new(72.0, TemperatureType::F));
         let inst = session.open_xml(WHISTLE_INST_XML).unwrap();
         let tuning = session.open_xml(WHISTLE_TUNING_PVC_XML).unwrap();
         session.select_instrument(inst.doc_id);
@@ -3824,7 +3858,7 @@ mod tests {
         initial_norm: f64,
         final_norm: f64,
         evaluations: usize,
-        nr_dimensions: usize,
+        nr_dimensions: Option<usize>,
     }
 
     /// Set up a session with instrument + tuning, ready for optimization.
@@ -4158,5 +4192,62 @@ mod tests {
         check_opt_parity(&mut session, include_str!(
             "../../../../golden/expected/RD-MERGED-03/optimize_0.json"
         ), "RD-MERGED-03");
+    }
+
+    // ── NAF optimization fixtures ──
+
+    const NAF_OPT_INSTR_XML: &str = include_str!(
+        "../../../../oracle/v2.6.0/NafStudy/instruments/0.75-bore_6-hole_NAF_starter.xml"
+    );
+    const NAF_OPT_TUNING_XML: &str = include_str!(
+        "../../../../oracle/v2.6.0/NafStudy/tunings/F#4_ET_6-hole_NAF_chromatic_tuning.xml"
+    );
+    const NAF_OPT_CONSTRAINTS_XML: &str = include_str!(
+        "../../../../oracle/v2.6.0/constraints/NafStudyModel/HoleFromTopObjectiveFunction/6/1.25_max_hole_spacing.xml"
+    );
+    const NAF_GRP_CONSTRAINTS_XML: &str = include_str!(
+        "../../../../oracle/v2.6.0/constraints/NafStudyModel/HoleGroupFromTopObjectiveFunction/6/2-group_1.25_max_spacing.xml"
+    );
+    const NAF_TPR_CONSTRAINTS_XML: &str = include_str!(
+        "../../../../oracle/v2.6.0/constraints/NafStudyModel/SingleTaperNoHoleGroupingFromTopObjectiveFunction/6/1.25_max_hole_spacing.xml"
+    );
+    const NAF_OPT02_TUNING_XML: &str = include_str!(
+        "../../../../golden/scenarios/support/NAF-OPT-02_tuning_weight0.xml"
+    );
+
+    #[test]
+    fn naf_opt_01_parity() {
+        let mut session = setup_opt_session(StudyKind::NAF, NAF_OPT_INSTR_XML, NAF_OPT_TUNING_XML);
+        with_oracle_constraints(&mut session, naf::HOLE_FROM_TOP, NAF_OPT_CONSTRAINTS_XML);
+        check_opt_parity(&mut session, include_str!(
+            "../../../../golden/expected/NAF-OPT-01/optimize_0.json"
+        ), "NAF-OPT-01");
+    }
+
+    #[test]
+    fn naf_opt_02_parity() {
+        let mut session = setup_opt_session(StudyKind::NAF, NAF_OPT_INSTR_XML, NAF_OPT02_TUNING_XML);
+        with_oracle_constraints(&mut session, naf::HOLE_FROM_TOP, NAF_OPT_CONSTRAINTS_XML);
+        check_opt_parity(&mut session, include_str!(
+            "../../../../golden/expected/NAF-OPT-02/optimize_0.json"
+        ), "NAF-OPT-02");
+    }
+
+    #[test]
+    fn naf_grp_01_parity() {
+        let mut session = setup_opt_session(StudyKind::NAF, NAF_OPT_INSTR_XML, NAF_OPT_TUNING_XML);
+        with_oracle_constraints(&mut session, naf::HOLE_GROUP_FROM_TOP, NAF_GRP_CONSTRAINTS_XML);
+        check_opt_parity(&mut session, include_str!(
+            "../../../../golden/expected/NAF-GRP-01/optimize_0.json"
+        ), "NAF-GRP-01");
+    }
+
+    #[test]
+    fn naf_tpr_01_parity() {
+        let mut session = setup_opt_session(StudyKind::NAF, NAF_OPT_INSTR_XML, NAF_OPT_TUNING_XML);
+        with_oracle_constraints(&mut session, naf::TAPER_NO_GROUPING, NAF_TPR_CONSTRAINTS_XML);
+        check_opt_parity(&mut session, include_str!(
+            "../../../../golden/expected/NAF-TPR-01/optimize_0.json"
+        ), "NAF-TPR-01");
     }
 }

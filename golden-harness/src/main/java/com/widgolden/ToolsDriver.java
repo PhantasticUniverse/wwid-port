@@ -269,7 +269,7 @@ public class ToolsDriver {
                 ORACLE + "/ReedStudy/tunings/A3-ClosedFingering.xml",
                 new SimpleReedCalculator(),
                 new SimpleInstrumentTuner(),
-                true);  // Reed uses usePredicted=true
+                false); // Reed inherits base StudyModel (usePredicted=false)
     }
 
     // ── GRAPH-WH ─────────────────────────────────────────────────────

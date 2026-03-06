@@ -2,6 +2,7 @@
 name = "wid-optimize"
 version = "0.1.0"
 edition = "2024"
+license.workspace = true
 
 [dependencies]
 wid-types = { path = "../wid-types" }

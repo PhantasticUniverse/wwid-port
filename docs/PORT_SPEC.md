@@ -219,13 +219,14 @@ In addition to generic XML checks, enforce baseline semantic rules, e.g.:
 - [x] M3: NAF calibration + optimization parity (139 tests, fipple cal + BOBYQA hole optimization)
 - [x] Post-M3: Expanded coverage to all NAF oracle XMLs (146 tests, 36 combos × 15 fingerings = 540 total)
 - [x] M4: Browser-hosted MVP (NAF end-to-end)
-- [ ] M5: Full parity across all study models + tools — in progress
+- [x] M5: Full parity across all study models + tools (449 tests, 57 golden fixture sets, 5 analysis tools, tuning wizard)
   - [x] M5.1: Study model infrastructure refactor
   - [x] M5.2: Whistle evaluation parity (16 combos, 272 fingerings, 0.000002 cents)
   - [x] M5.3: Flute evaluation parity (8 combos, 110 fingerings, 0.058 cents)
   - [x] M5.4: Whistle calibration + optimization parity (3 calibrators + 3 hole optimizers)
   - [x] M5.5: Flute calibration + optimization (3 calibrators + 3 hole optimizers, golden-backed parity tests)
   - [x] M5.6: Reed evaluation model (7 combos, 72 fingerings, 0.012 cents)
+  - [x] M5.7: Reed calibration + optimization (2D BOBYQA alpha/beta calibrator, 3 hole optimizers)
 
 ---
 

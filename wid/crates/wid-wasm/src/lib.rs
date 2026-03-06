@@ -285,14 +285,22 @@ impl WasmSession {
     }
 
     fn cmd_set_params(&mut self, args: &serde_json::Value) -> String {
+        let current = self.session.params();
         let temperature = args.get("temperature").and_then(|v| v.as_f64()).unwrap_or(20.0);
         let humidity = args.get("humidity").and_then(|v| v.as_f64()).unwrap_or(45.0);
+        // Preserve current pressure/CO2 unless explicitly provided,
+        // so changing temperature doesn't reset model-specific defaults.
+        let pressure = args.get("pressure").and_then(|v| v.as_f64())
+            .unwrap_or(current.pressure());
+        let co2 = args.get("co2Ppm").and_then(|v| v.as_f64())
+            .map(|ppm| ppm * 1e-6)
+            .unwrap_or(current.x_co2());
         let params = wid_session::PhysicalParameters::with_all(
             temperature,
             wid_session::TemperatureType::C,
-            101.325,   // standard pressure
+            pressure,
             humidity,
-            390e-6,    // standard CO2
+            co2,
         );
         self.session.set_params(params);
         // Return the updated params so the UI can refresh

@@ -54,6 +54,25 @@
 //! translated these into a `switch`-based state machine. This Rust port uses
 //! `loop { match state { … } }` with the same state labels (20, 60, 90, …).
 //!
+//! # Evaluation budget
+//!
+//! The `max_eval` parameter is a hard budget: the algorithm checks after
+//! each function evaluation and stops immediately when the limit is reached.
+//! The actual count is reported in [`BobyqaResult::evaluations`].
+//!
+//! # Known limitations
+//!
+//! - **No rescue procedure**: The Fortran original has a `RESCUE` subroutine
+//!   that resets the interpolation set when it becomes ill-conditioned.
+//!   Neither the Apache Commons Math Java version nor this Rust port
+//!   implements rescue. On ill-conditioned problems, the algorithm may
+//!   terminate early instead of recovering.
+//! - **N >= 2 required**: BOBYQA requires at least 2 variables. For
+//!   1-dimensional problems, use Brent's method or another 1D optimizer.
+//! - **Local optimizer only**: BOBYQA finds a local minimum from the given
+//!   starting point. For global optimization, combine with multi-start or
+//!   DIRECT-C.
+//!
 //! # Zero dependencies
 //!
 //! This crate has no runtime dependencies. All linear algebra operations are
@@ -2021,8 +2040,11 @@ impl BobyqaState {
         self.vlag[knew] -= 1.0;
 
         // Complete updating of Z
-        let sqrt_denom = denom.abs().sqrt();
-        if sqrt_denom == 0.0 {
+        // Match Java/Fortran: sqrt(denom). Denom should always be positive
+        // because the algorithm selects `knew` to maximize it. If negative
+        // (ill-conditioned), sqrt produces NaN and we bail out below.
+        let sqrt_denom = denom.sqrt();
+        if sqrt_denom == 0.0 || sqrt_denom.is_nan() {
             return;
         }
         let d1 = tau / sqrt_denom;

@@ -1,14 +1,9 @@
 //! Flute study model — optimizer registry, calibrator dispatch, and
 //! constraint templates.
 //!
-//! Supports 8 optimizers:
-//! - **Calibrators** (no constraints needed): AirstreamLength (1D),
-//!   Beta (1D), FluteCalibration (2D joint)
-//! - **Hole optimizers** (constraints required): HoleSize, HolePosition, Hole
-//! - **Global hole optimizers** (constraints required): GlobalHolePosition,
-//!   GlobalHole (DIRECT-C → BOBYQA)
-//!
 //! Mirrors `whistle.rs` but uses airstream length instead of window height.
+//! AirstreamLength and Beta sub-calibrators are used internally by
+//! FluteCalibration but not listed in the GUI optimizer menu (matching Java).
 
 use crate::types::OptimizerInfo;
 use wid_types::{Constraint, ConstraintType, Constraints};
@@ -39,16 +34,6 @@ pub const GLOBAL_HOLE_AND_BORE_DIAMETER_FROM_BOTTOM: &str = "GlobalHoleAndBoreDi
 /// Returns the list of available Flute optimizers.
 pub fn available_optimizers() -> Vec<OptimizerInfo> {
     vec![
-        OptimizerInfo {
-            key: AIRSTREAM_LENGTH.to_string(),
-            display_name: "Airstream length calibrator".to_string(),
-            objective_function_name: AIRSTREAM_LENGTH.to_string(),
-        },
-        OptimizerInfo {
-            key: BETA.to_string(),
-            display_name: "Beta calibrator".to_string(),
-            objective_function_name: BETA.to_string(),
-        },
         OptimizerInfo {
             key: FLUTE_CALIB.to_string(),
             display_name: "Flute calibration".to_string(),

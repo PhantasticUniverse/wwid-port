@@ -500,7 +500,7 @@ async function compareInstruments(oldId: DocId, newId: DocId) {
   try {
     setLoading(true);
     setError(null);
-    return await compute.run("compare_instruments", { old_doc_id: oldId, new_doc_id: newId });
+    return await compute.run("compare_instruments", { oldDocId: oldId, newDocId: newId });
   } catch (e) {
     setError(`Compare failed: ${e}`);
     return null;
@@ -526,7 +526,7 @@ async function noteSpectrum(fingeringIndex: number) {
   try {
     setLoading(true);
     setError(null);
-    return await compute.run("note_spectrum", { fingering_index: fingeringIndex });
+    return await compute.run("note_spectrum", { fingeringIndex });
   } catch (e) {
     setError(`Note spectrum failed: ${e}`);
     return null;

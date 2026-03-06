@@ -31,11 +31,11 @@ wid/target/
 **/*.wat
 
 # --- Node / web build (if/when used) ---
-wid/web/node_modules/
-wid/web/dist/
-wid/web/.next/
-wid/web/.vite/
-wid/web/.turbo/
+web/node_modules/
+web/dist/
+web/.next/
+web/.vite/
+web/.turbo/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*

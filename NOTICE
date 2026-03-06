@@ -1,0 +1,69 @@
+wwid-port
+Copyright 2025–2026 Xavier McCallum
+
+This product is licensed under the Apache License, Version 2.0.
+See the LICENSE file for the full license text.
+
+This product includes software and algorithms derived from or inspired by
+the following sources:
+
+---
+
+BOBYQA (Bound Optimization BY Quadratic Approximation)
+
+  Original algorithm by M.J.D. Powell (2009).
+  "The BOBYQA algorithm for bound constrained optimization without
+  derivatives." Cambridge NA Report NA2009/06, University of Cambridge.
+
+  Ported to Rust from the Java implementation in Apache Commons Math 3.6.1,
+  which is licensed under the Apache License, Version 2.0.
+  https://commons.apache.org/proper/commons-math/
+
+---
+
+DIRECT-C (DIviding RECTangles — locally biased variant)
+
+  Original DIRECT algorithm by D.R. Jones, C.D. Perttunen, and
+  B.E. Stuckman (1993). "Lipschitzian optimization without the Lipschitz
+  constant." Journal of Optimization Theory and Applications, 79(1):157-181.
+
+  Locally biased DIRECT-L variant by J.M. Gablonsky and C.T. Kelley (2001).
+  "A locally-biased form of the DIRECT algorithm." Journal of Global
+  Optimization, 21(1):27-37.
+
+  Implementation references:
+  - NLopt library by Steven G. Johnson (MIT License) for the base DIRECT
+    algorithm structure.
+  - WIDesigner v2.6.0 (GPL v3) for the algorithmic description of the
+    DIRECT-C variant (locally biased selection with constraint handling).
+
+  The Rust code in this project is original work, not a translation of
+  either NLopt or WIDesigner source code.
+
+---
+
+CIPM-2007 Air Properties Model
+
+  Speed of sound, density, viscosity, and thermal conductivity of moist air
+  computed from the CIPM-2007 equation (published scientific standard by the
+  International Committee for Weights and Measures). Not copyrightable.
+
+---
+
+Acoustic Transfer Matrix Method
+
+  Standard textbook method for computing impedance of cylindrical and
+  conical waveguides. Based on published acoustic physics literature.
+
+---
+
+WIDesigner (Woodwind Instrument Designer) v2.6.0
+
+  Copyright (c) Edward Kort. Licensed under the GNU General Public License
+  v3 (GPL v3). https://github.com/edwardkort/WWIDesigner
+
+  A read-only source snapshot of WIDesigner v2.6.0 is included in this
+  repository under WWIDesigner-2.6.0-src/ for verification reference only.
+  It is not compiled into the port. The port is a clean-room Rust
+  reimplementation based on the published physics and algorithmic designs
+  visible in the Java source.

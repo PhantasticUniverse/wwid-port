@@ -33,16 +33,6 @@ pub const GLOBAL_HOLE_AND_BORE_DIAMETER_FROM_BOTTOM: &str = "GlobalHoleAndBoreDi
 pub fn available_optimizers() -> Vec<OptimizerInfo> {
     vec![
         OptimizerInfo {
-            key: WINDOW_HEIGHT.to_string(),
-            display_name: "Window height calibrator".to_string(),
-            objective_function_name: WINDOW_HEIGHT.to_string(),
-        },
-        OptimizerInfo {
-            key: BETA.to_string(),
-            display_name: "Beta calibrator".to_string(),
-            objective_function_name: BETA.to_string(),
-        },
-        OptimizerInfo {
             key: WHISTLE_CALIB.to_string(),
             display_name: "Whistle calibration".to_string(),
             objective_function_name: WHISTLE_CALIB.to_string(),
@@ -112,11 +102,6 @@ pub fn available_optimizers() -> Vec<OptimizerInfo> {
             key: HOLE_AND_BORE_SPACING.to_string(),
             display_name: "Holes + bore spacing".to_string(),
             objective_function_name: HOLE_AND_BORE_SPACING.to_string(),
-        },
-        OptimizerInfo {
-            key: HOLE_AND_HEADJOINT.to_string(),
-            display_name: "Holes + headjoint".to_string(),
-            objective_function_name: HOLE_AND_HEADJOINT.to_string(),
         },
         OptimizerInfo {
             key: GLOBAL_HOLE_AND_TAPER.to_string(),

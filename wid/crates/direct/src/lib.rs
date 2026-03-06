@@ -54,6 +54,15 @@
 //! assert!((result.value - (-1.0316)).abs() < 0.01);
 //! ```
 //!
+//! # Evaluation budget
+//!
+//! The `max_evaluations` parameter is a soft budget: it is checked between
+//! rectangle divisions within each iteration. A single rectangle division
+//! (which evaluates 2 new points per eligible dimension) will run to
+//! completion even if it crosses the budget. The maximum overshoot is
+//! bounded by `2 * n_dimensions` function evaluations. The actual count
+//! is always reported in [`DirectResult::evaluations`].
+//!
 //! # Implementation lineage
 //!
 //! This is a clean-room Rust implementation based on:
@@ -136,7 +145,12 @@ pub struct DirectProgress {
 /// - `lower_bounds`, `upper_bounds`: box constraints
 /// - `convergence_threshold`: converge when best rectangle has all sides
 ///   smaller than this fraction of the bound range
-/// - `max_evaluations`: budget for function calls
+/// - `max_evaluations`: budget for function calls. The budget is checked
+///   between rectangle divisions within each iteration. A single rectangle
+///   division may overshoot by up to `2 * n_dimensions` evaluations, but
+///   no new rectangles will be selected for division once the budget is
+///   reached. The actual evaluation count is reported in
+///   [`DirectResult::evaluations`].
 /// - `target_value`: optional early stop when f <= target
 pub fn direct_minimize(
     f: &mut dyn FnMut(&[f64]) -> f64,
@@ -589,6 +603,10 @@ impl DirectOptimizer {
         let hull = self.get_potentially_optimal();
 
         for hr in &hull {
+            // Stop dividing if we've exhausted the evaluation budget
+            if self.num_evals >= self.max_evaluations {
+                break;
+            }
             // Look up the rectangle in the tree
             if let Some(rect) = self.rtree.get(&hr.key) {
                 if hr.key.diameter < convergence_diameter && rect.is_small(self.convergence_threshold) {

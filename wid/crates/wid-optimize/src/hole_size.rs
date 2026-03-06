@@ -21,16 +21,20 @@ pub fn optimize_hole_size(
     params: &PhysicalParameters,
     calc_params: &CalculatorParams,
 ) -> OptimizationResult {
-    optimize_hole_size_impl(instrument, tuning, constraints, params, calc_params, None)
+    optimize_hole_size_impl(instrument, tuning, constraints, params, calc_params, false, None)
 }
 
 /// Like [`optimize_hole_size`], but with a progress callback.
+///
+/// If `naf_trust` is true, uses Java's `NafHoleSizeObjectiveFunction` hardcoded
+/// trust radius (10.0 / 1e-8) instead of the bounds-based formula.
 pub fn optimize_hole_size_with_progress(
     instrument: &mut InstrumentRaw,
     tuning: &Tuning,
     constraints: &Constraints,
     params: &PhysicalParameters,
     calc_params: &CalculatorParams,
+    naf_trust: bool,
     on_progress: &mut dyn FnMut(BobyqaProgress) -> bool,
 ) -> OptimizationResult {
     optimize_hole_size_impl(
@@ -39,6 +43,7 @@ pub fn optimize_hole_size_with_progress(
         constraints,
         params,
         calc_params,
+        naf_trust,
         Some(on_progress),
     )
 }
@@ -49,6 +54,7 @@ fn optimize_hole_size_impl(
     constraints: &Constraints,
     params: &PhysicalParameters,
     calc_params: &CalculatorParams,
+    naf_trust: bool,
     on_progress: Option<&mut dyn FnMut(BobyqaProgress) -> bool>,
 ) -> OptimizationResult {
     let weights = fingering_weights(&tuning.fingerings);
@@ -71,7 +77,13 @@ fn optimize_hole_size_impl(
 
     let initial_norm = evaluate_norm(instrument, &tuning.fingerings, &weights, params, calc_params);
 
-    let (initial_trust, stopping_trust) = crate::compute_trust_radius(&lower_bounds, &upper_bounds);
+    // Java's NafHoleSizeObjectiveFunction overrides trust radius to 10.0/1e-8.
+    // The parent HoleSizeObjectiveFunction (used by Whistle/Flute/Reed) uses bounds-based.
+    let (initial_trust, stopping_trust) = if naf_trust {
+        (10.0, 1e-8)
+    } else {
+        crate::compute_trust_radius(&lower_bounds, &upper_bounds)
+    };
     let max_eval = crate::max_evaluations(n_dims);
     let n_interp = 2 * n_dims + 1;
 

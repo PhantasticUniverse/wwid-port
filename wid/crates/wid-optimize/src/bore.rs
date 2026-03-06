@@ -440,8 +440,20 @@ fn optimize_bore_position_impl(
     on_progress: Option<&mut dyn FnMut(BobyqaProgress) -> bool>,
 ) -> OptimizationResult {
     let weights = fingering_weights(&tuning.fingerings);
-    let lower = constraints.lower_bounds();
+    let mut lower = constraints.lower_bounds();
     let upper = constraints.upper_bounds();
+
+    // Java: BorePositionObjectiveFunction.setLowerBounds() ensures the bore
+    // end stays at least 12mm below the lowest hole when bottom is free.
+    if !bottom_fixed {
+        let m = instrument.length_type.to_metres();
+        let bottom_hole_pos = instrument.holes.iter()
+            .map(|h| h.bore_position * m)
+            .fold(f64::NEG_INFINITY, f64::max);
+        if bottom_hole_pos.is_finite() && lower[0] < bottom_hole_pos + 0.012 {
+            lower[0] = bottom_hole_pos + 0.012;
+        }
+    }
 
     let raw_geom = get_bore_position(instrument, n_unchanged, bottom_fixed);
     let initial_geometry = clamp_geometry(&raw_geom, &lower, &upper);
@@ -718,8 +730,20 @@ fn optimize_bore_from_bottom_impl(
     on_progress: Option<&mut dyn FnMut(BobyqaProgress) -> bool>,
 ) -> OptimizationResult {
     let weights = fingering_weights(&tuning.fingerings);
-    let lower = constraints.lower_bounds();
+    let mut lower = constraints.lower_bounds();
     let upper = constraints.upper_bounds();
+
+    // Java: BorePositionObjectiveFunction.setLowerBounds() ensures the bore
+    // end stays at least 12mm below the lowest hole when bottom is free.
+    if !bottom_fixed {
+        let m = instrument.length_type.to_metres();
+        let bottom_hole_pos = instrument.holes.iter()
+            .map(|h| h.bore_position * m)
+            .fold(f64::NEG_INFINITY, f64::max);
+        if bottom_hole_pos.is_finite() && lower[0] < bottom_hole_pos + 0.012 {
+            lower[0] = bottom_hole_pos + 0.012;
+        }
+    }
 
     // Merged geometry: [bore_position_dims..., bore_dia_from_bottom_dims...]
     let pos_geom = get_bore_position(instrument, n_unchanged, bottom_fixed);
@@ -1992,6 +2016,7 @@ mod tests {
     const WH_BORE_01_FINAL_GEOMETRY: [f64; 1] = [0.7843269596368897];
 
     // WH-BORE-02: BoreDiameterFromTop on SamplePVC-Whistle (1D Brent)
+    #[allow(dead_code)] // Extracted from golden but initial == final (optimizer at boundary)
     const WH_BORE_02_INITIAL_NORM: f64 = 24135.597275207845;
     const WH_BORE_02_FINAL_NORM: f64 = 24135.597275207845;
     const WH_BORE_02_INITIAL_GEOMETRY: [f64; 1] = [0.8403361344537815];

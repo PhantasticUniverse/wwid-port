@@ -1272,7 +1272,8 @@ pub fn get_bore_diameter_from_top(raw: &InstrumentRaw, n_changed: usize) -> Vec<
 
     let mut geometry = vec![0.0; n_changed];
     for i in (0..n_changed).rev() {
-        geometry[i] = sorted[i].1 / sorted[i + 1].1;
+        let next_dia = sorted[i + 1].1.max(0.000001);
+        geometry[i] = sorted[i].1 / next_dia;
     }
     geometry
 }
@@ -1334,7 +1335,7 @@ pub fn get_bore_diameter_from_bottom(raw: &InstrumentRaw, n_unchanged: usize) ->
 
     for i in 0..n_dims {
         let dia = sorted[n_unchanged + i].1;
-        geometry[i] = dia / prior_dia;
+        geometry[i] = dia / prior_dia.max(0.000001);
         prior_dia = dia;
     }
     geometry
@@ -1467,8 +1468,10 @@ pub fn clamp_bore_spacing_upper_bounds(
     let available = sorted_pos[n_changed + 1] - sorted_pos[0];
     let total_upper: f64 = upper_bounds.iter().sum();
 
-    if total_upper > available && total_upper > 0.0 {
-        let scale = available / total_upper;
+    // Java uses epsilon offset: triggers when sum + 0.0001 > available,
+    // and scales by available / (sum + 0.0001) to ensure strict feasibility.
+    if total_upper + 0.0001 > available {
+        let scale = available / (total_upper + 0.0001);
         for ub in upper_bounds.iter_mut() {
             *ub *= scale;
         }
@@ -1570,11 +1573,7 @@ pub fn set_bore_position(
 
     let n_fracs = positions.len() - dim;
     for d in 0..n_fracs {
-        let bp_sorted_idx = if bottom_fixed {
-            n_unchanged + d
-        } else {
-            n_unchanged + d
-        };
+        let bp_sorted_idx = n_unchanged + d;
         if bp_sorted_idx < sorted_indices.len() {
             let idx = sorted_indices[bp_sorted_idx];
             let new_pos = prior_pos + positions[dim + d] * (last_pos - prior_pos);
@@ -2705,7 +2704,7 @@ mod tests {
     #[test]
     fn bore_spacing_mutation() {
         let mut raw = parse_instrument_xml(WHISTLE_XML).unwrap();
-        let m = raw.length_type.to_metres();
+        let _m = raw.length_type.to_metres();
         let n_changed = 2;
 
         let mut spacings = get_bore_spacing_from_top(&raw, n_changed);

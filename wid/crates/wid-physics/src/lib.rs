@@ -273,6 +273,7 @@ impl PhysicalParameters {
 /// linearized around a reference temperature of 26.85 °C with fixed
 /// relative humidity of 0.45 and pressure of 101 kPa.
 #[derive(Debug, Clone)]
+#[allow(dead_code)]
 pub struct SimplePhysicalParameters {
     temperature: f64,    // °C
     rho: f64,            // kg/m³

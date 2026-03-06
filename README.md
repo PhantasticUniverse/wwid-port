@@ -41,7 +41,7 @@ We use an **oracle + golden fixtures** workflow:
 1. The official Java release package (v2.6.0) is the **oracle** — source of truth
 2. A small Java CLI ("golden harness") generates **golden fixtures**: predicted frequencies, impedance samples, optimization outcomes
 3. The port must match these fixtures within defined tolerances (≤ 0.5 cents for evaluation, ≤ 1.0 cents for optimization)
-4. **280 tests** validate parity across all four study models
+4. **449 tests** validate parity across all four study models
 
 Fipple factor behavior is **load-bearing** and has dedicated fixtures to prevent accidental drift.
 
@@ -89,7 +89,7 @@ tools/                    Helper scripts (fetch oracle, etc.)
 
 ```bash
 cd wid
-cargo test        # All 280 tests
+cargo test        # All 449 tests
 ```
 
 ### Generate golden fixtures (optional — fixtures are committed)
@@ -148,7 +148,7 @@ Any browser with WebAssembly and Web Worker support: Chrome 57+, Firefox 52+, Sa
 
 ## Current status
 
-**M5 (multi-model parity)** — in progress.
+All milestones complete (M0–M5).
 
 | Study Model | Evaluation | Calibration | Optimization | Global Opt |
 |-------------|:----------:|:-----------:|:------------:|:----------:|
@@ -157,8 +157,10 @@ Any browser with WebAssembly and Web Worker support: Chrome 57+, Firefox 52+, Sa
 | Flute       | Complete   | Complete    | Complete     | Complete   |
 | Reed        | Complete   | Complete    | Complete     | Complete   |
 
-280 tests, all passing. Remaining: NAF taper/grouped optimizers, bore optimizers, spectrum/sketch tools.
+449 tests, 57 golden fixture sets, 5 analysis tools, tuning wizard — all passing.
 
 ## License
 
-Port code: Apache-2.0. Upstream WIDesigner: GPL v3 (source snapshot included for reference only).
+Port code: Apache-2.0. See [LICENSE](LICENSE) and [NOTICE](NOTICE) for details.
+
+Upstream WIDesigner: GPL v3 (source snapshot included for read-only reference only; not compiled into the port).

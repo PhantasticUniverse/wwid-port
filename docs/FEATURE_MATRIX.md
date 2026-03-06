@@ -59,14 +59,10 @@ Legend:
 | Bore diameter from top  |        ✅ | WH-BORE-02   | M5        | N-dim, auto Brent for 1D |
 | Bore diameter from bottom|       ✅ | WH-BORE-01   | M5        | N-dim, auto Brent for 1D |
 | Bore spacing from top   |        ✅ | WH-BORE-SPACING-01 | M5   | Upper bound clamping |
-| Stopper position        |        ✅ | —            | M5        | 1D Brent, same code as FL-STOPPER-01 |
-| Headjoint               |        ✅ | —            | M5        | Same code as FL-HEADJOINT-01 |
 | Hole + taper            |        ✅ | WH-MERGED-04 | M5        | MOVE_BOTTOM, 20K evals |
 | Hole + bore dia top     |        ✅ | WH-MERGED-01 | M5        | PRESERVE_TAPER, 50K evals |
 | Hole + bore dia bottom  |        ✅ | WH-MERGED-02 | M5        | MOVE_BOTTOM, 50K evals |
 | Hole + bore spacing     |        ✅ | WH-MERGED-03 | M5        | PRESERVE_TAPER, 0.9e-6 stopping |
-| Hole + bore position    |        ✅ | —            | M5        | Same code as RD-MERGED-02 |
-| Hole + bore from bottom |        ✅ | —            | M5        | Same code as RD-MERGED-03 |
 | Hole + headjoint        |        ✅ | WH-MERGED-05 | M5        | PRESERVE_TAPER, 50K evals |
 | Global hole + bore (2)  |        ✅ | —            | M5        | DIRECT-C→BOBYQA, engine tested by DIRECT-01 |
 
@@ -138,4 +134,17 @@ Legend:
 
 ---
 
-¹ Fixture IDs without existing scenario files in `golden/scenarios/` are planned for their target milestone.
+## Parity Audits
+
+| Audit | Scope | Findings | Status |
+| ----- | ----- | -------- | ------ |
+| #1 (Post-M5) | Optimizer lists, physical param defaults, docs | Removed extra optimizers from Whistle/Flute, fixed per-model defaults | ✅ Complete |
+| #2 | Trust radius, constraint bounds, merged optimizer composition | `hole_from_top` trust radius mismatch (web UI path only) | ✅ Fixed |
+| #3 | Bore geometry, acoustics, evaluators, calibrators, session, WASM | Analysis tool frequency fallbacks (2 fixes), dead `if` cleanup | ✅ Fixed |
+| #4 | Session/WASM, compile/optimize, BOBYQA, DIRECT (4 hostile agents) | 7 code fixes (Reed supplementary, params persistence, bore guards, BOBYQA sqrt, DIRECT budget), reed validation asymmetry, NAF hole size trust radius, 4 NAF optimizer parity tests added | ✅ Fixed |
+
+All fixes applied. 449 tests passing. ~30 subsystems verified clean across 4 hostile audits.
+
+---
+
+¹ Scenario inputs live in `golden/scenarios/` (12 driver configs); expected outputs in `golden/expected/` (57 fixture directories). Not all fixtures need a scenario file — bulk eval and Z-sample drivers are parameterized in Java code.

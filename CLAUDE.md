@@ -126,7 +126,7 @@ Constraints XML lower/upper bound arrays must match baseline ordering exactly �
   - M5.5: Flute calibration + optimization ✓
   - M5.6: Reed evaluation model ✓
   - M5.7: Reed calibration + optimization ✓
-  - 445 tests, 4 study models, 56 golden fixture sets, 5 analysis tools, tuning wizard
+  - 449 tests, 4 study models, 57 golden fixture sets, 5 analysis tools, tuning wizard
 
 ## Temperature Default
 

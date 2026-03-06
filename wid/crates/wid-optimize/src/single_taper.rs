@@ -604,6 +604,7 @@ mod tests {
     // Golden: NAF-TPR-01/optimize_0.json
     const GOLDEN_INITIAL_NORM: f64 = 1324815.0036351618;
     const GOLDEN_FINAL_NORM: f64 = 208.358530441539;
+    #[allow(dead_code)] // Extracted from golden; eval count is chaotically sensitive (see parity-notes.md)
     const GOLDEN_EVALUATIONS: usize = 35469;
     const GOLDEN_INITIAL_GEOMETRY: [f64; 16] = [
         0.3248902169679828, 0.26393387003800606,
