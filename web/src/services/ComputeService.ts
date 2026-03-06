@@ -16,6 +16,7 @@ export class ComputeService {
   private nextId = 1;
   private pending = new Map<number, PendingRequest>();
   private readyResolve: (() => void) | null = null;
+  private readyReject: ((err: Error) => void) | null = null;
   private optimizePending: PendingRequest | null = null;
   private onProgress: ((p: OptProgress) => void) | null = null;
 
@@ -41,6 +42,11 @@ export class ComputeService {
         this.optimizePending = null;
         this.onProgress = null;
       }
+      if (this.readyReject) {
+        this.readyReject(new Error(msg));
+        this.readyResolve = null;
+        this.readyReject = null;
+      }
     };
   }
 
@@ -48,12 +54,14 @@ export class ComputeService {
   async init(studyKind: string): Promise<void> {
     return new Promise<void>((resolve, reject) => {
       this.readyResolve = resolve;
+      this.readyReject = reject;
 
       // Also handle init errors
       const errorHandler = (event: MessageEvent<WorkerResponse>) => {
         const msg = event.data;
         if (msg.type === "error" && msg.id === 0) {
           this.readyResolve = null;
+          this.readyReject = null;
           reject(new Error(msg.error));
         }
       };
@@ -105,6 +113,7 @@ export class ComputeService {
         if (this.readyResolve) {
           this.readyResolve();
           this.readyResolve = null;
+          this.readyReject = null;
         }
         break;
 

@@ -35,7 +35,7 @@ Legend:
 | Optimizer / Calibrator          | Baseline | Fixture(s)   | Milestone | Notes        |
 | ------------------------------- | -------: | ------------ | --------- | ------------ |
 | Fipple factor calibrator        |        ✅ | NAF-FF-02/03 | M3        | Load-bearing |
-| Hole size                       |        ✅ | NAF-HS-01    | M3        |              |
+| Hole size                       |        ✅ | NAF-OPT-01   | M3        | Shared objective function with hole size+position |
 | Hole size + position (from top) |        ✅ | NAF-OPT-01   | M3        |              |
 | Grouped hole size + position    |        ✅ | NAF-GRP-01   | M5        |              |
 | Taper variants                  |        ✅ | NAF-TAPER-01 | M5        |              |
@@ -53,8 +53,8 @@ Legend:
 | Hole size               |        ✅ | WH-OPT/opt_hole_size | M5.4 | N-dim BOBYQA |
 | Hole position           |        ✅ | WH-OPT/opt_hole_position | M5.4 | (N+1)-dim BOBYQA |
 | Hole size + position    |        ✅ | WH-OPT/opt_hole | M5.4 | (2N+1)-dim merged BOBYQA |
-| Hole spacing (global)   |        ✅ | —            | M5        | DIRECT-C→BOBYQA, session dispatched |
-| Hole size+spacing (global)|      ✅ | —            | M5        | DIRECT-C→BOBYQA, session dispatched |
+| Hole spacing (global)   |        ✅ | —            | M5        | ² DIRECT-C→BOBYQA, session dispatched |
+| Hole size+spacing (global)|      ✅ | —            | M5        | ² DIRECT-C→BOBYQA, session dispatched |
 | Basic taper             |        ✅ | WH-TAPER-01  | M5        | 2D BOBYQA |
 | Bore diameter from top  |        ✅ | WH-BORE-02   | M5        | N-dim, auto Brent for 1D |
 | Bore diameter from bottom|       ✅ | WH-BORE-01   | M5        | N-dim, auto Brent for 1D |
@@ -64,7 +64,7 @@ Legend:
 | Hole + bore dia bottom  |        ✅ | WH-MERGED-02 | M5        | MOVE_BOTTOM, 50K evals |
 | Hole + bore spacing     |        ✅ | WH-MERGED-03 | M5        | PRESERVE_TAPER, 0.9e-6 stopping |
 | Hole + headjoint        |        ✅ | WH-MERGED-05 | M5        | PRESERVE_TAPER, 50K evals |
-| Global hole + bore (2)  |        ✅ | —            | M5        | DIRECT-C→BOBYQA, engine tested by DIRECT-01 |
+| Global hole + bore (2)  |        ✅ | —            | M5        | ² Engine tested by DIRECT-01 |
 
 ---
 
@@ -86,7 +86,7 @@ Legend:
 | Hole + bore (merged 2)  |        ✅ | FL-MERGED-02 | M5        | BoreSpacingFromTop |
 | Hole + bore (merged 3)  |        ✅ | FL-MERGED-03 | M5        | BasicTaper |
 | Hole + bore (merged 4)  |        ✅ | FL-MERGED-04 | M5        | Headjoint |
-| Global hole + bore (2)  |        ✅ | —            | M5        | DIRECT-C→BOBYQA, engine tested by DIRECT-01 |
+| Global hole + bore (2)  |        ✅ | —            | M5        | ² Engine tested by DIRECT-01 |
 
 ---
 
@@ -98,14 +98,14 @@ Legend:
 | Reed mouthpiece model        |        ✅ | — | M5.6 | SimpleReed: X = alpha × 1e-3 × freq + beta |
 | Reed calibrator (alpha/beta) |        ✅ | RD-CAL/calib_joint | M5.7 | 2D BOBYQA, CentDeviationEvaluator |
 | Hole size + position         |        ✅ | RD-OPT-01 | M5.7 | (2N+1)-dim merged BOBYQA |
-| Hole size+spacing (global)   |        ✅ | — | M5        | DIRECT-C→BOBYQA, engine tested by DIRECT-01 |
+| Hole size+spacing (global)   |        ✅ | — | M5        | ² DIRECT-C→BOBYQA, session dispatched |
 | Bore diameter from bottom    |        ✅ | RD-BORE-02 | M5   | N-dim BOBYQA, auto Brent for 1D |
 | Bore position                |        ✅ | RD-BORE-01 | M5   | Mixed dims (1 abs + fractions) |
 | Bore from bottom (merged)    |        ✅ | RD-BORE-03 | M5   | Position + diameter, 40K evals |
 | Hole + bore dia bottom       |        ✅ | RD-MERGED-01 | M5 | BoreDiameterFromBottom |
 | Hole + bore position         |        ✅ | RD-MERGED-02 | M5 | BorePosition |
 | Hole + bore from bottom      |        ✅ | RD-MERGED-03 | M5 | BoreFromBottom |
-| Global hole + bore dia       |        ✅ | — | M5        | DIRECT-C→BOBYQA, engine tested by DIRECT-01 |
+| Global hole + bore dia       |        ✅ | — | M5        | ² Engine tested by DIRECT-01 |
 | Reed validity rule           |        ✅ | —          | M5        | mouthpiece pos = bore start (unit test) |
 
 ---
@@ -142,9 +142,12 @@ Legend:
 | #2 | Trust radius, constraint bounds, merged optimizer composition | `hole_from_top` trust radius mismatch (web UI path only) | ✅ Fixed |
 | #3 | Bore geometry, acoustics, evaluators, calibrators, session, WASM | Analysis tool frequency fallbacks (2 fixes), dead `if` cleanup | ✅ Fixed |
 | #4 | Session/WASM, compile/optimize, BOBYQA, DIRECT (4 hostile agents) | 7 code fixes (Reed supplementary, params persistence, bore guards, BOBYQA sqrt, DIRECT budget), reed validation asymmetry, NAF hole size trust radius, 4 NAF optimizer parity tests added | ✅ Fixed |
+| #5 | Full codebase (3 hostile agents: Rust core, frontend/WASM, docs/fixtures) | 1 bug (ComputeService init hang), 2 edge cases (spectrum empty rows, graph Y-axis), 3 doc fixes (NAF-HS-01, global optimizer footnote, MEMORY test count) | ✅ Fixed |
 
-All fixes applied. 449 tests passing. ~30 subsystems verified clean across 4 hostile audits.
+All fixes applied. 449 tests passing. ~30 subsystems verified clean across 5 hostile audits.
 
 ---
 
 ¹ Scenario inputs live in `golden/scenarios/` (12 driver configs); expected outputs in `golden/expected/` (57 fixture directories). Not all fixtures need a scenario file — bulk eval and Z-sample drivers are parameterized in Java code.
+
+² Global optimizers share the DIRECT-C → BOBYQA refinement engine (tested by DIRECT-01). They differ only in objective function composition, which is independently tested by each standalone optimizer's fixture.

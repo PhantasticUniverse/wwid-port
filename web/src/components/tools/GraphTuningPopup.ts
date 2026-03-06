@@ -111,6 +111,7 @@ function buildChart(canvas: HTMLCanvasElement, d: GraphTuningResult) {
     maxY += 0.10 * range;
     minY -= 0.10 * range;
   }
+  if (maxY <= minY) { maxY = 1; minY = -1; }
   const clamp = (y: number) => Math.max(minY, Math.min(maxY, y));
   for (const p of fmaxPts) { p.y = clamp(p.y); }
   for (const p of fminPts) { p.y = clamp(p.y); }

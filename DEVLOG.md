@@ -13,6 +13,7 @@
 
 ### Entries (newest first)
 
+- [Parity Audit #5](#2026-03-06-parity-audit-5) — 3 hostile agents across entire codebase; 1 bug fix (ComputeService init hang), 2 edge cases, 3 doc fixes; Rust core clean
 - [All Tools → Popups](#2026-03-06-all-tools--popups) — Graph Tuning and Note Spectrum converted to popup windows (completing the popup migration for all 6 tool dialogs)
 - [Popups + Sketch Mouthpiece](#2026-03-06-popups--sketch-mouthpiece) — Sketch and Compare converted to popup windows; fipple window/windway + embouchure ellipse rendering; axis labels without units
 - [UI/UX Clarity Pass](#2026-03-06-uiux-clarity-pass) — 7 fixes + graph Y-axis exact markers, settings additions (length type, spectrum multiplier)
@@ -41,6 +42,24 @@
 - [M3 NAF Calibration + Optimization](#2026-03-02-m3--naf-calibration--optimization-parity) — BOBYQA crate, 139 tests
 - [NAF Bulk Test Coverage](#2026-03-02-expanded-naf-test-coverage-all-oracle-xmls) — 36 combos, 540 fingerings
 - [M4 Browser MVP](#2026-03-02-m4--browser-hosted-mvp-naf-end-to-end)
+
+---
+
+## 2026-03-06: Parity Audit #5
+
+Final comprehensive audit with 3 hostile exploration agents covering the entire codebase: Rust core, frontend/WASM, and docs/fixtures. The Rust core (449 tests) is clean — no undocumented parity issues found.
+
+**Code fixes:**
+1. **ComputeService `init()` hang** (HIGH) — `onerror` handler rejected pending promises but never touched `readyResolve`, so `init()` would hang forever if WASM failed to load via ErrorEvent. Added `readyReject` field and wired it into all error paths
+2. **Spectrum popup empty rows** (MEDIUM) — `openNoteSpectrumPopup([])` would open a popup with no dropdown and send invalid index 0 to WASM. Added `evalData.rows.length > 0` guard
+3. **Graph Y-axis degenerate range** (LOW) — When all marker Y values are 0, Y-axis was [0, 0]. Added `if (maxY <= minY) { maxY = 1; minY = -1; }` fallback
+
+**Doc fixes:**
+4. **NAF-HS-01 phantom fixture** — FEATURE_MATRIX referenced a non-existent fixture. Changed to NAF-OPT-01 (shared objective function)
+5. **Global optimizer footnote** — Added footnote ² explaining DIRECT-C → BOBYQA engine sharing across global optimizer rows
+6. **MEMORY.md test count** — Fixed stale 445 → 449
+
+**Non-issues verified:** `calibrationCount` IS used, `parseFloat(x) || 0` correctly handles NaN, Rust edition IS documented, temperature validation IS safe.
 
 ---
 

@@ -56,7 +56,7 @@ export default function Toolbar() {
       evalData = await sessionStore.evaluateTuning();
       if (evalData) setLastEval(evalData);
     }
-    if (evalData) {
+    if (evalData && evalData.rows.length > 0) {
       openNoteSpectrumPopup(evalData.rows.map((r) => ({ note: r.note, target_freq: r.target_freq })));
     }
   }
