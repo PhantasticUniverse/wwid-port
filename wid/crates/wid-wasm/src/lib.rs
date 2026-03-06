@@ -440,7 +440,8 @@ impl WasmSession {
             Some(i) => i as usize,
             None => return Response::err("Missing 'fingeringIndex' argument"),
         };
-        match self.session.note_spectrum(index) {
+        let freq_mult = args.get("freqMult").and_then(|v| v.as_f64());
+        match self.session.note_spectrum(index, freq_mult) {
             Ok(r) => Response::ok(r),
             Err(e) => Response::err(e),
         }

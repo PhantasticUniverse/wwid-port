@@ -10,6 +10,9 @@ interface TuningCurve {
   predicted_freq: number;
   freq_min?: number;
   freq_max?: number;
+  y_at_fmin?: number;
+  y_at_fmax?: number;
+  y_at_target?: number;
   points: [number, number][];
 }
 
@@ -76,26 +79,46 @@ export default function GraphTuningDialog(props: { onClose: () => void }) {
     const targetOut: { x: number; y: number }[] = [];
 
     for (const curve of d.curves) {
-      if (curve.freq_max != null && curve.freq_max > 0) {
-        const y = nearestY(curve.points, curve.freq_max);
-        if (y != null) fmaxPts.push({ x: curve.freq_max, y });
+      // Use exact Y values from backend (computed at exact frequencies, not interpolated)
+      if (curve.freq_max != null && curve.freq_max > 0 && curve.y_at_fmax != null) {
+        fmaxPts.push({ x: curve.freq_max, y: curve.y_at_fmax });
       }
-      if (curve.freq_min != null && curve.freq_min > 0) {
-        const y = nearestY(curve.points, curve.freq_min);
-        if (y != null) fminPts.push({ x: curve.freq_min, y });
+      if (curve.freq_min != null && curve.freq_min > 0 && curve.y_at_fmin != null) {
+        fminPts.push({ x: curve.freq_min, y: curve.y_at_fmin });
       }
-      if (curve.target_freq > 0) {
-        const y = nearestY(curve.points, curve.target_freq);
-        if (y != null) {
-          const inRange =
-            curve.freq_min != null &&
-            curve.freq_max != null &&
-            curve.target_freq >= curve.freq_min &&
-            curve.target_freq <= curve.freq_max;
-          (inRange ? targetIn : targetOut).push({ x: curve.target_freq, y });
-        }
+      if (curve.target_freq > 0 && curve.y_at_target != null) {
+        const inRange =
+          curve.freq_min != null &&
+          curve.freq_max != null &&
+          curve.target_freq >= curve.freq_min &&
+          curve.target_freq <= curve.freq_max;
+        (inRange ? targetIn : targetOut).push({ x: curve.target_freq, y: curve.y_at_target });
       }
     }
+
+    // Match Java's PlotPlayingRanges.buildGraph() Y-axis logic exactly:
+    // 1. minY=0, maxY=0 (initialized at zero, so range always includes zero)
+    // 2. Expand from Y values at fmin and fmax frequencies only
+    // 3. Add 10% padding
+    // 4. Clamp all marker Y values to [minY, maxY]
+    let minY = 0.0;
+    let maxY = 0.0;
+    for (const p of fminPts) { minY = Math.min(minY, p.y); maxY = Math.max(maxY, p.y); }
+    for (const p of fmaxPts) { minY = Math.min(minY, p.y); maxY = Math.max(maxY, p.y); }
+    if (maxY > minY) {
+      const range = maxY - minY;
+      maxY += 0.10 * range;
+      minY -= 0.10 * range;
+    }
+    // Clamp all marker points to the computed bounds (matching Java's clamp())
+    const clamp = (y: number) => Math.max(minY, Math.min(maxY, y));
+    for (const p of fmaxPts) { p.y = clamp(p.y); }
+    for (const p of fminPts) { p.y = clamp(p.y); }
+    for (const p of targetIn) { p.y = clamp(p.y); }
+    for (const p of targetOut) { p.y = clamp(p.y); }
+    // Set Y-axis to marker bounds so chart focuses on the actionable data
+    const yAxisMin = minY;
+    const yAxisMax = maxY;
 
     // Scatter overlay datasets (markers only, no connecting lines)
     const markerDatasets = [
@@ -157,6 +180,8 @@ export default function GraphTuningDialog(props: { onClose: () => void }) {
             title: { display: true, text: "Reactance Ratio, X/R", color: "#8b8fa3" },
             ticks: { color: "#8b8fa3" },
             grid: { color: "#1a1d27" },
+            min: yAxisMin,
+            max: yAxisMax,
           },
         },
         plugins: {

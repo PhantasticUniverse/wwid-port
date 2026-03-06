@@ -22,8 +22,8 @@ Legend:
 | Open/save Constraints XML |        ✅ | CONSTRAINTS-01/02 | M3        | Constraints ordering ABI             |
 | Drag & drop open          |        ✅ | UX-01             | M4        | Web drop zone parity                 |
 | Calculate tuning (table)  |        ✅ | EVAL-*, NAF-BULK-EVAL, WHISTLE-BULK-EVAL, FLUTE-BULK-EVAL | M2/M5.2/M5.3 | NAF: 36 combos; Whistle: 16; Flute: 8 |
-| Graph tuning              |        ✅ | GRAPH-WH          | M5        | 17 curves, 33 X/R sweep points each |
-| Note spectrum graph       |        ✅ | SPEC-WH           | M5        | 2000 impedance+gain points, 5 checkpoints |
+| Graph tuning              |        ✅ | GRAPH-WH          | M5        | 17 curves, exact Y at markers, Java Y-axis algorithm |
+| Note spectrum graph       |        ✅ | SPEC-WH           | M5        | 2000 impedance+gain points, configurable freq range |
 | Supplementary info table  |        ✅ | SUP-NAF/WH/FL/RD  | M5        | All 4 study models, air speed/flow/gain/Q |
 | Sketch instrument         |        ✅ | SKETCH-NAF        | M5        | Bore, holes, mouthpiece, termination |
 | Compare instruments       |        ✅ | CMP-NAF           | M5        | 25 diff rows, original vs optimized  |

@@ -341,5 +341,20 @@ Java uses JFreeChart's XYPlot to render a top-down engineering drawing: dashed b
 ### Default Constraints
 Java's "Create Default Constraints" pre-populates bounds with study-model-specific values (bore length ranges, hole diameter ranges, taper ratios). Our web port now matches this. "Create Blank Constraints" creates empty bounds (Java fills with 0.0/1.0; we use None). The constraints are used identically for optimization — this is a usability feature, not a computation difference.
 
+### Graph Tuning Y-Axis Algorithm
+Java's `PlotPlayingRanges.buildGraph()` computes the Y-axis bounds as follows:
+1. Initialize `minY=0`, `maxY=0` (so the range always includes zero)
+2. Expand from Y values at fmin and fmax frequencies only (not from curve sweep points)
+3. Add 10% padding to each side
+4. Clamp all marker Y values (fmax, fmin, target) to `[minY, maxY]`
+5. Set the Y-axis to the computed `[minY, maxY]`
+
+The marker Y values (at fmin, fmax, target) are computed at the **exact frequencies** using `calc_z()`, not interpolated from the 33 sweep points. This matters because sweep points rarely land exactly on fmin/fmax frequencies, and impedance ratios can be very steep near resonances.
+
+Backend sends `y_at_fmin`, `y_at_fmax`, `y_at_target` fields on each `TuningCurve`. Frontend uses these exact values for marker placement and Y-axis computation. The `nearestY()` interpolation approach was removed — it produced wildly inaccurate values near steep impedance transitions.
+
+### Note Spectrum Frequency Range
+Java's `PlayingRangeSpectrum` uses a configurable upper frequency multiplier (default 3.17× the note frequency) via `OptimizationPreferences.getNumberOfFrequenciesToDisplay()`. Our Settings dialog exposes this as "Max Note Spectrum freq (multiplier)" with the same 3.17 default. The value passes through `noteSpectrum(idx, freqMult)` → WASM → `session.note_spectrum(index, freq_mult)`.
+
 ### Settings Dialog
-Java has a multi-tab preferences dialog (temperature, humidity, length type, DIRECT toggle, constraints directory). Our settings are minimal: temperature, humidity, DIRECT toggle. Missing settings: length type (always metric in our implementation), constraints directory (web uses in-memory document store). These are platform differences, not parity gaps.
+Java has a multi-tab preferences dialog (`OptimizationPreferences.java`): temperature, humidity, length type, DIRECT toggle, constraints directory, max note spectrum frequency multiplier. Our settings now include: temperature, humidity, DIRECT toggle, length type (in/mm/cm/m/ft), and max note spectrum freq multiplier (default 3.17). Missing: constraints directory (web uses in-memory document store — not applicable).

@@ -14,6 +14,14 @@ export default function SettingsDialog(props: {
   const [temp, setTemp] = createSignal(Math.round((p?.temperature ?? 20.0) * 100) / 100);
   const [humidity, setHumidity] = createSignal(p?.humidity ?? 45.0);
   const [useDirect, setUseDirect] = createSignal(getUseDirect());
+  const [lengthType, setLengthType] = createSignal(getLengthType());
+  const [spectrumMult, setSpectrumMult] = createSignal(getSpectrumMult());
+
+  const inputStyle = {
+    background: "var(--color-surface-alt)",
+    border: "1px solid var(--color-border)",
+    color: "var(--color-text)",
+  };
 
   return (
     <div
@@ -32,17 +40,32 @@ export default function SettingsDialog(props: {
         <div class="flex flex-col gap-4">
           <div class="flex items-center justify-between">
             <label class="text-sm" style={{ color: "var(--color-text)" }}>
+              Length Type:
+            </label>
+            <select
+              class="w-24 px-2 py-1 rounded text-sm"
+              style={inputStyle}
+              value={lengthType()}
+              onChange={(e) => setLengthType(e.currentTarget.value)}
+              title="Default length unit for display"
+            >
+              <option value="in">IN</option>
+              <option value="mm">mm</option>
+              <option value="cm">cm</option>
+              <option value="m">m</option>
+              <option value="ft">ft</option>
+            </select>
+          </div>
+
+          <div class="flex items-center justify-between">
+            <label class="text-sm" style={{ color: "var(--color-text)" }}>
               Temperature, C:
             </label>
             <input
               type="number"
               step="0.1"
               class="w-24 px-2 py-1 rounded text-sm text-right"
-              style={{
-                background: "var(--color-surface-alt)",
-                border: "1px solid var(--color-border)",
-                color: "var(--color-text)",
-              }}
+              style={inputStyle}
               value={temp()}
               onInput={(e) => setTemp(parseFloat(e.currentTarget.value) || 0)}
             />
@@ -58,11 +81,7 @@ export default function SettingsDialog(props: {
               min="0"
               max="100"
               class="w-24 px-2 py-1 rounded text-sm text-right"
-              style={{
-                background: "var(--color-surface-alt)",
-                border: "1px solid var(--color-border)",
-                color: "var(--color-text)",
-              }}
+              style={inputStyle}
               value={humidity()}
               onInput={(e) => setHumidity(parseFloat(e.currentTarget.value) || 0)}
             />
@@ -77,6 +96,23 @@ export default function SettingsDialog(props: {
               checked={useDirect()}
               onChange={(e) => setUseDirect(e.currentTarget.checked)}
               class="w-4 h-4"
+            />
+          </div>
+
+          <div class="flex items-center justify-between">
+            <label class="text-sm" style={{ color: "var(--color-text)" }}>
+              Max Note Spectrum freq (multiplier):
+            </label>
+            <input
+              type="number"
+              step="0.01"
+              min="1"
+              max="100"
+              class="w-24 px-2 py-1 rounded text-sm text-right"
+              style={inputStyle}
+              value={spectrumMult()}
+              onInput={(e) => setSpectrumMult(parseFloat(e.currentTarget.value) || 3.17)}
+              title="Upper frequency bound for Note Spectrum as a multiple of the note frequency (Java default: 3.17)"
             />
           </div>
         </div>
@@ -95,6 +131,8 @@ export default function SettingsDialog(props: {
             onClick={async () => {
               await sessionStore.updateParams(temp(), humidity());
               setUseDirectPref(useDirect());
+              setLengthTypePref(lengthType());
+              setSpectrumMultPref(spectrumMult());
               props.onClose();
             }}
           >
@@ -116,4 +154,27 @@ export function getUseDirect(): boolean {
 /** Persist DIRECT preference. */
 function setUseDirectPref(value: boolean) {
   localStorage.setItem("wid_use_direct", String(value));
+}
+
+/** Read Length Type preference. Default: "in" (matching Java's IN). */
+export function getLengthType(): string {
+  return localStorage.getItem("wid_length_type") ?? "in";
+}
+
+/** Persist Length Type preference. */
+function setLengthTypePref(value: string) {
+  localStorage.setItem("wid_length_type", value);
+}
+
+/** Read spectrum freq multiplier. Default: 3.17 (matching Java). */
+export function getSpectrumMult(): number {
+  const stored = localStorage.getItem("wid_spectrum_mult");
+  if (stored === null) return 3.17;
+  const v = parseFloat(stored);
+  return isNaN(v) ? 3.17 : v;
+}
+
+/** Persist spectrum freq multiplier. */
+function setSpectrumMultPref(value: number) {
+  localStorage.setItem("wid_spectrum_mult", String(value));
 }

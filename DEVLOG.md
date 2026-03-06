@@ -13,7 +13,7 @@
 
 ### Entries (newest first)
 
-- [UI/UX Clarity Pass](#2026-03-06-uiux-clarity-pass) — 7 fixes: number formatting, toolbar reorganization, Esc key, row management, console readability, tooltips
+- [UI/UX Clarity Pass](#2026-03-06-uiux-clarity-pass) — 7 fixes + graph Y-axis exact markers, settings additions (length type, spectrum multiplier)
 - [Visual Parity Improvements](#2026-03-06-visual-parity-improvements) — 5 priorities: Graph Tuning chart, Note Spectrum gain coloring, default constraints bounds, Sketch engineering style, Settings DIRECT toggle
 - [Parity Audit #4 + NAF optimizer tests](#2026-03-06-parity-audit-4--naf-optimizer-tests) — 7 code fixes, 4 NAF parity tests, BOBYQA/DIRECT docs, SUP-RD fixture regen
 - [Parity Audits #2 & #3](#2026-03-06-parity-audits-2--3) — trust radius fix, analysis tool frequency fallbacks, bore geometry dead-if cleanup
@@ -73,7 +73,18 @@ Added `title` attributes to: study model selector, Open File, bore/hole table he
 ### Settings Temperature
 Rounded temperature initial value to 2 decimal places (was showing `22.22222222222222`).
 
-449 Rust tests unaffected — all changes are display-only, layout, or event handlers.
+### Graph Tuning: Exact Y Values at Marker Frequencies
+Replaced `nearestY()` interpolation with exact impedance computation at marker frequencies. The 33 sweep points rarely land on exact fmin/fmax frequencies, causing wildly inaccurate marker placement near steep impedance transitions. Backend now computes `y_at_fmin`, `y_at_fmax`, `y_at_target` using `calc_z()` at exact frequencies and sends them as new fields on `TuningCurve`. Y-axis bounds algorithm matches Java's `PlotPlayingRanges.buildGraph()` exactly: start at 0, expand from fmin/fmax Y values, 10% padding, clamp markers.
+
+### Settings: Length Type + Spectrum Multiplier
+Added two settings matching Java's `OptimizationPreferences`:
+- **Length Type** dropdown (in/mm/cm/m/ft) — persisted via `localStorage`, exported as `getLengthType()`
+- **Max Note Spectrum freq multiplier** (default 3.17) — controls upper frequency bound for Note Spectrum chart. Passed through `noteSpectrum(idx, freqMult)` → WASM `freqMult` arg → `session.note_spectrum(index, freq_mult)`.
+
+### Note Spectrum: Configurable Frequency Range
+`note_spectrum()` now accepts optional `freq_mult` parameter (default 3.17). WASM layer parses `freqMult` from JSON args. All 14 test call sites updated to pass `None`.
+
+449 Rust tests unaffected — all changes are display-only, layout, or event handlers (except `note_spectrum` signature change which is backward-compatible via `Option`).
 
 ---
 

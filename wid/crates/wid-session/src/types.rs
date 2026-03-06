@@ -313,6 +313,15 @@ pub struct TuningCurve {
     /// Upper bound of the playing range (fmax = reactance zero). None if not found.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub freq_max: Option<f64>,
+    /// Im(Z)/Re(Z) computed at exact fmin frequency.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub y_at_fmin: Option<f64>,
+    /// Im(Z)/Re(Z) computed at exact fmax frequency.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub y_at_fmax: Option<f64>,
+    /// Im(Z)/Re(Z) computed at exact target frequency.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub y_at_target: Option<f64>,
     /// Frequency sweep points: `[frequency_hz, im_z_over_re_z]`.
     pub points: Vec<[f64; 2]>,
 }

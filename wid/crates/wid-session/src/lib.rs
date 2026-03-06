@@ -1622,6 +1622,9 @@ impl StudySession {
                     predicted_freq: 0.0,
                     freq_min: None,
                     freq_max: None,
+                    y_at_fmin: None,
+                    y_at_fmax: None,
+                    y_at_target: None,
                     points: Vec::new(),
                 });
                 continue;
@@ -1659,12 +1662,24 @@ impl StudySession {
                 points.push([f, x_over_r]);
             }
 
+            // Compute exact Y values at marker frequencies (matching Java's yValue())
+            let y_at = |f: f64| -> f64 {
+                let z = wid_eval::calc_z(&compiled, f, fingering, &self.params, &self.calc_params);
+                if z.re.abs() > f64::EPSILON { z.im / z.re } else { 0.0 }
+            };
+            let y_at_fmin = fmin.map(&y_at);
+            let y_at_fmax = fmax.map(&y_at);
+            let y_at_target = if target_freq > 0.0 { Some(y_at(target_freq)) } else { None };
+
             curves.push(types::TuningCurve {
                 note_name: fingering.note.name.clone(),
                 target_freq,
                 predicted_freq,
                 freq_min: fmin,
                 freq_max: fmax,
+                y_at_fmin,
+                y_at_fmax,
+                y_at_target,
                 points,
             });
         }
@@ -1694,6 +1709,7 @@ impl StudySession {
     pub fn note_spectrum(
         &self,
         fingering_index: usize,
+        freq_mult: Option<f64>,
     ) -> Result<types::NoteSpectrumResult, SessionError> {
         use wid_eval::linear_v;
 
@@ -1727,8 +1743,9 @@ impl StudySession {
         const N_POINTS: usize = 2000;
         // Java: SPECTRUM_FREQUENCY_BELOW = 0.45, DEFAULT_NOTE_FREQ_MULT = 3.17
         // Range covers up to the 3rd harmonic (a major 9th below to just above 3f)
+        let mult = freq_mult.unwrap_or(3.17);
         let freq_lo = 0.45 * target_freq;
-        let freq_hi = 3.17 * target_freq;
+        let freq_hi = mult * target_freq;
         let step = (freq_hi - freq_lo) / (N_POINTS as f64 - 1.0);
 
         let mut points = Vec::with_capacity(N_POINTS);
@@ -2980,7 +2997,7 @@ mod tests {
     #[test]
     fn note_spectrum_requires_can_tune() {
         let session = StudySession::new(StudyKind::NAF);
-        assert!(session.note_spectrum(0).is_err());
+        assert!(session.note_spectrum(0, None).is_err());
     }
 
     #[test]
@@ -2991,7 +3008,7 @@ mod tests {
         session.select_instrument(inst.doc_id);
         session.select_tuning(tuning.doc_id);
 
-        assert!(session.note_spectrum(100).is_err());
+        assert!(session.note_spectrum(100, None).is_err());
     }
 
     #[test]
@@ -3002,7 +3019,7 @@ mod tests {
         session.select_instrument(inst.doc_id);
         session.select_tuning(tuning.doc_id);
 
-        let result = session.note_spectrum(0).unwrap();
+        let result = session.note_spectrum(0, None).unwrap();
         assert_eq!(result.points.len(), 2000);
         assert_eq!(result.note_name, "F#4");
     }
@@ -3016,7 +3033,7 @@ mod tests {
         session.select_instrument(inst.doc_id);
         session.select_tuning(tuning.doc_id);
 
-        let result = session.note_spectrum(0).unwrap();
+        let result = session.note_spectrum(0, None).unwrap();
         let target = result.target_freq;
 
         // First point ≈ 0.45 × target
@@ -3042,7 +3059,7 @@ mod tests {
         session.select_instrument(inst.doc_id);
         session.select_tuning(tuning.doc_id);
 
-        let result = session.note_spectrum(0).unwrap();
+        let result = session.note_spectrum(0, None).unwrap();
         for w in result.points.windows(2) {
             assert!(w[1].freq > w[0].freq, "Frequencies should increase");
         }
@@ -3056,7 +3073,7 @@ mod tests {
         session.select_instrument(inst.doc_id);
         session.select_tuning(tuning.doc_id);
 
-        let result = session.note_spectrum(0).unwrap();
+        let result = session.note_spectrum(0, None).unwrap();
         // NAF with windway_height has a gain model (G = g0 * f * rho / |Z|).
         // Gain should be positive and vary across the frequency sweep.
         for pt in &result.points {
@@ -3077,7 +3094,7 @@ mod tests {
         session.select_instrument(inst.doc_id);
         session.select_tuning(tuning.doc_id);
 
-        let result = session.note_spectrum(0).unwrap();
+        let result = session.note_spectrum(0, None).unwrap();
         let gains: Vec<f64> = result.points.iter().map(|p| p.loop_gain).collect();
         let min = gains.iter().cloned().fold(f64::INFINITY, f64::min);
         let max = gains.iter().cloned().fold(f64::NEG_INFINITY, f64::max);
@@ -3095,7 +3112,7 @@ mod tests {
         session.select_instrument(inst.doc_id);
         session.select_tuning(tuning.doc_id);
 
-        let result = session.note_spectrum(0).unwrap();
+        let result = session.note_spectrum(0, None).unwrap();
         // Im(Z)/Re(Z) should cross zero near the playing frequency
         let has_positive = result.points.iter().any(|p| p.impedance_ratio > 0.0);
         let has_negative = result.points.iter().any(|p| p.impedance_ratio < 0.0);
@@ -3111,7 +3128,7 @@ mod tests {
         session.select_instrument(inst.doc_id);
         session.select_tuning(tuning.doc_id);
 
-        let result = session.note_spectrum(0).unwrap();
+        let result = session.note_spectrum(0, None).unwrap();
         let json = serde_json::to_string(&result).unwrap();
         let v: serde_json::Value = serde_json::from_str(&json).unwrap();
         // serde uses snake_case: note_name, target_freq
@@ -3180,8 +3197,8 @@ mod tests {
         session.select_instrument(inst.doc_id);
         session.select_tuning(tuning.doc_id);
 
-        let spec0 = session.note_spectrum(0).unwrap();
-        let spec1 = session.note_spectrum(1).unwrap();
+        let spec0 = session.note_spectrum(0, None).unwrap();
+        let spec1 = session.note_spectrum(1, None).unwrap();
 
         assert_ne!(spec0.note_name, spec1.note_name);
         assert_ne!(spec0.target_freq, spec1.target_freq);
@@ -3708,7 +3725,7 @@ mod tests {
         session.select_instrument(inst.doc_id);
         session.select_tuning(tuning.doc_id);
 
-        let result = session.note_spectrum(0).unwrap();
+        let result = session.note_spectrum(0, None).unwrap();
         assert_eq!(result.points.len(), 2000);
 
         // Compare at checkpoints

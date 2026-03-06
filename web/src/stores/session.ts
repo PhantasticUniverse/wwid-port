@@ -522,11 +522,11 @@ async function graphTuning() {
   }
 }
 
-async function noteSpectrum(fingeringIndex: number) {
+async function noteSpectrum(fingeringIndex: number, freqMult?: number) {
   try {
     setLoading(true);
     setError(null);
-    return await compute.run("note_spectrum", { fingeringIndex });
+    return await compute.run("note_spectrum", { fingeringIndex, ...(freqMult != null && { freqMult }) });
   } catch (e) {
     setError(`Note spectrum failed: ${e}`);
     return null;

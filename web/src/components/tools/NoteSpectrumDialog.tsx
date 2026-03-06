@@ -1,5 +1,6 @@
 import { Show, For, createSignal, onMount, onCleanup } from "solid-js";
 import { sessionStore } from "../../stores/session";
+import { getSpectrumMult } from "../layout/SettingsDialog";
 import { Chart, LineController, LineElement, PointElement, LinearScale, Legend, Tooltip } from "chart.js";
 import type { ChartConfiguration } from "chart.js";
 
@@ -37,7 +38,7 @@ export default function NoteSpectrumDialog(props: {
     setLoading(true);
     chartInstance?.destroy();
     chartInstance = undefined;
-    const result = await sessionStore.noteSpectrum(idx);
+    const result = await sessionStore.noteSpectrum(idx, getSpectrumMult());
     if (result) {
       setData(result as NoteSpectrumResult);
     }
