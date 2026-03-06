@@ -336,7 +336,15 @@ Java draws all curves in black/dark gray with green filled circles at peak reson
 Java uses green dots (gain >= 1) and red dots (gain < 1) with a black impedance line. We use continuous line segments in green/red with NaN-gap splitting, plus a dashed gain=1 reference line. The impedance line is dark gray (our dark theme equivalent of Java's black-on-white).
 
 ### Sketch Diagram
-Java uses JFreeChart's XYPlot to render a top-down engineering drawing: dashed bore outline, circles for holes on the center axis, axis labels. We use custom SVG with the same engineering conventions: dashed bore polygon, outline circles for holes positioned on the center line (straddling the bore, matching Java), labeled X/Y axes with tick marks, hole labels above the bore top edge. No colored fills — monochrome gray palette. Handles both cylindrical and tapered bores correctly.
+Java uses JFreeChart's XYPlot to render a top-down engineering drawing: dashed bore outline, circles for holes on the center axis, axis labels. Opens in a JFrame window. We use custom SVG in a popup window with the same engineering conventions: dashed bore polygon, outline circles for holes positioned on the center line (straddling the bore, matching Java), labeled X/Y axes with tick marks (labels "Length" / "Width" without units, matching Java), hole labels above the bore top edge. No colored fills — monochrome gray palette. Handles both cylindrical and tapered bores correctly.
+
+**Mouthpiece rendering:**
+- **Fipple (NAF/Whistle):** Solid rectangle for the fipple window (position - window_length to position, window_width tall), matching Java lines 115-127. Dashed rectangle for windway extending left from window (when windway_length is present), matching Java lines 128-153.
+- **Embouchure (Flute):** SVG ellipse centered on bore_position with rx=length/2 and ry=width/2, matching Java lines 155-171.
+- **Reed/LipReed:** No mouthpiece drawing (Java doesn't draw these either).
+
+### Compare Instruments
+Java opens comparison results in a JFrame window. Our port uses a two-step flow: an in-page selector dialog for choosing old/new instruments, then a popup window for the comparison table with Category, Field, Old, New, Diff, %Change columns. This matches Java's workflow where the user selects instruments in the GUI and results appear in a separate window.
 
 ### Default Constraints
 Java's "Create Default Constraints" pre-populates bounds with study-model-specific values (bore length ranges, hole diameter ranges, taper ratios). Our web port now matches this. "Create Blank Constraints" creates empty bounds (Java fills with 0.0/1.0; we use None). The constraints are used identically for optimization — this is a usability feature, not a computation difference.

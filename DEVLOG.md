@@ -13,6 +13,7 @@
 
 ### Entries (newest first)
 
+- [Popups + Sketch Mouthpiece](#2026-03-06-popups--sketch-mouthpiece) — Sketch and Compare converted to popup windows; fipple window/windway + embouchure ellipse rendering; axis labels without units
 - [UI/UX Clarity Pass](#2026-03-06-uiux-clarity-pass) — 7 fixes + graph Y-axis exact markers, settings additions (length type, spectrum multiplier)
 - [Visual Parity Improvements](#2026-03-06-visual-parity-improvements) — 5 priorities: Graph Tuning chart, Note Spectrum gain coloring, default constraints bounds, Sketch engineering style, Settings DIRECT toggle
 - [Parity Audit #4 + NAF optimizer tests](#2026-03-06-parity-audit-4--naf-optimizer-tests) — 7 code fixes, 4 NAF parity tests, BOBYQA/DIRECT docs, SUP-RD fixture regen
@@ -39,6 +40,33 @@
 - [M3 NAF Calibration + Optimization](#2026-03-02-m3--naf-calibration--optimization-parity) — BOBYQA crate, 139 tests
 - [NAF Bulk Test Coverage](#2026-03-02-expanded-naf-test-coverage-all-oracle-xmls) — 36 combos, 540 fingerings
 - [M4 Browser MVP](#2026-03-02-m4--browser-hosted-mvp-naf-end-to-end)
+
+---
+
+## 2026-03-06: Popups + Sketch Mouthpiece
+
+Java WIDesigner opens every tool result in a separate JFrame window. Our port had Evaluate and Supplementary as popups but Sketch, Compare, Graph, and Spectrum as in-page modals. This session converts Sketch and Compare to popup windows (Graph/Spectrum kept as modals due to Chart.js canvas interaction).
+
+### Changes
+
+1. **Sketch → popup window** (`SketchPopup.ts`): Full SVG sketch in a popup, matching the EvalPopup/SupplementaryPopup pattern. Deleted SketchDialog.tsx.
+
+2. **Sketch mouthpiece rendering**: Replaced the generic 8×6px rectangle with to-scale geometry:
+   - **Fipple (NAF/Whistle):** Solid rectangle for fipple window, dashed rectangle for windway
+   - **Embouchure (Flute):** SVG ellipse centered on bore position
+   - **Reed/LipReed:** No drawing (matches Java)
+   - Removed "Fipple" text label
+
+3. **Axis labels**: Changed from "Length (in)" / "Width (in)" to "Length" / "Width" (matching Java).
+
+4. **Compare → popup result** (`ComparePopup.ts`): Comparison results open in a popup window. CompareDialog.tsx kept as a selector (dropdowns + Compare button); results open in popup and dialog closes.
+
+### Files
+- `web/src/components/tools/SketchPopup.ts` — new
+- `web/src/components/tools/ComparePopup.ts` — new
+- `web/src/components/tools/SketchDialog.tsx` — deleted
+- `web/src/components/tools/CompareDialog.tsx` — simplified (result table removed, opens popup)
+- `web/src/components/layout/Toolbar.tsx` — sketch uses popup directly
 
 ---
 

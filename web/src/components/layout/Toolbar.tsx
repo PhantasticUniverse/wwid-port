@@ -1,11 +1,11 @@
 import { Show, createSignal, createMemo } from "solid-js";
 import { sessionStore } from "../../stores/session";
 import OptimizeDialog from "../tools/OptimizeDialog";
-import SketchDialog from "../tools/SketchDialog";
 import CompareDialog from "../tools/CompareDialog";
 import GraphTuningDialog from "../tools/GraphTuningDialog";
 import NoteSpectrumDialog from "../tools/NoteSpectrumDialog";
 import WizardDialog from "../tools/WizardDialog";
+import { openSketchPopup } from "../tools/SketchPopup";
 import { openSupplementaryPopup } from "../tools/SupplementaryPopup";
 import { getUseDirect } from "./SettingsDialog";
 import type { OptimizeResult, CalibResult, TuningResult } from "../../types/session";
@@ -13,7 +13,6 @@ import type { OptimizeResult, CalibResult, TuningResult } from "../../types/sess
 export default function Toolbar() {
   const [showOptDialog, setShowOptDialog] = createSignal(false);
   const [optResult, setOptResult] = createSignal<OptimizeResult | CalibResult | null>(null);
-  const [showSketch, setShowSketch] = createSignal(false);
   const [showCompare, setShowCompare] = createSignal(false);
   const [showGraph, setShowGraph] = createSignal(false);
   const [showSpectrum, setShowSpectrum] = createSignal(false);
@@ -75,7 +74,10 @@ export default function Toolbar() {
             class={btn}
             style={{ background: "var(--color-surface-alt)", color: "var(--color-text)", border: "1px solid var(--color-border)" }}
             disabled={!sessionStore.canSketch()}
-            onClick={() => setShowSketch(true)}
+            onClick={async () => {
+              const data = await sessionStore.sketchInstrument();
+              if (data) openSketchPopup(data as any);
+            }}
             title="Show instrument cross-section diagram"
           >
             Sketch
@@ -182,10 +184,6 @@ export default function Toolbar() {
           setOptResult(null);
         }}
       />
-
-      <Show when={showSketch()}>
-        <SketchDialog onClose={() => setShowSketch(false)} />
-      </Show>
 
       <Show when={showCompare()}>
         <CompareDialog onClose={() => setShowCompare(false)} />

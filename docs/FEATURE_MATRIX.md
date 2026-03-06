@@ -25,8 +25,8 @@ Legend:
 | Graph tuning              |        ✅ | GRAPH-WH          | M5        | 17 curves, exact Y at markers, Java Y-axis algorithm |
 | Note spectrum graph       |        ✅ | SPEC-WH           | M5        | 2000 impedance+gain points, configurable freq range |
 | Supplementary info table  |        ✅ | SUP-NAF/WH/FL/RD  | M5        | All 4 study models, air speed/flow/gain/Q |
-| Sketch instrument         |        ✅ | SKETCH-NAF        | M5        | Bore, holes, mouthpiece, termination |
-| Compare instruments       |        ✅ | CMP-NAF           | M5        | 25 diff rows, original vs optimized  |
+| Sketch instrument         |        ✅ | SKETCH-NAF        | M5        | Popup window, fipple/embouchure to-scale |
+| Compare instruments       |        ✅ | CMP-NAF           | M5        | Selector dialog + popup result window |
 
 ---
 

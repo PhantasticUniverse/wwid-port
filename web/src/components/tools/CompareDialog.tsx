@@ -1,5 +1,6 @@
 import { Show, For, createSignal, onMount, onCleanup } from "solid-js";
 import { sessionStore } from "../../stores/session";
+import { openComparePopup } from "./ComparePopup";
 
 interface CompareRow {
   category: string;
@@ -25,25 +26,23 @@ export default function CompareDialog(props: { onClose: () => void }) {
 
   const [oldId, setOldId] = createSignal(defaultOld());
   const [newId, setNewId] = createSignal(defaultNew());
-  const [result, setResult] = createSignal<CompareResult | null>(null);
   const [loading, setLoading] = createSignal(false);
 
   async function runCompare() {
     if (oldId() < 0 || newId() < 0 || oldId() === newId()) return;
     setLoading(true);
     const r = await sessionStore.compareInstruments(oldId(), newId());
-    if (r) setResult(r as CompareResult);
     setLoading(false);
+    if (r) {
+      openComparePopup(r as CompareResult);
+      props.onClose();
+    }
   }
 
   onMount(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") props.onClose(); };
     document.addEventListener("keydown", onKey);
     onCleanup(() => document.removeEventListener("keydown", onKey));
-    // Auto-compare on mount if both are pre-selected
-    if (oldId() >= 0 && newId() >= 0 && oldId() !== newId()) {
-      runCompare();
-    }
   });
 
   return (
@@ -106,12 +105,8 @@ export default function CompareDialog(props: { onClose: () => void }) {
           </div>
         </div>
 
-        {/* Results table */}
         <Show when={loading()}>
           <div class="text-sm py-4" style={{ color: "var(--color-text-muted)" }}>Comparing...</div>
-        </Show>
-        <Show when={result()}>
-          {(r) => <CompareTable result={r()} />}
         </Show>
 
         <div class="flex justify-end mt-4">
@@ -128,67 +123,3 @@ export default function CompareDialog(props: { onClose: () => void }) {
   );
 }
 
-function CompareTable(props: { result: CompareResult }) {
-  const r = props.result;
-
-  // Group rows by category
-  let lastCategory = "";
-
-  return (
-    <div style={{ "max-height": "400px", "overflow-y": "auto" }}>
-      <table class="w-full text-sm" style={{ "border-collapse": "collapse" }}>
-        <thead>
-          <tr style={{ "border-bottom": "1px solid var(--color-border)" }}>
-            <th class="text-left px-2 py-1 text-xs font-semibold" style={{ color: "var(--color-text-muted)" }}>Category</th>
-            <th class="text-left px-2 py-1 text-xs font-semibold" style={{ color: "var(--color-text-muted)" }}>Field</th>
-            <th class="text-right px-2 py-1 text-xs font-semibold" style={{ color: "var(--color-text-muted)" }}>{r.old_name}</th>
-            <th class="text-right px-2 py-1 text-xs font-semibold" style={{ color: "var(--color-text-muted)" }}>{r.new_name}</th>
-            <th class="text-right px-2 py-1 text-xs font-semibold" style={{ color: "var(--color-text-muted)" }}>Diff</th>
-            <th class="text-right px-2 py-1 text-xs font-semibold" style={{ color: "var(--color-text-muted)" }}>%</th>
-          </tr>
-        </thead>
-        <tbody>
-          <For each={r.rows}>
-            {(row) => {
-              const showCategory = row.category !== lastCategory;
-              lastCategory = row.category;
-              const pctColor = row.percent_change != null
-                ? row.percent_change > 0 ? "#22c55e" : row.percent_change < 0 ? "#ef4444" : ""
-                : "";
-
-              return (
-                <tr style={{ "border-bottom": "1px solid var(--color-border)" }}>
-                  <td class="px-2 py-1" style={{ color: "var(--color-text-muted)" }}>
-                    {showCategory ? row.category : ""}
-                  </td>
-                  <td class="px-2 py-1">{row.field}</td>
-                  <td class="px-2 py-1 text-right" style={{ "font-family": "monospace" }}>
-                    {row.old_value != null ? fmtNum(row.old_value) : "—"}
-                  </td>
-                  <td class="px-2 py-1 text-right" style={{ "font-family": "monospace" }}>
-                    {row.new_value != null ? fmtNum(row.new_value) : "—"}
-                  </td>
-                  <td class="px-2 py-1 text-right" style={{ "font-family": "monospace" }}>
-                    {row.difference != null ? fmtDiff(row.difference) : "—"}
-                  </td>
-                  <td class="px-2 py-1 text-right" style={{ "font-family": "monospace", color: pctColor }}>
-                    {row.percent_change != null ? `${row.percent_change >= 0 ? "+" : ""}${row.percent_change.toFixed(2)}%` : "—"}
-                  </td>
-                </tr>
-              );
-            }}
-          </For>
-        </tbody>
-      </table>
-    </div>
-  );
-}
-
-function fmtNum(v: number): string {
-  return Math.abs(v) < 0.001 ? v.toExponential(4) : v.toFixed(4);
-}
-
-function fmtDiff(v: number): string {
-  const prefix = v >= 0 ? "+" : "";
-  return prefix + fmtNum(v);
-}
