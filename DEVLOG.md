@@ -13,6 +13,7 @@
 
 ### Entries (newest first)
 
+- [Final Audit & Polish](#2026-03-09-final-audit--polish) — Commit pending fixes, frontend hardening, world-class docs, justfile, CI
 - [Parity Audit #6](#2026-03-06-parity-audit-6) — 6 hostile agents across 2 rounds; evaluate_tuning NaN fix, popup guard; acoustic core, optimization engine, WASM pipeline verified clean
 - [Parity Audit #5](#2026-03-06-parity-audit-5) — 3 hostile agents across entire codebase; 1 bug fix (ComputeService init hang), 2 edge cases, 3 doc fixes; Rust core clean
 - [All Tools → Popups](#2026-03-06-all-tools--popups) — Graph Tuning and Note Spectrum converted to popup windows (completing the popup migration for all 6 tool dialogs)
@@ -43,6 +44,37 @@
 - [M3 NAF Calibration + Optimization](#2026-03-02-m3--naf-calibration--optimization-parity) — BOBYQA crate, 139 tests
 - [NAF Bulk Test Coverage](#2026-03-02-expanded-naf-test-coverage-all-oracle-xmls) — 36 combos, 540 fingerings
 - [M4 Browser MVP](#2026-03-02-m4--browser-hosted-mvp-naf-end-to-end)
+
+---
+
+## 2026-03-09: Final Audit & Polish
+
+Committed pending Audit #6 fixes, added frontend defensive hardening, created world-class developer documentation, build orchestration, and CI.
+
+**Code fixes:**
+1. Committed Audit #6: `evaluate_tuning` NaN fix + NoteSpectrumPopup closed guard
+2. Frontend defensive fixes: `popup.closed` guard in GraphTuningPopup `requestAnimationFrame`, null coalescing on tooltip `ctx.parsed.y`/`ctx.parsed.x` in both GraphTuningPopup and NoteSpectrumPopup
+
+**Documentation (6 new files):**
+- `CONTRIBUTING.md` — getting started, adding features, code style, commit conventions
+- `CHANGELOG.md` — version history (1.0.0 = full parity, earlier milestones as sub-versions)
+- `docs/ARCHITECTURE.md` — crate dependency graph, data flow, session pattern, extension guide
+- `golden-harness/README.md` — fixture generation from Java oracle, driver class reference
+- `web/README.md` — frontend architecture, WASM integration, popup windows
+- `wid/TESTING.md` — running tests, golden fixtures, tolerances, adding new fixtures
+
+**Doc updates:**
+- `README.md` — expanded documentation table with links to all new docs
+- `web/package.json` — added description, bumped to 1.0.0
+- `wid/Cargo.toml` — added repository URL to workspace config
+- `wid-optimize/lib.rs` — expanded crate-level docs to cover all 16 modules
+- Removed `BASELINE.md` (redundant with CLAUDE.md and README)
+
+**Build & CI:**
+- `justfile` — single entry point: test, wasm, web, build, dev, fixtures
+- `.github/workflows/test.yml` — Rust tests + WASM build + TypeScript check on push/PR
+
+**Verification:** 449 tests passing, web build clean.
 
 ---
 
