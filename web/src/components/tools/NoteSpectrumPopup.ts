@@ -232,7 +232,7 @@ function buildChart(canvas: HTMLCanvasElement, d: NoteSpectrumResult): Chart {
         },
         tooltip: {
           callbacks: {
-            label: (ctx) => `${ctx.dataset.label}: ${ctx.parsed.y.toFixed(4)} @ ${ctx.parsed.x.toFixed(1)} Hz`,
+            label: (ctx) => `${ctx.dataset.label}: ${(ctx.parsed.y ?? 0).toFixed(4)} @ ${(ctx.parsed.x ?? 0).toFixed(1)} Hz`,
           },
         },
       },

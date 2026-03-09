@@ -59,7 +59,10 @@ export function openGraphTuningPopup(result: GraphTuningResult) {
   container.appendChild(canvas);
 
   // Build chart after DOM is ready
-  popup.requestAnimationFrame(() => buildChart(canvas, result));
+  popup.requestAnimationFrame(() => {
+    if (popup.closed) return;
+    buildChart(canvas, result);
+  });
 }
 
 function buildChart(canvas: HTMLCanvasElement, d: GraphTuningResult) {
@@ -195,7 +198,7 @@ function buildChart(canvas: HTMLCanvasElement, d: GraphTuningResult) {
         tooltip: {
           callbacks: {
             label: (ctx) =>
-              `${ctx.dataset.label || "curve"}: ${ctx.parsed.y.toFixed(3)} @ ${ctx.parsed.x.toFixed(1)} Hz`,
+              `${ctx.dataset.label || "curve"}: ${(ctx.parsed.y ?? 0).toFixed(3)} @ ${(ctx.parsed.x ?? 0).toFixed(1)} Hz`,
           },
         },
       },
