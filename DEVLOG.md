@@ -4,7 +4,7 @@
 
 | Metric | Value |
 |--------|-------|
-| **Total tests** | 449 |
+| **Total tests** | 454 |
 | **Study models complete** | 4/4 (NAF, Whistle, Flute, Reed) |
 | **Milestones done** | M0–M5 complete |
 | **Evaluation parity** | ≤ 0.058 cents across 994 fingerings |
@@ -13,6 +13,7 @@
 
 ### Entries (newest first)
 
+- [Full Repo Audit](#2026-03-09-full-repo-audit) — Clippy fixes, CI improvements, defensive hardening committed, CHANGELOG fix
 - [Final Audit & Polish](#2026-03-09-final-audit--polish) — Commit pending fixes, frontend hardening, world-class docs, justfile, CI
 - [Parity Audit #6](#2026-03-06-parity-audit-6) — 6 hostile agents across 2 rounds; evaluate_tuning NaN fix, popup guard; acoustic core, optimization engine, WASM pipeline verified clean
 - [Parity Audit #5](#2026-03-06-parity-audit-5) — 3 hostile agents across entire codebase; 1 bug fix (ComputeService init hang), 2 edge cases, 3 doc fixes; Rust core clean
@@ -44,6 +45,36 @@
 - [M3 NAF Calibration + Optimization](#2026-03-02-m3--naf-calibration--optimization-parity) — BOBYQA crate, 139 tests
 - [NAF Bulk Test Coverage](#2026-03-02-expanded-naf-test-coverage-all-oracle-xmls) — 36 combos, 540 fingerings
 - [M4 Browser MVP](#2026-03-02-m4--browser-hosted-mvp-naf-end-to-end)
+
+---
+
+## 2026-03-09: Full Repo Audit
+
+Three parallel exploration agents swept the entire repo — docs, Rust code, CI, frontend, repo hygiene. Overall verdict: excellent shape, no critical bugs.
+
+**Clippy fixes (actually fixed, not suppressed):**
+- `brent.rs`: late initialization → `let s = if ... { } else { }`
+- `lib.rs` (wid-eval): `map_or(false, ...)` → `is_some_and(...)`
+- `doc_store.rs`: added `Default` impl for `DocStore`
+- `reed.rs`: `(n + 1) / 2` → `n.div_ceil(2)`
+- `lib.rs` (wid-session): redundant closure, unnecessary cast, needless borrows
+
+**Targeted clippy allows for algorithm ports:**
+- `bobyqa`: range loops, memcpy, arg count, saturating sub (faithful Fortran port)
+- `direct`: range loops (DIRECT-C port)
+- `wid-compile`: range loops (geometry ordering)
+- `wid-optimize`: arg count (optimizer entry points with many inherent params)
+
+**CI improvements:**
+- Added `cargo clippy -- -D warnings` step after tests
+- Added `npx vite build` step after TypeScript check
+
+**Other fixes:**
+- CHANGELOG: test count 449 → 454
+- `web/index.html`: added `<meta name="description">` tag
+- Committed defensive hardening from prior session (NaN validation, fipple Option, LinearV empty guard, sketch sort, validate min/max — 5 new edge-case tests)
+
+**Verification:** 454 tests pass, clippy clean, vite build succeeds.
 
 ---
 
