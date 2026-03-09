@@ -137,14 +137,18 @@ Any browser with WebAssembly and Web Worker support: Chrome 57+, Firefox 52+, Sa
 
 | Document | Purpose |
 |----------|---------|
+| [`CONTRIBUTING.md`](CONTRIBUTING.md) | How to develop, test, and extend the port |
+| [`CHANGELOG.md`](CHANGELOG.md) | Version history and release notes |
+| [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | Crate dependency graph, data flow, extension guide |
 | [`docs/PORT_SPEC.md`](docs/PORT_SPEC.md) | Definition of done, parity metrics, milestones |
 | [`docs/FIXTURE_PLAN.md`](docs/FIXTURE_PLAN.md) | Golden fixture suite design and tolerances |
 | [`docs/API_SHAPE.md`](docs/API_SHAPE.md) | Session-based API contract |
 | [`docs/FEATURE_MATRIX.md`](docs/FEATURE_MATRIX.md) | Per-study-model feature parity checklist |
-| [`wid/ARCHITECTURE.md`](wid/ARCHITECTURE.md) | Crate-by-crate architecture guide |
+| [`wid/TESTING.md`](wid/TESTING.md) | Testing guide: running tests, adding fixtures |
+| [`golden-harness/README.md`](golden-harness/README.md) | Golden fixture generation from Java oracle |
+| [`web/README.md`](web/README.md) | Frontend architecture and development |
 | [`parity-notes.md`](parity-notes.md) | Debugging notes and parity gotchas |
 | [`DEVLOG.md`](DEVLOG.md) | Detailed development log |
-| [`CLAUDE.md`](CLAUDE.md) | AI assistant project instructions |
 
 ## Current status
 

@@ -1,7 +1,8 @@
 {
   "name": "widesigner",
   "private": true,
-  "version": "0.1.0",
+  "version": "1.0.0",
+  "description": "Browser-based woodwind instrument designer — Rust/WASM port of WIDesigner v2.6.0",
   "type": "module",
   "scripts": {
     "dev": "vite",

@@ -1,11 +1,42 @@
 //! Optimization infrastructure for WIDesigner instrument tuning.
 //!
-//! This crate provides:
-//! - Brent univariate minimizer (`brent_min`)
-//! - BOBYQA multivariate minimizer (`bobyqa`)
-//! - Fipple factor calibration (`fipple`)
-//! - Hole geometry optimization (`hole_from_top`)
-//! - Weighted norm calculation (`calc_norm`)
+//! This crate provides objective functions, calibrators, and optimizer dispatch
+//! for all four study models (NAF, Whistle, Flute, Reed).
+//!
+//! # Optimizers
+//!
+//! - [`brent_min`] — Brent univariate minimizer (for 1D bore optimizers)
+//! - [`bobyqa`](::bobyqa_impl) — BOBYQA multivariate (via standalone crate)
+//! - [`global_optimize`] / [`multi_start`] — DIRECT-C → BOBYQA two-stage pipeline
+//!
+//! # Calibrators
+//!
+//! - [`fipple`] — NAF fipple factor (1D Brent)
+//! - [`whistle_calib`] — window height, beta, or joint (BOBYQA)
+//! - [`flute_calib`] — airstream length, beta, or joint (BOBYQA)
+//! - [`reed_calib`] — alpha + beta joint (2D BOBYQA)
+//!
+//! # Hole objective functions
+//!
+//! - [`hole_from_top`] — hole positions from top of bore
+//! - [`hole_group_from_top`] — grouped hole positions
+//! - [`hole_size`] — hole diameters (NAF-specific trust radius)
+//! - [`hole_position`] — absolute hole positions
+//! - [`hole_combined`] — combined hole position + size
+//!
+//! # Bore and geometry
+//!
+//! - [`bore`] — bore diameter optimization (from top, bottom, or full)
+//! - [`single_taper`] — single taper geometry (4 variants)
+//! - [`window_height`] — window height optimization
+//! - [`airstream_length`] — flute airstream length
+//! - [`beta`] — beta factor optimization
+//!
+//! # Utilities
+//!
+//! - [`calc_norm`] — weighted L2 norm (matching Java `BaseObjectiveFunction.calcNorm()`)
+//! - [`compute_trust_radius`] — BOBYQA trust region from bounds
+//! - [`max_evaluations`] — evaluation budget formula
 
 pub mod airstream_length;
 pub mod global_optimize;
