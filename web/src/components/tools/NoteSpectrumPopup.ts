@@ -114,6 +114,7 @@ export function openNoteSpectrumPopup(notes: EvalNote[]) {
       return;
     }
 
+    if (popup!.closed) return;
     info.textContent = `${result.note_name} — target ${result.target_freq.toFixed(1)} Hz`;
     status.style.display = "none";
     canvas.style.display = "block";

@@ -13,6 +13,7 @@
 
 ### Entries (newest first)
 
+- [Parity Audit #6](#2026-03-06-parity-audit-6) — 6 hostile agents across 2 rounds; evaluate_tuning NaN fix, popup guard; acoustic core, optimization engine, WASM pipeline verified clean
 - [Parity Audit #5](#2026-03-06-parity-audit-5) — 3 hostile agents across entire codebase; 1 bug fix (ComputeService init hang), 2 edge cases, 3 doc fixes; Rust core clean
 - [All Tools → Popups](#2026-03-06-all-tools--popups) — Graph Tuning and Note Spectrum converted to popup windows (completing the popup migration for all 6 tool dialogs)
 - [Popups + Sketch Mouthpiece](#2026-03-06-popups--sketch-mouthpiece) — Sketch and Compare converted to popup windows; fipple window/windway + embouchure ellipse rendering; axis labels without units
@@ -42,6 +43,24 @@
 - [M3 NAF Calibration + Optimization](#2026-03-02-m3--naf-calibration--optimization-parity) — BOBYQA crate, 139 tests
 - [NAF Bulk Test Coverage](#2026-03-02-expanded-naf-test-coverage-all-oracle-xmls) — 36 combos, 540 fingerings
 - [M4 Browser MVP](#2026-03-02-m4--browser-hosted-mvp-naf-end-to-end)
+
+---
+
+## 2026-03-06: Parity Audit #6
+
+Final hostile pass with 6 independent agents across 2 rounds. Round 1: frontend/WASM, Rust core parity, docs/fixtures/tests. Round 2: acoustic numerics (line-by-line formula comparison), optimization objective functions (geometry mapping, bounds, weights, trust radii), session-to-WASM-to-frontend command dispatch (all 43 commands traced end-to-end).
+
+**Code fixes (2 real issues out of 22+ raw findings):**
+1. **`evaluate_tuning` NaN on missing frequency** (MEDIUM) — When `fingering.note.frequency` is None, `cents(0.0, pred)` computes `(pred / 0.0).ln()` = NaN. Java's `TuningComparisonTable.buildTable()` checks `tgtF == null` and skips cents. Fix: return `cent_dev = 0.0` when `target_freq <= 0.0`, exclude from weighted summary stats
+2. **NoteSpectrumPopup closed guard** (LOW) — After async `noteSpectrum()`, popup may be closed by user. Added `popup.closed` check before DOM updates
+
+**Deep-dive verification (all clean):**
+- Acoustic numerics: transfer matrix formulas (cylinder, cone), radiation impedance (Silva 2008 Padé), 3 mouthpiece models, complex wave propagation (lossy epsilon), hole effective length (Lefebvre & Scavone 2012), physical parameters (CIPM-2007) — all match Java to machine precision
+- Optimization: all objective function geometry mappings (hole, bore, taper, spacing, merged), constraint bounds creation, fingering weight normalization, BOBYQA trust radius, max evaluations formula — all match Java exactly
+- Session/WASM dispatch: all 43 commands present, 26 called from frontend, all camelCase, all return types match TypeScript interfaces
+- Docs/fixtures: 57 golden fixture directories consistent, 449 tests consistent, all MEMORY.md gotchas verified current
+
+**False positives dismissed (20+):** App.tsx unhandled promise (has internal try/catch), WizardDialog errors (has own try/catch), SolidJS select coercion (correct), Chart.js popup memory (popup close destroys DOM), study model switch race (sequential await), missing select validation (matches Java), ComputeService errorHandler (correct), cents() guards (caller responsibility), radiation impedance (matches Java), SimplePhysicalParameters alpha (legacy model).
 
 ---
 

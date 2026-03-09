@@ -396,7 +396,11 @@ impl StudySession {
             };
 
             let (predicted_freq, cent_dev) = if let Some(pred) = pred {
-                (pred, cents(target_freq, pred))
+                if target_freq > 0.0 {
+                    (pred, cents(target_freq, pred))
+                } else {
+                    (pred, 0.0) // No target frequency — skip cents (matches Java)
+                }
             } else {
                 (0.0, 1200.0)
             };
@@ -412,7 +416,9 @@ impl StudySession {
 
         // Summary: net error = signed mean of weighted cents,
         // deviation = mean absolute cents (weighted)
-        let weighted_rows: Vec<&EvalRow> = rows.iter().filter(|r| r.weight > 0).collect();
+        let weighted_rows: Vec<&EvalRow> = rows.iter()
+            .filter(|r| r.weight > 0 && r.target_freq > 0.0)
+            .collect();
         let n_weighted = weighted_rows.len() as f64;
         let net_error = if n_weighted > 0.0 {
             weighted_rows.iter().map(|r| r.cents).sum::<f64>() / n_weighted

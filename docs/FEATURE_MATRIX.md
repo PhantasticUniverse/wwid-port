@@ -143,8 +143,9 @@ Legend:
 | #3 | Bore geometry, acoustics, evaluators, calibrators, session, WASM | Analysis tool frequency fallbacks (2 fixes), dead `if` cleanup | ✅ Fixed |
 | #4 | Session/WASM, compile/optimize, BOBYQA, DIRECT (4 hostile agents) | 7 code fixes (Reed supplementary, params persistence, bore guards, BOBYQA sqrt, DIRECT budget), reed validation asymmetry, NAF hole size trust radius, 4 NAF optimizer parity tests added | ✅ Fixed |
 | #5 | Full codebase (3 hostile agents: Rust core, frontend/WASM, docs/fixtures) | 1 bug (ComputeService init hang), 2 edge cases (spectrum empty rows, graph Y-axis), 3 doc fixes (NAF-HS-01, global optimizer footnote, MEMORY test count) | ✅ Fixed |
+| #6 | Full codebase (6 hostile agents across 2 rounds: frontend/WASM, Rust core, docs/fixtures, acoustic numerics, optimization objectives, session/WASM dispatch) | 1 parity fix (evaluate_tuning NaN on missing freq), 1 defensive guard (popup closed check). All acoustic formulas, optimization geometry mappings, and 43 WASM commands verified line-by-line. 20+ false positives triaged | ✅ Fixed |
 
-All fixes applied. 449 tests passing. ~30 subsystems verified clean across 5 hostile audits.
+All fixes applied. 449 tests passing. ~30 subsystems verified clean across 6 hostile audits.
 
 ---
 
