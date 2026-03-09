@@ -1087,7 +1087,7 @@ impl StudySession {
         scale_name: &str,
     ) -> Result<OpenResult, SessionError> {
         let scale = scale_from_temperament(temperament, symbols, ref_name, ref_frequency, scale_name)
-            .map_err(|e| SessionError::EvalError(e))?;
+            .map_err(SessionError::EvalError)?;
         let name = scale.name.clone();
         let id = self.docs.insert(
             DocKind::Scale,
@@ -1193,18 +1193,19 @@ impl StudySession {
         let inst = self.docs.get_instrument(inst_id)
             .ok_or(SessionError::DocNotFound(inst_id))?;
 
-        let bore_points: Vec<types::SketchBorePoint> = inst.bore_points.iter()
+        let mut bore_points: Vec<types::SketchBorePoint> = inst.bore_points.iter()
             .map(|bp| types::SketchBorePoint {
                 position: bp.bore_position,
                 diameter: bp.bore_diameter,
             })
             .collect();
+        bore_points.sort_by(|a, b| a.position.partial_cmp(&b.position).unwrap_or(std::cmp::Ordering::Equal));
 
-        let bore_length = inst.bore_points.iter()
-            .map(|bp| bp.bore_position)
-            .fold(0.0_f64, f64::max);
+        let bore_length = bore_points.iter()
+            .map(|bp| bp.position)
+            .fold(f64::NEG_INFINITY, f64::max);
 
-        let holes: Vec<types::SketchHole> = inst.holes.iter()
+        let mut holes: Vec<types::SketchHole> = inst.holes.iter()
             .map(|h| types::SketchHole {
                 name: h.name.clone(),
                 position: h.bore_position,
@@ -1212,6 +1213,7 @@ impl StudySession {
                 height: h.height,
             })
             .collect();
+        holes.sort_by(|a, b| a.position.partial_cmp(&b.position).unwrap_or(std::cmp::Ordering::Equal));
 
         let mouthpiece = extract_mouthpiece_sketch(&inst.mouthpiece);
 
@@ -1269,7 +1271,7 @@ impl StudySession {
             wid_types::LengthType::Feet => 4,
             wid_types::LengthType::Metres => 5,
         };
-        let min_diff = 10.0_f64.powi(-(precision as i32));
+        let min_diff = 10.0_f64.powi(-precision);
 
         let mut rows = Vec::new();
         let mut push = |cat: &str, field: &str, old_v: Option<f64>, new_v: Option<f64>| {
@@ -1673,8 +1675,8 @@ impl StudySession {
                 let z = wid_eval::calc_z(&compiled, f, fingering, &self.params, &self.calc_params);
                 if z.re.abs() > f64::EPSILON { z.im / z.re } else { 0.0 }
             };
-            let y_at_fmin = fmin.map(&y_at);
-            let y_at_fmax = fmax.map(&y_at);
+            let y_at_fmin = fmin.map(y_at);
+            let y_at_fmax = fmax.map(y_at);
             let y_at_target = if target_freq > 0.0 { Some(y_at(target_freq)) } else { None };
 
             curves.push(types::TuningCurve {
@@ -2169,8 +2171,12 @@ fn validate_instrument_geometry(inst: &InstrumentRaw) -> Vec<String> {
 
     let scale = inst.length_type.to_metres();
     let mp_pos = inst.mouthpiece.position * scale;
-    let bore_bottom = inst.bore_points.first().unwrap().bore_position * scale;
-    let bore_top = inst.bore_points.last().unwrap().bore_position * scale;
+    let bore_bottom = inst.bore_points.iter()
+        .map(|bp| bp.bore_position * scale)
+        .fold(f64::INFINITY, f64::min);
+    let bore_top = inst.bore_points.iter()
+        .map(|bp| bp.bore_position * scale)
+        .fold(f64::NEG_INFINITY, f64::max);
 
     let is_reed = inst.mouthpiece.single_reed.is_some()
         || inst.mouthpiece.double_reed.is_some()

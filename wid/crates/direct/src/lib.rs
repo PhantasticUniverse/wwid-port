@@ -1,3 +1,5 @@
+// Faithful port of DIRECT-C — index-based loops match the original algorithm.
+#![allow(clippy::needless_range_loop)]
 //! Pure Rust implementation of the DIRECT-C global optimizer.
 //!
 //! **DIRECT** (DIviding RECTangles) is a deterministic global optimization

@@ -1,3 +1,12 @@
+// Faithful port of Powell's Fortran BOBYQA — index-based loops match the original.
+#![allow(
+    clippy::needless_range_loop,
+    clippy::too_many_arguments,
+    clippy::manual_memcpy,
+    clippy::assign_op_pattern,
+    clippy::manual_saturating_arithmetic,
+    clippy::implicit_saturating_sub
+)]
 //! Pure Rust implementation of Powell's BOBYQA algorithm.
 //!
 //! **BOBYQA** (Bound Optimization BY Quadratic Approximation) is a

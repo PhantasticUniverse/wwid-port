@@ -1,3 +1,5 @@
+// Geometry ordering logic ported from Java — index-based loops preserve clarity.
+#![allow(clippy::needless_range_loop)]
 //! Instrument compilation: raw XML model to acoustic component chain.
 //!
 //! The [`compile`] function converts an [`InstrumentRaw`] (from XML) into an
@@ -2025,6 +2027,34 @@ fn validate(raw: &InstrumentRaw) -> Vec<String> {
     if raw.bore_points.len() < 2 {
         errors.push("Instrument must have at least two bore points.".to_string());
     }
+    // Reject non-finite bore point values (guards partial_cmp().unwrap() in sorting)
+    for (i, bp) in raw.bore_points.iter().enumerate() {
+        if !bp.bore_position.is_finite() || !bp.bore_diameter.is_finite() {
+            errors.push(format!(
+                "Bore point {} has non-finite position or diameter.",
+                i + 1
+            ));
+        }
+        if bp.bore_diameter <= 0.0 {
+            errors.push(format!(
+                "Bore point {} diameter must be positive.",
+                i + 1
+            ));
+        }
+    }
+    // Reject non-finite hole values
+    for hole in &raw.holes {
+        let name = hole.name.as_deref().unwrap_or("unnamed");
+        if !hole.bore_position.is_finite() || !hole.diameter.is_finite() || !hole.height.is_finite()
+        {
+            errors.push(format!("Hole '{}' has non-finite geometry.", name));
+        }
+    }
+    // Reject non-finite mouthpiece position
+    if !raw.mouthpiece.position.is_finite() {
+        errors.push("Mouthpiece position is non-finite.".to_string());
+    }
+
     if raw.bore_points.len() >= 2 {
         let min_pos = raw
             .bore_points
@@ -3021,5 +3051,43 @@ mod tests {
         // Should be scaled down if the spacing exceeds available space
         // Available = point[2] - point[0] (but n_changed=1 means we need point at index 2)
         assert!(upper[0] < 1.0, "upper bound should be clamped");
+    }
+
+    // ── Defensive: non-finite validation ────────────────────────
+
+    #[test]
+    fn nan_bore_position_rejected() {
+        use wid_types::*;
+        let raw = InstrumentRaw {
+            name: "test".to_string(),
+            description: None,
+            length_type: LengthType::Metres,
+            mouthpiece: MouthpieceRaw {
+                position: 0.0,
+                beta: None,
+                fipple: Some(FippleRaw {
+                    window_length: 0.01,
+                    window_width: 0.01,
+                    fipple_factor: Some(0.75),
+                    window_height: None,
+                    windway_length: None,
+                    windway_height: None,
+                }),
+                embouchure_hole: None,
+                single_reed: None,
+                double_reed: None,
+                lip_reed: None,
+            },
+            bore_points: vec![
+                BorePointRaw { name: None, bore_position: 0.0, bore_diameter: 0.02 },
+                BorePointRaw { name: None, bore_position: f64::NAN, bore_diameter: 0.02 },
+            ],
+            holes: vec![],
+            termination: TerminationRaw { flange_diameter: 0.0 },
+        };
+        let result = compile(&raw);
+        assert!(result.is_err(), "compile should reject NaN bore position");
+        let msgs = result.unwrap_err().messages;
+        assert!(msgs.iter().any(|m| m.contains("non-finite")), "error should mention non-finite: {:?}", msgs);
     }
 }

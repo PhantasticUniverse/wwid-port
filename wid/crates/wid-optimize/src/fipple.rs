@@ -31,7 +31,18 @@ pub fn calibrate_fipple(
     calc_params: &CalculatorParams,
 ) -> CalibrationResult {
     // Extract the lowest-frequency fingering (matching Java getLowestNote)
-    let lowest = get_lowest_fingering(&tuning.fingerings);
+    let lowest = match get_lowest_fingering(&tuning.fingerings) {
+        Some(f) => f,
+        None => {
+            let current_ff = get_fipple_factor(instrument).unwrap_or(0.75);
+            return CalibrationResult {
+                initial_fipple_factor: current_ff,
+                final_fipple_factor: current_ff,
+                initial_norm: 0.0,
+                final_norm: 0.0,
+            };
+        }
+    };
     let lowest_fingerings = vec![lowest.clone()];
     let weights = fingering_weights(&lowest_fingerings);
 
@@ -76,7 +87,7 @@ pub fn calibrate_fipple(
 }
 
 /// Find the fingering with the lowest target frequency.
-fn get_lowest_fingering(fingerings: &[Fingering]) -> &Fingering {
+fn get_lowest_fingering(fingerings: &[Fingering]) -> Option<&Fingering> {
     fingerings
         .iter()
         .filter(|f| f.note.frequency.is_some())
@@ -87,7 +98,6 @@ fn get_lowest_fingering(fingerings: &[Fingering]) -> &Fingering {
                 .partial_cmp(&b.note.frequency.unwrap())
                 .unwrap()
         })
-        .expect("tuning must have at least one fingering with a frequency")
 }
 
 /// Evaluate the weighted norm for the given fingerings.
@@ -315,5 +325,33 @@ mod tests {
                 err
             );
         }
+    }
+
+    // ── Defensive: empty/no-frequency fingerings ────────────────
+
+    #[test]
+    fn get_lowest_fingering_empty_returns_none() {
+        assert!(get_lowest_fingering(&[]).is_none());
+    }
+
+    #[test]
+    fn calibrate_fipple_no_frequency_is_noop() {
+        use wid_types::Note;
+        let mut inst = parse_instrument_xml(NAF_6HOLE_XML).unwrap();
+        let tuning = Tuning {
+            name: "test".to_string(),
+            comment: None,
+            number_of_holes: 6,
+            fingerings: vec![Fingering {
+                note: Note { name: "X".to_string(), frequency: None, frequency_min: None, frequency_max: None },
+                open_holes: vec![],
+                open_end: None,
+                optimization_weight: None,
+            }],
+        };
+        let params = default_params();
+        let result = calibrate_fipple(&mut inst, &tuning, &params, DEFAULT_FF_LOWER, DEFAULT_FF_UPPER, &CalculatorParams::NAF);
+        assert_eq!(result.initial_norm, 0.0);
+        assert_eq!(result.final_norm, 0.0);
     }
 }

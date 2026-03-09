@@ -62,19 +62,18 @@ pub fn find_root(
 
         // Decide between interpolation and bisection
         if e.abs() >= tol && fa.abs() > fb.abs() {
-            let s;
-            if (a - c).abs() < f64::EPSILON {
+            let s = if (a - c).abs() < f64::EPSILON {
                 // Secant method (linear interpolation)
-                s = -fb * (b - a) / (fb - fa);
+                -fb * (b - a) / (fb - fa)
             } else {
                 // Inverse quadratic interpolation
                 let r = fb / fc;
                 let q = fa / fc;
                 let p_val = fb / fa;
-                s = -(p_val
+                -(p_val
                     * (2.0 * m * q * (q - r) - (b - a) * (r - 1.0)))
-                    / ((q - 1.0) * (r - 1.0) * (p_val - 1.0));
-            }
+                    / ((q - 1.0) * (r - 1.0) * (p_val - 1.0))
+            };
 
             // Check if interpolation is acceptable
             let bound1 = 0.75 * m - 0.5 * tol.abs();

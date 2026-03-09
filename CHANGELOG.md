@@ -15,7 +15,7 @@ Full parity with WIDesigner v2.6.0 across all four study models.
 - **All tools in popup windows**: matching Java JFrame behavior
 
 ### Verification
-- 449 tests, 57 golden fixture sets
+- 454 tests, 57 golden fixture sets
 - Evaluation parity: ≤0.058 cents across 994 fingerings
 - 6 hostile parity audits, all clean
 

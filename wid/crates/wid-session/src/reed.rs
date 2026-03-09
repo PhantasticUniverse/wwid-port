@@ -420,7 +420,7 @@ fn apply_reed_hole_position_bounds(constraints: &mut [Constraint], offset: usize
     }
     // Java: if (numberOfHoles >= 5) upperBound[(numberOfHoles + 1) / 2] = 0.100
     if n >= 5 {
-        if let Some(c) = constraints.get_mut(offset + (n + 1) / 2) {
+        if let Some(c) = constraints.get_mut(offset + n.div_ceil(2)) {
             c.upper_bound = Some(0.100);
         }
     }

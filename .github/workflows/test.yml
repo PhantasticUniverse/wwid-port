@@ -26,6 +26,10 @@ jobs:
         working-directory: wid
         run: cargo test
 
+      - name: Clippy lint
+        working-directory: wid
+        run: cargo clippy -- -D warnings
+
       - name: Build WASM
         working-directory: wid
         run: cargo build --target wasm32-unknown-unknown --release -p wid-wasm
@@ -40,3 +44,7 @@ jobs:
         run: |
           npm install
           npx tsc --noEmit
+
+      - name: Vite build
+        working-directory: web
+        run: npx vite build

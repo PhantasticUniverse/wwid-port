@@ -133,6 +133,10 @@ impl LinearVTuner {
         calc_params: &CalculatorParams,
         blowing_level: u8,
     ) -> Self {
+        if fingerings.is_empty() {
+            return LinearVTuner { slope: 0.0, intercept: 1.0 };
+        }
+
         let wl = window_length(instrument);
 
         // Find lowest and highest target frequencies (with optimization_weight > 0)
@@ -165,6 +169,11 @@ impl LinearVTuner {
                     note_high_idx = i;
                 }
             }
+        }
+
+        // No usable fingering found — return identity tuner
+        if f_low_target == f64::MAX {
+            return LinearVTuner { slope: 0.0, intercept: 1.0 };
         }
 
         let bottom_frac = bottom_fraction(blowing_level);
@@ -204,6 +213,7 @@ impl LinearVTuner {
 /// Returns `(nominal_freq, velocity)` where:
 /// - For the low note: nominal_freq = fmax, velocity = vMax - fraction*(vMax-vMin)
 /// - For the high note: nominal_freq = fmin, velocity = vMax - fraction*(vMax-vMin)
+#[allow(clippy::too_many_arguments)]
 fn compute_velocity_at_note(
     instrument: &InstrumentCompiled,
     fingering: &Fingering,
@@ -390,4 +400,42 @@ pub fn predicted_frequency_linear_v(
     let target_ratio = z_ratio(target_freq, wl, v_nom);
 
     find_z_ratio(instrument, fingering, params, calc_params, target_freq, target_ratio)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use wid_physics::{PhysicalParameters, TemperatureType};
+    use wid_types::parse_instrument_xml;
+
+    const NAF_0HOLE_XML: &str =
+        include_str!("../../../../golden/scenarios/support/NAF-FF-02_instrument_0hole.xml");
+
+    #[test]
+    fn empty_fingerings_does_not_panic() {
+        let raw = parse_instrument_xml(NAF_0HOLE_XML).unwrap();
+        let compiled = wid_compile::compile(&raw).unwrap();
+        let params = PhysicalParameters::new(72.0, TemperatureType::F);
+        let tuner = LinearVTuner::new(&compiled, &[], &params, &CalculatorParams::NAF, 5);
+        // Should return identity tuner, not panic
+        assert_eq!(tuner.slope, 0.0);
+        assert_eq!(tuner.intercept, 1.0);
+    }
+
+    #[test]
+    fn no_frequency_fingerings_does_not_panic() {
+        use wid_types::{Fingering, Note};
+        let raw = parse_instrument_xml(NAF_0HOLE_XML).unwrap();
+        let compiled = wid_compile::compile(&raw).unwrap();
+        let params = PhysicalParameters::new(72.0, TemperatureType::F);
+        let fingerings = vec![Fingering {
+            note: Note { name: "X".to_string(), frequency: None, frequency_min: None, frequency_max: None },
+            open_holes: vec![],
+            open_end: None,
+            optimization_weight: None,
+        }];
+        let tuner = LinearVTuner::new(&compiled, &fingerings, &params, &CalculatorParams::NAF, 5);
+        assert_eq!(tuner.slope, 0.0);
+        assert_eq!(tuner.intercept, 1.0);
+    }
 }

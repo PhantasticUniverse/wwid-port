@@ -137,6 +137,7 @@ Any browser with WebAssembly and Web Worker support: Chrome 57+, Firefox 52+, Sa
 
 | Document | Purpose |
 |----------|---------|
+| [**User Guide**](docs/user-guide/index.md) | **End-user documentation: getting started, study models, tools, optimizers, reference** |
 | [`CONTRIBUTING.md`](CONTRIBUTING.md) | How to develop, test, and extend the port |
 | [`CHANGELOG.md`](CHANGELOG.md) | Version history and release notes |
 | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | Crate dependency graph, data flow, extension guide |

@@ -1,3 +1,5 @@
+// Optimizer entry points inherently take many parameters (instrument, tuning, constraints, etc.).
+#![allow(clippy::too_many_arguments)]
 //! Optimization infrastructure for WIDesigner instrument tuning.
 //!
 //! This crate provides objective functions, calibrators, and optimizer dispatch

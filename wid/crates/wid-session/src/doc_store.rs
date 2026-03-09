@@ -30,12 +30,18 @@ pub struct DocStore {
     next_id: u32,
 }
 
-impl DocStore {
-    pub fn new() -> Self {
+impl Default for DocStore {
+    fn default() -> Self {
         DocStore {
             docs: Vec::new(),
             next_id: 1,
         }
+    }
+}
+
+impl DocStore {
+    pub fn new() -> Self {
+        Self::default()
     }
 
     /// Store a new document, returning its assigned ID.

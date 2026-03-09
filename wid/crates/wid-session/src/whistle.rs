@@ -312,6 +312,7 @@ fn constraint_template(
 /// DEFAULT_CONSTRAINTS_INTENT code path.
 ///
 /// Called by Whistle, Flute (via delegation), and Reed (with different constants).
+#[allow(clippy::too_many_arguments)]
 pub(crate) fn apply_default_bounds(
     constraints: &mut [Constraint],
     optimizer: &str,

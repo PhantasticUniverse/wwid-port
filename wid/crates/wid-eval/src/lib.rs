@@ -184,7 +184,7 @@ pub(crate) fn find_bracket(
         let up = find_bracket_above(freq, val, reactance, near_freq * SEARCH_BOUND_RATIO);
 
         let up_failed = up.is_none();
-        let up_too_far = up.map_or(false, |(_, hi)| hi > near_freq * PREFERRED_SOLUTION_RATIO);
+        let up_too_far = up.is_some_and(|(_, hi)| hi > near_freq * PREFERRED_SOLUTION_RATIO);
 
         if up_failed || up_too_far {
             let limit = if up_failed {
@@ -203,7 +203,7 @@ pub(crate) fn find_bracket(
         let down = find_bracket_below(freq, val, reactance, near_freq / SEARCH_BOUND_RATIO);
 
         let down_failed = down.is_none();
-        let down_too_far = down.map_or(false, |(lo, _)| lo < near_freq / PREFERRED_SOLUTION_RATIO);
+        let down_too_far = down.is_some_and(|(lo, _)| lo < near_freq / PREFERRED_SOLUTION_RATIO);
 
         if down_failed || down_too_far {
             let limit = if down_failed {
