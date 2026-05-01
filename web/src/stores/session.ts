@@ -1,4 +1,4 @@
-import { createSignal, createMemo } from "solid-js";
+import { createSignal } from "solid-js";
 import { createStore, produce } from "solid-js/store";
 import type {
   DocId,
@@ -18,6 +18,7 @@ import type {
   TuningData,
   ConstraintsData,
 } from "../types/documents";
+import type { SampleBundle } from "../data/sampleBundles";
 import { ComputeService } from "../services/ComputeService";
 import { openEvalPopup } from "../components/tools/EvalPopup";
 
@@ -59,11 +60,25 @@ function log(msg: string) {
   setConsoleLogs(produce((logs) => logs.push(msg)));
 }
 
-// ── Gating (computed from selection) ─────────────────────────
-const canTune = createMemo(() => {
-  const sel = selection();
-  return sel.instrument_id !== null && sel.tuning_id !== null;
-});
+function logAirProperties() {
+  const p = params();
+  if (!p) return;
+  log("");
+  log(
+    `Properties of air at ${p.temperature.toFixed(2)} C, ` +
+      `${p.pressure.toFixed(3)} kPa, ` +
+      `${p.humidity.toFixed(0)}% humidity, ` +
+      `${p.co2Ppm.toFixed(0)} ppm CO2:`
+  );
+  log(`Speed of sound is ${p.speedOfSound.toFixed(3)} m/s.`);
+  log(`Density is ${p.density.toFixed(4)} kg/m^3.`);
+  log(`Epsilon factor is ${p.epsilonConstant.toExponential(3)}.`);
+}
+
+// ── Gating (mirrors backend predicates) ──────────────────────
+const [canTune, setCanTune] = createSignal(false);
+const [canOptimize, setCanOptimize] = createSignal(false);
+const [canSketch, setCanSketch] = createSignal(false);
 
 const CALIBRATOR_KEYS = new Set([
   "FippleFactorObjectiveFunction",
@@ -75,27 +90,15 @@ const CALIBRATOR_KEYS = new Set([
   "ReedCalibratorObjectiveFunction",
 ]);
 
-const isCalibratorSelected = createMemo(() => {
+const isCalibratorSelected = () => {
   const key = selection().optimizer_key;
   return key !== null && CALIBRATOR_KEYS.has(key);
-});
+};
 
-const canOptimize = createMemo(() => {
-  const sel = selection();
-  if (!canTune() || sel.optimizer_key === null) return false;
-  // Calibrators don't require constraints
-  if (CALIBRATOR_KEYS.has(sel.optimizer_key)) return true;
-  return sel.constraints_id !== null;
-});
-
-const canSketch = createMemo(() => {
-  return selection().instrument_id !== null;
-});
-
-const canCreateConstraints = createMemo(() => {
+const canCreateConstraints = () => {
   const sel = selection();
   return sel.instrument_id !== null && sel.optimizer_key !== null;
-});
+};
 
 // ── Actions ──────────────────────────────────────────────────
 
@@ -116,6 +119,7 @@ async function init() {
     log(`Speed of sound is ${p.speedOfSound.toFixed(3)} m/s.`);
     log(`Density is ${p.density.toFixed(4)} kg/m^3.`);
     log(`Epsilon factor is ${p.epsilonConstant.toExponential(3)}.`);
+    await refreshGating();
     setReady(true);
   } catch (e) {
     setError(`Failed to initialize: ${e}`);
@@ -164,6 +168,47 @@ async function openXml(xml: string) {
   }
 }
 
+async function loadSampleBundle(bundle: SampleBundle): Promise<boolean> {
+  try {
+    setLoading(true);
+    setError(null);
+    log(`Loading sample bundle: ${bundle.title}`);
+    const opened: DocInfo[] = [];
+    for (const file of bundle.files) {
+      const response = await fetch(file.path);
+      if (!response.ok) {
+        throw new Error(`Could not fetch ${file.path}: ${response.status}`);
+      }
+      const xml = await response.text();
+      if (!xml.trimStart().startsWith("<?xml") && !xml.trimStart().startsWith("<")) {
+        throw new Error(`Sample ${file.path} did not return XML`);
+      }
+      if (xml.trimStart().toLowerCase().startsWith("<!doctype html")) {
+        throw new Error(`Sample ${file.path} returned the app shell instead of XML`);
+      }
+      const info = await openXml(xml);
+      if (info) {
+        opened.push(info);
+        log(`  ${file.kind}: ${file.label}`);
+      }
+    }
+    const firstInstrument = opened.find((doc) => doc.kind === "Instrument");
+    const firstTuning = opened.find((doc) => doc.kind === "Tuning");
+    const firstConstraints = opened.find((doc) => doc.kind === "Constraints");
+    if (firstInstrument) await selectInstrument(firstInstrument.doc_id);
+    if (firstTuning) await selectTuning(firstTuning.doc_id);
+    if (firstConstraints) await selectConstraints(firstConstraints.doc_id);
+    log(`Sample ready: ${bundle.title}`);
+    logAirProperties();
+    return true;
+  } catch (e) {
+    setError(`Failed to load sample bundle: ${e}`);
+    return false;
+  } finally {
+    setLoading(false);
+  }
+}
+
 async function selectInstrument(docId: DocId) {
   setError(null);
   await compute.run("select_instrument", { docId });
@@ -195,6 +240,14 @@ async function selectConstraints(docId: DocId) {
 async function refreshGating() {
   const sel = await compute.run<Selection>("get_selection");
   setSelection(sel);
+  const [canTuneNow, canOptimizeNow, canSketchNow] = await Promise.all([
+    compute.run<boolean>("can_tune"),
+    compute.run<boolean>("can_optimize"),
+    compute.run<boolean>("can_sketch"),
+  ]);
+  setCanTune(canTuneNow);
+  setCanOptimize(canOptimizeNow);
+  setCanSketch(canSketchNow);
 }
 
 // ── Tab management ───────────────────────────────────────────
@@ -212,12 +265,18 @@ function openTab(docId: DocId, kind: DocKind, title: string) {
 }
 
 function closeTab(tabId: string) {
+  const currentTabs = [...tabs];
+  const idx = currentTabs.findIndex((t) => t.id === tabId);
+  const nextActive =
+    idx >= 0
+      ? currentTabs[idx + 1]?.id ?? currentTabs[idx - 1]?.id ?? null
+      : activeTabId();
   setTabs(produce((list) => {
-    const idx = list.findIndex((t) => t.id === tabId);
-    if (idx >= 0) list.splice(idx, 1);
+    const removeIdx = list.findIndex((t) => t.id === tabId);
+    if (removeIdx >= 0) list.splice(removeIdx, 1);
   }));
   if (activeTabId() === tabId) {
-    setActiveTabId(tabs.length > 0 ? tabs[tabs.length - 1]?.id ?? null : null);
+    setActiveTabId(nextActive);
   }
 }
 
@@ -235,6 +294,8 @@ async function setInstrument(docId: DocId, data: InstrumentData) {
     "name",
     data.name,
   );
+  setTabs((t) => t.docId === docId, "title", data.name);
+  await refreshGating();
 }
 
 async function getTuning(docId: DocId): Promise<TuningData> {
@@ -248,6 +309,8 @@ async function setTuning(docId: DocId, data: TuningData) {
     "name",
     data.name,
   );
+  setTabs((t) => t.docId === docId, "title", data.name);
+  await refreshGating();
 }
 
 async function getConstraints(docId: DocId): Promise<ConstraintsData> {
@@ -261,11 +324,82 @@ async function setConstraints(docId: DocId, data: ConstraintsData) {
     "name",
     data.constraintsName,
   );
+  setTabs((t) => t.docId === docId, "title", data.constraintsName);
+  await refreshGating();
+}
+
+async function replaceXml(docId: DocId, xml: string): Promise<boolean> {
+  try {
+    setLoading(true);
+    setError(null);
+    const result = await compute.run<{ doc_id: number; doc_kind: string; name: string }>(
+      "replace_xml",
+      { docId, xml }
+    );
+    const kind = result.doc_kind as DocInfo["kind"];
+    if (kind === "Instrument") {
+      setInstruments((d) => d.doc_id === docId, "name", result.name);
+    } else if (kind === "Tuning") {
+      setTunings((d) => d.doc_id === docId, "name", result.name);
+    } else if (kind === "Constraints") {
+      setConstraintsList((d) => d.doc_id === docId, "name", result.name);
+    }
+    setTabs((t) => t.docId === docId, "title", result.name);
+    await refreshGating();
+    log(`Applied XML edits: ${result.name}`);
+    return true;
+  } catch (e) {
+    setError(`Apply XML failed: ${e}`);
+    return false;
+  } finally {
+    setLoading(false);
+  }
+}
+
+async function deleteDoc(docId: DocId): Promise<boolean> {
+  try {
+    setLoading(true);
+    setError(null);
+    await compute.run("delete_doc", { docId });
+    setInstruments(produce((list) => {
+      const idx = list.findIndex((d) => d.doc_id === docId);
+      if (idx >= 0) list.splice(idx, 1);
+    }));
+    setTunings(produce((list) => {
+      const idx = list.findIndex((d) => d.doc_id === docId);
+      if (idx >= 0) list.splice(idx, 1);
+    }));
+    setConstraintsList(produce((list) => {
+      const idx = list.findIndex((d) => d.doc_id === docId);
+      if (idx >= 0) list.splice(idx, 1);
+    }));
+    const currentTabs = [...tabs];
+    const openTabs = currentTabs.filter((t) => t.docId === docId).map((t) => t.id);
+    const activeRemoved = activeTabId() != null && openTabs.includes(activeTabId()!);
+    const nextTab = currentTabs.find((t) => !openTabs.includes(t.id));
+    setTabs(produce((list) => {
+      for (const tabId of openTabs) {
+        const idx = list.findIndex((t) => t.id === tabId);
+        if (idx >= 0) list.splice(idx, 1);
+      }
+    }));
+    if (activeRemoved) {
+      setActiveTabId(nextTab?.id ?? null);
+    }
+    await refreshGating();
+    log(`Removed document ${docId}`);
+    return true;
+  } catch (e) {
+    setError(`Remove document failed: ${e}`);
+    return false;
+  } finally {
+    setLoading(false);
+  }
 }
 
 // ── Evaluation (popup) ──────────────────────────────────────
 
-async function evaluateTuning(): Promise<TuningResult | null> {
+async function evaluateTuning(openPopup = true): Promise<TuningResult | null> {
   try {
     setLoading(true);
     setError(null);
@@ -274,10 +408,11 @@ async function evaluateTuning(): Promise<TuningResult | null> {
       `Evaluation: net error ${result.net_error.toFixed(2)} cents, ` +
         `mean deviation ${result.mean_deviation.toFixed(2)} cents`
     );
-    // Open results in a popup window
-    const instName =
-      instruments.find((d) => d.doc_id === selection().instrument_id)?.name ?? "Instrument";
-    openEvalPopup(result, instName);
+    if (openPopup) {
+      const instName =
+        instruments.find((d) => d.doc_id === selection().instrument_id)?.name ?? "Instrument";
+      openEvalPopup(result, instName);
+    }
     return result;
   } catch (e) {
     setError(`Evaluation failed: ${e}`);
@@ -444,6 +579,13 @@ async function createBlankConstraints() {
 // ── Study model switching ────────────────────────────────────
 
 async function switchStudyModel(kind: string) {
+  if (
+    (instruments.length > 0 || tunings.length > 0 || constraints.length > 0) &&
+    localStorage.getItem("wid_confirm_study_switch") !== "false" &&
+    !window.confirm("Switching study model clears the current session. Continue?")
+  ) {
+    return;
+  }
   setStudyKind(kind);
   // Clear all state
   setInstruments([]);
@@ -653,12 +795,15 @@ export const sessionStore = {
   init,
   switchStudyModel,
   openXml,
+  loadSampleBundle,
   selectInstrument,
   selectTuning,
   selectOptimizer,
   selectConstraints,
   evaluateTuning,
   exportXml,
+  replaceXml,
+  deleteDoc,
   saveDocXml,
   updateParams,
   log,

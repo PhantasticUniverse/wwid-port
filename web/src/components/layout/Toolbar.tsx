@@ -7,6 +7,15 @@ import { openSketchPopup } from "../tools/SketchPopup";
 import { openSupplementaryPopup } from "../tools/SupplementaryPopup";
 import { openGraphTuningPopup } from "../tools/GraphTuningPopup";
 import { openNoteSpectrumPopup } from "../tools/NoteSpectrumPopup";
+import { openEvalPopup } from "../tools/EvalPopup";
+import ToolDockDialog, {
+  type GraphTuningResult,
+  type NoteSpectrumResult,
+  type SupplementaryResult,
+  type ToolDockContent,
+} from "../tools/ToolDockDialog";
+import type { SketchData } from "../tools/SketchPopup";
+import { getOutputMode } from "./SettingsDialog";
 import type { OptimizeResult, CalibResult, TuningResult } from "../../types/session";
 
 export default function Toolbar() {
@@ -14,6 +23,7 @@ export default function Toolbar() {
   const [optResult, setOptResult] = createSignal<OptimizeResult | CalibResult | null>(null);
   const [showCompare, setShowCompare] = createSignal(false);
   const [showWizard, setShowWizard] = createSignal(false);
+  const [toolDock, setToolDock] = createSignal<ToolDockContent | null>(null);
 
   const [lastEval, setLastEval] = createSignal<TuningResult | null>(null);
 
@@ -31,8 +41,21 @@ export default function Toolbar() {
   }
 
   async function handleEvaluate() {
-    const result = await sessionStore.evaluateTuning();
-    if (result) setLastEval(result);
+    const result = await sessionStore.evaluateTuning(false);
+    if (result) {
+      setLastEval(result);
+      if (getOutputMode() === "dock") {
+        const instName =
+          sessionStore.instruments.find((d) => d.doc_id === sessionStore.selection()?.instrument_id)?.name ?? "Instrument";
+        setToolDock({ kind: "eval", result, instrumentName: instName });
+      } else {
+        const instName =
+          sessionStore.instruments.find((d) => d.doc_id === sessionStore.selection()?.instrument_id)?.name ?? "Instrument";
+        // If the browser blocks Java-style popups, fall back to the in-app dock.
+        const opened = openEvalPopup(result, instName);
+        if (!opened) setToolDock({ kind: "eval", result, instrumentName: instName });
+      }
+    }
   }
 
   async function handleSupplementary() {
@@ -40,23 +63,46 @@ export default function Toolbar() {
     if (result) {
       const instName =
         sessionStore.instruments.find((d) => d.doc_id === sessionStore.selection()?.instrument_id)?.name ?? "Instrument";
-      openSupplementaryPopup(result as any, instName);
+      const supplementary = result as SupplementaryResult;
+      if (getOutputMode() === "dock") {
+        setToolDock({ kind: "supplementary", result: supplementary, instrumentName: instName });
+      } else {
+        const opened = openSupplementaryPopup(supplementary, instName);
+        if (!opened) setToolDock({ kind: "supplementary", result: supplementary, instrumentName: instName });
+      }
     }
   }
 
   async function handleGraph() {
     const result = await sessionStore.graphTuning();
-    if (result) openGraphTuningPopup(result as any);
+    if (result) {
+      const graph = result as GraphTuningResult;
+      if (getOutputMode() === "dock") {
+        setToolDock({ kind: "graph", result: graph });
+      } else {
+        const opened = openGraphTuningPopup(graph);
+        if (!opened) setToolDock({ kind: "graph", result: graph });
+      }
+    }
   }
 
   async function handleSpectrum() {
     let evalData = lastEval();
     if (!evalData) {
-      evalData = await sessionStore.evaluateTuning();
+      evalData = await sessionStore.evaluateTuning(false);
       if (evalData) setLastEval(evalData);
     }
     if (evalData && evalData.rows.length > 0) {
-      openNoteSpectrumPopup(evalData.rows.map((r) => ({ note: r.note, target_freq: r.target_freq })));
+      if (getOutputMode() === "dock") {
+        const spectrum = await sessionStore.noteSpectrum(0);
+        if (spectrum) setToolDock({ kind: "spectrum", result: spectrum as NoteSpectrumResult });
+      } else {
+        const opened = openNoteSpectrumPopup(evalData.rows.map((r) => ({ note: r.note, target_freq: r.target_freq })));
+        if (!opened) {
+          const spectrum = await sessionStore.noteSpectrum(0);
+          if (spectrum) setToolDock({ kind: "spectrum", result: spectrum as NoteSpectrumResult });
+        }
+      }
     }
   }
 
@@ -77,10 +123,18 @@ export default function Toolbar() {
           <button
             class={btn}
             style={{ background: "var(--color-surface-alt)", color: "var(--color-text)", border: "1px solid var(--color-border)" }}
-            disabled={!sessionStore.canSketch()}
+            disabled={!sessionStore.canSketch() || sessionStore.loading()}
             onClick={async () => {
               const data = await sessionStore.sketchInstrument();
-              if (data) openSketchPopup(data as any);
+              if (data) {
+                const sketch = data as SketchData;
+                if (getOutputMode() === "dock") {
+                  setToolDock({ kind: "sketch", result: sketch });
+                } else {
+                  const opened = openSketchPopup(sketch);
+                  if (!opened) setToolDock({ kind: "sketch", result: sketch });
+                }
+              }
             }}
             title="Show instrument cross-section diagram"
           >
@@ -89,7 +143,7 @@ export default function Toolbar() {
           <button
             class={btn}
             style={{ background: "var(--color-surface-alt)", color: "var(--color-text)", border: "1px solid var(--color-border)" }}
-            disabled={!canCompare()}
+            disabled={!canCompare() || sessionStore.loading()}
             onClick={() => setShowCompare(true)}
             title={!canCompare() ? "Load at least 2 instruments to compare" : "Compare two instruments side by side"}
           >
@@ -102,7 +156,7 @@ export default function Toolbar() {
           <button
             class={btn}
             style={{ background: "var(--color-accent)", color: "white" }}
-            disabled={!sessionStore.canTune()}
+            disabled={!sessionStore.canTune() || sessionStore.loading()}
             onClick={handleEvaluate}
             title={!sessionStore.canTune() ? "Select instrument and tuning first" : "Calculate tuning deviations for all fingerings"}
           >
@@ -111,7 +165,7 @@ export default function Toolbar() {
           <button
             class={btn}
             style={{ background: "var(--color-surface-alt)", color: "var(--color-text)", border: "1px solid var(--color-border)" }}
-            disabled={!sessionStore.canTune()}
+            disabled={!sessionStore.canTune() || sessionStore.loading()}
             onClick={handleSupplementary}
             title="Show supplementary acoustic information"
           >
@@ -124,7 +178,7 @@ export default function Toolbar() {
           <button
             class={btn}
             style={{ background: "var(--color-surface-alt)", color: "var(--color-text)", border: "1px solid var(--color-border)" }}
-            disabled={!sessionStore.canTune()}
+            disabled={!sessionStore.canTune() || sessionStore.loading()}
             onClick={handleGraph}
             title="Plot impedance playing ranges"
           >
@@ -133,7 +187,7 @@ export default function Toolbar() {
           <button
             class={btn}
             style={{ background: "var(--color-surface-alt)", color: "var(--color-text)", border: "1px solid var(--color-border)" }}
-            disabled={!sessionStore.canTune()}
+            disabled={!sessionStore.canTune() || sessionStore.loading()}
             onClick={handleSpectrum}
             title="Show note impedance spectrum"
           >
@@ -146,7 +200,7 @@ export default function Toolbar() {
           <button
             class={btn}
             style={{ background: "var(--color-accent)", color: "white" }}
-            disabled={!sessionStore.canOptimize() || sessionStore.optimizing()}
+            disabled={!sessionStore.canOptimize() || sessionStore.optimizing() || sessionStore.loading()}
             onClick={handleOptimize}
             title={
               !sessionStore.canOptimize()
@@ -190,11 +244,20 @@ export default function Toolbar() {
       />
 
       <Show when={showCompare()}>
-        <CompareDialog onClose={() => setShowCompare(false)} />
+        <CompareDialog
+          onClose={() => setShowCompare(false)}
+          onDock={(result) => setToolDock({ kind: "compare", result })}
+        />
       </Show>
 
       <Show when={showWizard()}>
         <WizardDialog onClose={() => setShowWizard(false)} />
+      </Show>
+
+      <Show when={toolDock()}>
+        {(content) => (
+          <ToolDockDialog content={content()} onClose={() => setToolDock(null)} />
+        )}
       </Show>
     </>
   );

@@ -1,11 +1,14 @@
-import { Show, For, Switch, Match, createMemo } from "solid-js";
+import { Show, For, Switch, Match, createMemo, createSignal } from "solid-js";
 import { sessionStore } from "../../stores/session";
 import InstrumentEditor from "../editors/InstrumentEditor";
 import TuningEditor from "../editors/TuningEditor";
 import ConstraintsEditor from "../editors/ConstraintsEditor";
+import RawXmlEditor from "../editors/RawXmlEditor";
 import Toolbar from "./Toolbar";
 
 export default function Workspace() {
+  const [viewMode, setViewMode] = createSignal<Record<number, "form" | "xml">>({});
+  const [refreshKey, setRefreshKey] = createSignal(0);
   const activeTab = createMemo(() => {
     const id = sessionStore.activeTabId();
     if (!id) return null;
@@ -16,6 +19,12 @@ export default function Workspace() {
     <main class="flex-1 flex flex-col overflow-hidden">
       {/* Toolbar */}
       <Toolbar />
+
+      <Show when={sessionStore.loading()}>
+        <div class="border-b px-4 py-1 text-xs ws-mono" style={{ background: "var(--color-accent-soft)", "border-color": "var(--color-border)", color: "var(--color-text-muted)" }}>
+          Working...
+        </div>
+      </Show>
 
       {/* Error banner */}
       <Show when={sessionStore.error()}>
@@ -91,25 +100,66 @@ export default function Workspace() {
           fallback={
             <Show when={sessionStore.ready()}>
               <div class="flex flex-col items-center justify-center h-full opacity-40">
-                <p class="text-lg mb-2">Drop XML files here to get started</p>
-                <p class="text-sm">or use the Open File button</p>
+                <p class="ws-serif text-3xl mb-2">Load a sample or drop XML files here</p>
+                <p class="text-sm">Start from a bundled study bundle or use the Open File button</p>
                 <p class="text-xs mt-4">Double-click a document in the study panel to edit it</p>
               </div>
             </Show>
           }
         >
           {(tab) => (
-            <Switch>
-              <Match when={tab().kind === "Instrument"}>
-                <InstrumentEditor docId={tab().docId} />
-              </Match>
-              <Match when={tab().kind === "Tuning"}>
-                <TuningEditor docId={tab().docId} />
-              </Match>
-              <Match when={tab().kind === "Constraints"}>
-                <ConstraintsEditor docId={tab().docId} />
-              </Match>
-            </Switch>
+            <section class="ws-panel p-4">
+              <div class="mb-4 flex items-center justify-between gap-4 border-b pb-3" style={{ "border-color": "var(--color-border)" }}>
+                <div>
+                  <div class="ws-eyebrow">{tab().kind}</div>
+                  <h2 class="ws-serif text-2xl font-semibold">{tab().title}</h2>
+                </div>
+                <div class="flex rounded border p-0.5" style={{ "border-color": "var(--color-border)", background: "var(--color-surface-alt)" }}>
+                  <button
+                    class="px-3 py-1 text-xs font-semibold"
+                    style={{
+                      background: (viewMode()[tab().docId] ?? "form") === "form" ? "var(--color-surface)" : "transparent",
+                      color: "var(--color-text)",
+                    }}
+                    onClick={() => setViewMode((m) => ({ ...m, [tab().docId]: "form" }))}
+                  >
+                    Form
+                  </button>
+                  <button
+                    class="px-3 py-1 text-xs font-semibold"
+                    style={{
+                      background: viewMode()[tab().docId] === "xml" ? "var(--color-surface)" : "transparent",
+                      color: "var(--color-text)",
+                    }}
+                    onClick={() => setViewMode((m) => ({ ...m, [tab().docId]: "xml" }))}
+                  >
+                    XML
+                  </button>
+                </div>
+              </div>
+              <Show
+                when={(viewMode()[tab().docId] ?? "form") === "form"}
+                fallback={
+                  <RawXmlEditor
+                    docId={tab().docId}
+                    refreshKey={refreshKey()}
+                    onApplied={() => setRefreshKey((k) => k + 1)}
+                  />
+                }
+              >
+                <Switch>
+                  <Match when={tab().kind === "Instrument"}>
+                    <InstrumentEditor docId={tab().docId} />
+                  </Match>
+                  <Match when={tab().kind === "Tuning"}>
+                    <TuningEditor docId={tab().docId} />
+                  </Match>
+                  <Match when={tab().kind === "Constraints"}>
+                    <ConstraintsEditor docId={tab().docId} />
+                  </Match>
+                </Switch>
+              </Show>
+            </section>
           )}
         </Show>
       </div>

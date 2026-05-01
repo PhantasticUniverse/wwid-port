@@ -24,15 +24,14 @@ interface EvalNote {
   target_freq: number;
 }
 
-export function openNoteSpectrumPopup(notes: EvalNote[]) {
+export function openNoteSpectrumPopup(notes: EvalNote[]): boolean {
   const popup = window.open(
     "",
     `spectrum-${Date.now()}`,
     "width=900,height=560,menubar=no,toolbar=no,location=no,status=no"
   );
   if (!popup) {
-    alert("Popup blocked — please allow popups for note spectrum.");
-    return;
+    return false;
   }
 
   const doc = popup.document;
@@ -130,6 +129,7 @@ export function openNoteSpectrumPopup(notes: EvalNote[]) {
 
   // Load first note
   if (notes.length > 0) loadSpectrum(0);
+  return true;
 }
 
 function buildChart(canvas: HTMLCanvasElement, d: NoteSpectrumResult): Chart {

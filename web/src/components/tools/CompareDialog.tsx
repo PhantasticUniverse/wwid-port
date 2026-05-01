@@ -1,6 +1,7 @@
 import { Show, For, createSignal, onMount, onCleanup } from "solid-js";
 import { sessionStore } from "../../stores/session";
 import { openComparePopup } from "./ComparePopup";
+import { getOutputMode } from "../layout/SettingsDialog";
 
 interface CompareRow {
   category: string;
@@ -17,7 +18,10 @@ interface CompareResult {
   rows: CompareRow[];
 }
 
-export default function CompareDialog(props: { onClose: () => void }) {
+export default function CompareDialog(props: {
+  onClose: () => void;
+  onDock?: (result: CompareResult) => void;
+}) {
   const instruments = () => sessionStore.instruments;
 
   // Pre-select: if 2+ instruments, pick first two (most recent optimization = last two)
@@ -34,7 +38,13 @@ export default function CompareDialog(props: { onClose: () => void }) {
     const r = await sessionStore.compareInstruments(oldId(), newId());
     setLoading(false);
     if (r) {
-      openComparePopup(r as CompareResult);
+      const result = r as CompareResult;
+      if (getOutputMode() === "dock") {
+        props.onDock?.(result);
+      } else {
+        const opened = openComparePopup(result);
+        if (!opened) props.onDock?.(result);
+      }
       props.onClose();
     }
   }

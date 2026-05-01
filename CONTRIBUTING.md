@@ -39,7 +39,7 @@ Or use the justfile: `just build` (full pipeline) or `just dev` (WASM + dev serv
 
 ```bash
 cd wid
-cargo test              # All 454 tests
+cargo test              # All 457 tests
 cargo test naf_         # Tests matching a pattern
 cargo test --test bulk_naf_eval  # A specific integration test
 ```

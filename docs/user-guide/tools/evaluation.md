@@ -16,12 +16,12 @@ If these conditions are not met, the Evaluate button in the toolbar is disabled.
 
 Click the **Evaluate** button in the toolbar. The acoustic model compiles the instrument geometry, applies the physical parameters (temperature, humidity, pressure), and calculates the playing frequency for each fingering in the tuning.
 
-Results open in a popup window. Your browser may need to allow popups for this site.
+Results open in an in-app tool panel by default. You can choose Java-style popup windows in Settings.
 
 
 ## Reading the Tuning Table
 
-The popup shows a table with one row per fingering. The columns are:
+The result table shows one row per fingering. The columns are:
 
 | Column | Description |
 |--------|-------------|
@@ -55,7 +55,7 @@ Cents are a logarithmic unit for measuring pitch intervals. There are 100 cents 
 ## Study Model Differences
 
 - **NAF** and **Reed** models show only the nominal playing frequency for each fingering.
-- **Whistle** and **Flute** models can include additional columns for minimum and maximum playing frequencies (fmin/fmax), with their own predicted values and deviations. These reflect the playable range of each note, not just the nominal pitch.
+- **Whistle** and **Flute** playing-range data is available through **Graph** and **Supplementary**. The Evaluate table itself reports the nominal predicted frequency and cents deviation for each fingering.
 
 ## Note Weights
 

@@ -222,6 +222,47 @@ impl StudySession {
         }
     }
 
+    /// Replace an existing document with XML of the same document kind.
+    ///
+    /// This powers the web raw-XML editor. It deliberately rejects root/kind
+    /// changes so applying XML cannot silently turn a selected tuning into an
+    /// instrument or vice versa.
+    pub fn replace_xml(&mut self, doc_id: DocId, xml: &str) -> Result<OpenResult, SessionError> {
+        let existing_kind = self.docs.get(doc_id)
+            .ok_or(SessionError::DocNotFound(doc_id))?
+            .kind;
+        let stripped = wid_types::strip_xml_namespaces(xml);
+        let root = detect_root_element(&stripped);
+
+        match (existing_kind, root.as_deref()) {
+            (DocKind::Instrument, Some("instrument")) => {
+                let inst = parse_instrument_xml(xml)
+                    .map_err(|e| SessionError::InvalidXml(e.to_string()))?;
+                let name = inst.name.clone();
+                self.set_instrument(doc_id, inst)?;
+                Ok(OpenResult { doc_id, doc_kind: DocKind::Instrument, name })
+            }
+            (DocKind::Tuning, Some("tuning")) => {
+                let tuning = parse_tuning_xml(xml)
+                    .map_err(|e| SessionError::InvalidXml(e.to_string()))?;
+                let name = tuning.name.clone();
+                self.set_tuning(doc_id, tuning)?;
+                Ok(OpenResult { doc_id, doc_kind: DocKind::Tuning, name })
+            }
+            (DocKind::Constraints, Some("constraints")) => {
+                let constraints = parse_constraints_xml(xml)
+                    .map_err(|e| SessionError::InvalidXml(e.to_string()))?;
+                let name = constraints.name.clone();
+                self.set_constraints(doc_id, constraints)?;
+                Ok(OpenResult { doc_id, doc_kind: DocKind::Constraints, name })
+            }
+            _ => Err(SessionError::InvalidXml(format!(
+                "XML root {:?} does not match existing {:?} document",
+                root, existing_kind
+            ))),
+        }
+    }
+
     // ── Selection ───────────────────────────────────────────────────
 
     /// Select an instrument document.
@@ -247,6 +288,23 @@ impl StudySession {
     /// Clear all selections.
     pub fn clear_selection(&mut self) {
         self.selection = Selection::default();
+    }
+
+    /// Remove a document and clear any selection that pointed at it.
+    pub fn delete_doc(&mut self, doc_id: DocId) -> Result<(), SessionError> {
+        if !self.docs.remove(doc_id) {
+            return Err(SessionError::DocNotFound(doc_id));
+        }
+        if self.selection.instrument_id == Some(doc_id) {
+            self.selection.instrument_id = None;
+        }
+        if self.selection.tuning_id == Some(doc_id) {
+            self.selection.tuning_id = None;
+        }
+        if self.selection.constraints_id == Some(doc_id) {
+            self.selection.constraints_id = None;
+        }
+        Ok(())
     }
 
     // ── Gating predicates ───────────────────────────────────────────
@@ -2471,6 +2529,37 @@ mod tests {
         assert_eq!(t1.fingerings.len(), t2.fingerings.len());
     }
 
+    #[test]
+    fn replace_xml_updates_existing_doc() {
+        let mut session = StudySession::new(StudyKind::NAF);
+        let orig = session.open_xml(NAF_6HOLE_XML).unwrap();
+        let xml = session.export_xml(orig.doc_id).unwrap();
+        let original_name = session.docs().get_instrument(orig.doc_id).unwrap().name.clone();
+        let edited = xml.replace(
+            &format!("<name>{original_name}</name>"),
+            "<name>XML Edited NAF</name>",
+        );
+
+        let result = session.replace_xml(orig.doc_id, &edited).unwrap();
+        assert_eq!(result.doc_id, orig.doc_id);
+        assert_eq!(result.name, "XML Edited NAF");
+        assert_eq!(
+            session.docs().get_instrument(orig.doc_id).unwrap().name,
+            "XML Edited NAF"
+        );
+    }
+
+    #[test]
+    fn replace_xml_rejects_kind_change() {
+        let mut session = StudySession::new(StudyKind::NAF);
+        let inst = session.open_xml(NAF_6HOLE_XML).unwrap();
+        let tuning_doc = session.open_xml(TUNING_6HOLE_XML).unwrap();
+        let tuning = session.export_xml(tuning_doc.doc_id).unwrap();
+
+        assert!(session.replace_xml(inst.doc_id, &tuning).is_err());
+        assert!(session.docs().get_instrument(inst.doc_id).is_some());
+    }
+
     // ── Delete holes ────────────────────────────────────────────────
 
     #[test]
@@ -2487,6 +2576,21 @@ mod tests {
             session.docs().get_instrument(inst.doc_id).unwrap().holes.len(),
             0
         );
+    }
+
+    #[test]
+    fn delete_doc_clears_selection() {
+        let mut session = StudySession::new(StudyKind::NAF);
+        let inst = session.open_xml(NAF_6HOLE_XML).unwrap();
+        let tuning = session.open_xml(TUNING_6HOLE_XML).unwrap();
+        session.select_instrument(inst.doc_id);
+        session.select_tuning(tuning.doc_id);
+        assert!(session.can_tune());
+
+        session.delete_doc(inst.doc_id).unwrap();
+        assert!(!session.can_tune());
+        assert!(session.selection().instrument_id.is_none());
+        assert!(session.delete_doc(inst.doc_id).is_err());
     }
 
     // ── Document get/set ──────────────────────────────────────────

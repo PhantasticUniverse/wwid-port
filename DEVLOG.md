@@ -4,7 +4,7 @@
 
 | Metric | Value |
 |--------|-------|
-| **Total tests** | 454 |
+| **Total tests** | 457 |
 | **Study models complete** | 4/4 (NAF, Whistle, Flute, Reed) |
 | **Milestones done** | M0–M5 complete |
 | **Evaluation parity** | ≤ 0.058 cents across 994 fingerings |
@@ -74,7 +74,7 @@ Three parallel exploration agents swept the entire repo — docs, Rust code, CI,
 - `web/index.html`: added `<meta name="description">` tag
 - Committed defensive hardening from prior session (NaN validation, fipple Option, LinearV empty guard, sketch sort, validate min/max — 5 new edge-case tests)
 
-**Verification:** 454 tests pass, clippy clean, vite build succeeds.
+**Verification:** 457 tests pass, clippy clean, vite build succeeds.
 
 ---
 
@@ -105,7 +105,7 @@ Committed pending Audit #6 fixes, added frontend defensive hardening, created wo
 - `justfile` — single entry point: test, wasm, web, build, dev, fixtures
 - `.github/workflows/test.yml` — Rust tests + WASM build + TypeScript check on push/PR
 
-**Verification:** 454 tests passing, web build clean.
+**Verification:** 457 tests passing, web build clean.
 
 ---
 
@@ -121,7 +121,7 @@ Final hostile pass with 6 independent agents across 2 rounds. Round 1: frontend/
 - Acoustic numerics: transfer matrix formulas (cylinder, cone), radiation impedance (Silva 2008 Padé), 3 mouthpiece models, complex wave propagation (lossy epsilon), hole effective length (Lefebvre & Scavone 2012), physical parameters (CIPM-2007) — all match Java to machine precision
 - Optimization: all objective function geometry mappings (hole, bore, taper, spacing, merged), constraint bounds creation, fingering weight normalization, BOBYQA trust radius, max evaluations formula — all match Java exactly
 - Session/WASM dispatch: all 43 commands present, 26 called from frontend, all camelCase, all return types match TypeScript interfaces
-- Docs/fixtures: 57 golden fixture directories consistent, 454 tests consistent, all MEMORY.md gotchas verified current
+- Docs/fixtures: 57 golden fixture directories consistent, 457 tests consistent, all MEMORY.md gotchas verified current
 
 **False positives dismissed (20+):** App.tsx unhandled promise (has internal try/catch), WizardDialog errors (has own try/catch), SolidJS select coercion (correct), Chart.js popup memory (popup close destroys DOM), study model switch race (sequential await), missing select validation (matches Java), ComputeService errorHandler (correct), cents() guards (caller responsibility), radiation impedance (matches Java), SimplePhysicalParameters alpha (legacy model).
 
@@ -129,7 +129,7 @@ Final hostile pass with 6 independent agents across 2 rounds. Round 1: frontend/
 
 ## 2026-03-06: Parity Audit #5
 
-Final comprehensive audit with 3 hostile exploration agents covering the entire codebase: Rust core, frontend/WASM, and docs/fixtures. The Rust core (454 tests) is clean — no undocumented parity issues found.
+Final comprehensive audit with 3 hostile exploration agents covering the entire codebase: Rust core, frontend/WASM, and docs/fixtures. The Rust core (457 tests) is clean — no undocumented parity issues found.
 
 **Code fixes:**
 1. **ComputeService `init()` hang** (HIGH) — `onerror` handler rejected pending promises but never touched `readyResolve`, so `init()` would hang forever if WASM failed to load via ErrorEvent. Added `readyReject` field and wired it into all error paths
@@ -235,7 +235,7 @@ Added two settings matching Java's `OptimizationPreferences`:
 
 ## 2026-03-06: Visual Parity Improvements
 
-After comparing screenshots of Java WIDesigner v2.6.0 against the web port, addressed 5 visual gaps prioritized by user impact. All changes are presentation-only; 454 tests remain passing.
+After comparing screenshots of Java WIDesigner v2.6.0 against the web port, addressed 5 visual gaps prioritized by user impact. All changes are presentation-only; 457 tests remain passing.
 
 ### P1: Graph Tuning Chart Overhaul
 - Renamed dialog title from "Graph Tuning - Playing Ranges" to "Impedance Pattern" (matching Java)

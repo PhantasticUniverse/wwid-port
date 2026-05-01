@@ -32,20 +32,21 @@ In the header bar at the top of the page, you will see a dropdown menu next to t
 For this walkthrough, select **NAF**.
 
 
-## Step 3: Download Sample Files
+## Step 3: Load a Sample Bundle
 
-The app bundles sample files for each study model. You can download them from the `/samples/` directory served by the app. For the NAF study model, you need at minimum an instrument file and a tuning file:
+Click **Load Sample** in the header bar and choose **NAF F#4 Starter**. The app loads the instrument, tuning, and matching constraints files directly from the bundled `/samples/` directory.
+
+If you prefer to download files manually, the NAF walkthrough uses:
 
 - [`/samples/NafStudy/0.625-bore_6-hole_NAF_starter.xml`](/samples/NafStudy/0.625-bore_6-hole_NAF_starter.xml) -- a starter NAF instrument with 0.625" bore diameter and 6 holes
-- [`/samples/NafStudy/F#4_ET_6-hole_NAF_chromatic_tuning.xml`](/samples/NafStudy/F%234_ET_6-hole_NAF_chromatic_tuning.xml) -- an equal temperament tuning in F#4 for a 6-hole NAF
-
-Right-click each link and save the file to your computer, or navigate to those URLs directly in your browser to download them.
+- [`/samples/NafStudy/Fsharp4_ET_6-hole_NAF_chromatic_tuning.xml`](/samples/NafStudy/Fsharp4_ET_6-hole_NAF_chromatic_tuning.xml) -- an equal temperament tuning in F#4 for a 6-hole NAF
+- [`/samples/NafStudy/NAF_HoleFromTop_constraints.xml`](/samples/NafStudy/NAF_HoleFromTop_constraints.xml) -- constraints for hole-position optimization
 
 See [Sample Files](sample-files.md) for the full list of bundled files across all study models.
 
 ## Step 4: Load Your Files
 
-Click the **Open File** button in the header bar. A file picker dialog appears. Select both XML files you downloaded (you can select multiple files at once, or open them one at a time).
+If you used **Load Sample**, the files are already loaded and selected. To use your own files, click the **Open File** button in the header bar. A file picker dialog appears. Select XML files (you can select multiple files at once, or open them one at a time).
 
 The files appear in the **Study Panel** on the left side of the screen. Instrument files appear under the "Instruments" section, and tuning files appear under the "Tunings" section.
 
@@ -60,7 +61,7 @@ With both selected, the **Evaluate** button in the toolbar becomes active. WIDes
 
 ## Step 6: Run an Evaluation
 
-Click **Evaluate** in the toolbar row. A popup window opens showing a tuning comparison table. For each fingering in the tuning, the table displays:
+Click **Evaluate** in the toolbar row. The tuning comparison table opens in the app by default; you can switch tool output to popup windows in Settings. For each fingering in the tuning, the table displays:
 
 - The note name
 - The target frequency (from the tuning file)
@@ -78,7 +79,7 @@ Double-click the instrument name in the Study Panel to open it in an editor tab 
 - **Bore profile** -- a table of position/diameter pairs defining the bore shape
 - **Hole table** -- position, diameter, and height for each tone hole
 
-You can modify any value directly. Changes take effect immediately for subsequent evaluations.
+You can modify any value directly. Changes take effect immediately for subsequent evaluations. Use the **Form/XML** toggle in the workspace header to switch between the structured editor and raw XML view.
 
 
 ## Step 8: Optimize (Brief Overview)
@@ -99,7 +100,7 @@ The WIDesigner Web interface has four main areas:
 
 ```
 +---------------------------------------------------------------+
-| WIDesigner  [NAF v]   [Open File]  [Save]  [Settings]        |  Header Bar
+| WIDesigner  [NAF v] [Load Sample] [Open File] [Save] [Settings] | Header
 +---------------------------------------------------------------+
 | Sketch | Compare || Evaluate | Suppl. || Graph | Spectrum     |  Toolbar Row
 | || Optimize | Calibrate | Wizard                              |
@@ -119,7 +120,7 @@ The WIDesigner Web interface has four main areas:
 +---------------------------------------------------------------+
 ```
 
-- **Header bar**: Application title, study model dropdown, Open File button, Save button, Settings gear icon.
+- **Header bar**: Application title, study model dropdown, Load Sample, Open File, Save, and Settings.
 - **Toolbar row**: Action buttons grouped by function -- visualization (Sketch, Compare), evaluation (Evaluate, Supplementary), analysis (Graph Tuning, Note Spectrum), and optimization (Optimize/Calibrate, Tuning Wizard).
 - **Study Panel** (left sidebar, 224px wide): Lists loaded documents organized by type -- Instruments, Tunings, Optimizers, Constraints. The Constraints section has "+ Default" and "+ Blank" buttons to create new constraint documents when an optimizer is selected. Single-click to select; double-click to open in an editor.
 - **Workspace** (center): Tabbed editor area for open documents. Each tab shows the document's name and a close button.

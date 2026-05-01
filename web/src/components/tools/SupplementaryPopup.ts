@@ -14,15 +14,14 @@ interface SupplementaryResult {
   rows: SupplementaryRow[];
 }
 
-export function openSupplementaryPopup(result: SupplementaryResult, instrumentName: string) {
+export function openSupplementaryPopup(result: SupplementaryResult, instrumentName: string): boolean {
   const popup = window.open(
     "",
     `sup-${Date.now()}`,
     "width=780,height=520,menubar=no,toolbar=no,location=no,status=no"
   );
   if (!popup) {
-    alert("Popup blocked — please allow popups for supplementary info.");
-    return;
+    return false;
   }
 
   const doc = popup.document;
@@ -100,6 +99,7 @@ export function openSupplementaryPopup(result: SupplementaryResult, instrumentNa
   }
   table.appendChild(tbody);
   doc.body.appendChild(table);
+  return true;
 }
 
 function addCell(doc: Document, tr: HTMLTableRowElement, text: string, align?: string): HTMLTableCellElement {

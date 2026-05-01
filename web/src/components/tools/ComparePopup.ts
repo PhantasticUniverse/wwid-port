@@ -15,15 +15,14 @@ export interface CompareResult {
   rows: CompareRow[];
 }
 
-export function openComparePopup(result: CompareResult) {
+export function openComparePopup(result: CompareResult): boolean {
   const popup = window.open(
     "",
     `compare-${Date.now()}`,
     "width=700,height=500,menubar=no,toolbar=no,location=no,status=no"
   );
   if (!popup) {
-    alert("Popup blocked — please allow popups for comparison results.");
-    return;
+    return false;
   }
 
   const doc = popup.document;
@@ -116,6 +115,7 @@ export function openComparePopup(result: CompareResult) {
   }
   table.appendChild(tbody);
   doc.body.appendChild(table);
+  return true;
 }
 
 function fmtNum(v: number): string {

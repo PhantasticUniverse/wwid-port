@@ -51,15 +51,14 @@ export interface SketchData {
   flange_diameter: number;
 }
 
-export function openSketchPopup(data: SketchData) {
+export function openSketchPopup(data: SketchData): boolean {
   const popup = window.open(
     "",
     `sketch-${Date.now()}`,
     "width=900,height=500,menubar=no,toolbar=no,location=no,status=no"
   );
   if (!popup) {
-    alert("Popup blocked — please allow popups for the instrument sketch.");
-    return;
+    return false;
   }
 
   const doc = popup.document;
@@ -108,6 +107,7 @@ export function openSketchPopup(data: SketchData) {
     summary.appendChild(val);
   }
   doc.body.appendChild(summary);
+  return true;
 }
 
 function buildSketchSVG(doc: Document, d: SketchData): SVGElement {

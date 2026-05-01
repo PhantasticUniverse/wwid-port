@@ -41,7 +41,7 @@ We use an **oracle + golden fixtures** workflow:
 1. The official Java release package (v2.6.0) is the **oracle** — source of truth
 2. A small Java CLI ("golden harness") generates **golden fixtures**: predicted frequencies, impedance samples, optimization outcomes
 3. The port must match these fixtures within defined tolerances (≤ 0.5 cents for evaluation, ≤ 1.0 cents for optimization)
-4. **454 tests** validate parity across all four study models
+4. **457 tests** validate parity across all four study models
 
 Fipple factor behavior is **load-bearing** and has dedicated fixtures to prevent accidental drift.
 
@@ -89,7 +89,7 @@ tools/                    Helper scripts (fetch oracle, etc.)
 
 ```bash
 cd wid
-cargo test        # All 454 tests
+cargo test        # All 457 tests
 ```
 
 ### Generate golden fixtures (optional — fixtures are committed)
@@ -162,7 +162,7 @@ All milestones complete (M0–M5).
 | Flute       | Complete   | Complete    | Complete     | Complete   |
 | Reed        | Complete   | Complete    | Complete     | Complete   |
 
-454 tests, 57 golden fixture sets, 5 analysis tools, tuning wizard — all passing.
+457 tests, 57 golden fixture sets, 5 analysis tools, tuning wizard — all passing.
 
 ## License
 

@@ -2,7 +2,7 @@
 
 ## Purpose
 
-> **Status**: Complete. All four study models (NAF, Whistle, Flute, Reed) fully implemented. Session lifecycle, document I/O, selection, evaluation, optimization, calibration, constraints creation, 5 analysis tools (sketch, compare, supplementary, graph tuning, note spectrum), and tuning wizard all working end-to-end in the browser. DIRECT-C global optimization, multi-start, bore optimizers, taper optimizers all complete. 454 tests passing.
+> **Status**: Complete. All four study models (NAF, Whistle, Flute, Reed) fully implemented. Session lifecycle, document I/O, selection, evaluation, optimization, calibration, constraints creation, 5 analysis tools (sketch, compare, supplementary, graph tuning, note spectrum), and tuning wizard all working end-to-end in the browser. DIRECT-C global optimization, multi-start, bore optimizers, taper optimizers all complete. 457 tests passing.
 
 Define a stable `StudySession` API that mirrors baseline StudyModel behavior:
 

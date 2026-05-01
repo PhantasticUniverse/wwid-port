@@ -4,9 +4,12 @@ import StudyPanel from "./components/layout/StudyPanel";
 import Workspace from "./components/layout/Workspace";
 import ConsolePanel from "./components/layout/ConsolePanel";
 import SettingsDialog from "./components/layout/SettingsDialog";
+import SampleLoaderDialog from "./components/layout/SampleLoaderDialog";
+import type { SampleBundle } from "./data/sampleBundles";
 
 export default function App() {
   const [showSettings, setShowSettings] = createSignal(false);
+  const [showSamples, setShowSamples] = createSignal(false);
 
   onMount(() => {
     sessionStore.init();
@@ -39,6 +42,11 @@ export default function App() {
     event.preventDefault();
   }
 
+  async function handleSampleLoad(bundle: SampleBundle) {
+    const loaded = await sessionStore.loadSampleBundle(bundle);
+    if (loaded) setShowSamples(false);
+  }
+
   return (
     <div class="min-h-screen flex flex-col" onDrop={handleDrop} onDragOver={handleDragOver}>
       {/* Top bar */}
@@ -47,9 +55,12 @@ export default function App() {
         style={{ background: "var(--color-surface)", "border-color": "var(--color-border)" }}
       >
         <div class="flex items-center gap-3">
-          <h1 class="text-lg font-semibold tracking-tight">WIDesigner</h1>
+          <div>
+            <h1 class="ws-serif text-xl font-semibold tracking-tight">WIDesigner</h1>
+            <div class="ws-eyebrow">Acoustic workbench</div>
+          </div>
           <select
-            class="px-2 py-1 rounded text-sm border"
+            class="ws-select"
             style={{
               background: "var(--color-surface)",
               color: "var(--color-text)",
@@ -66,17 +77,23 @@ export default function App() {
           </select>
         </div>
         <div class="flex items-center gap-3">
+          <button
+            class="ws-btn"
+            disabled={sessionStore.loading()}
+            onClick={() => setShowSamples(true)}
+            title="Load bundled sample instrument, tuning, and constraints files"
+          >
+            Load Sample
+          </button>
           <label
-            class="px-3 py-1.5 rounded text-sm font-medium cursor-pointer transition-colors"
-            style={{ background: "var(--color-accent)", color: "white" }}
+            class="ws-btn ws-btn--signal cursor-pointer"
             title="Open instrument, tuning, or constraints XML files"
           >
             Open File
             <input type="file" accept=".xml" multiple class="hidden" onChange={handleFileOpen} />
           </label>
           <button
-            class="px-3 py-1.5 rounded text-sm font-medium transition-colors disabled:opacity-40"
-            style={{ background: "var(--color-accent)", color: "white" }}
+            class="ws-btn ws-btn--primary"
             disabled={!sessionStore.activeTabId()}
             onClick={() => {
               const tab = sessionStore.tabs.find((t) => t.id === sessionStore.activeTabId());
@@ -114,6 +131,13 @@ export default function App() {
 
       <Show when={showSettings()}>
         <SettingsDialog onClose={() => setShowSettings(false)} />
+      </Show>
+      <Show when={showSamples()}>
+        <SampleLoaderDialog
+          study={sessionStore.studyKind()}
+          onLoad={handleSampleLoad}
+          onClose={() => setShowSamples(false)}
+        />
       </Show>
     </div>
   );

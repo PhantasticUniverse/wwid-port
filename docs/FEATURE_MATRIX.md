@@ -145,7 +145,7 @@ Legend:
 | #5 | Full codebase (3 hostile agents: Rust core, frontend/WASM, docs/fixtures) | 1 bug (ComputeService init hang), 2 edge cases (spectrum empty rows, graph Y-axis), 3 doc fixes (NAF-HS-01, global optimizer footnote, MEMORY test count) | ✅ Fixed |
 | #6 | Full codebase (6 hostile agents across 2 rounds: frontend/WASM, Rust core, docs/fixtures, acoustic numerics, optimization objectives, session/WASM dispatch) | 1 parity fix (evaluate_tuning NaN on missing freq), 1 defensive guard (popup closed check). All acoustic formulas, optimization geometry mappings, and 43 WASM commands verified line-by-line. 20+ false positives triaged | ✅ Fixed |
 
-All fixes applied. 454 tests passing. ~30 subsystems verified clean across 6 hostile audits.
+All fixes applied. 457 tests passing. ~30 subsystems verified clean across 6 hostile audits.
 
 ---
 

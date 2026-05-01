@@ -1,15 +1,14 @@
 import type { TuningResult, EvalRow } from "../../types/session";
 
 /** Open evaluation results in a popup window (matches Java WIDesigner behavior). */
-export function openEvalPopup(result: TuningResult, instrumentName: string) {
+export function openEvalPopup(result: TuningResult, instrumentName: string): boolean {
   const popup = window.open(
     "",
     `eval-${Date.now()}`,
     "width=640,height=520,menubar=no,toolbar=no,location=no,status=no"
   );
   if (!popup) {
-    alert("Popup blocked — please allow popups for evaluation results.");
-    return;
+    return false;
   }
 
   const doc = popup.document;
@@ -74,6 +73,7 @@ export function openEvalPopup(result: TuningResult, instrumentName: string) {
   table.appendChild(tfoot);
 
   doc.body.appendChild(table);
+  return true;
 }
 
 function createEvalRow(doc: Document, row: EvalRow): HTMLTableRowElement {

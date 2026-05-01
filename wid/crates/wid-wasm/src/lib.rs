@@ -78,7 +78,9 @@ impl WasmSession {
 
         match cmd.cmd.as_str() {
             "open_xml" => self.cmd_open_xml(&cmd.args),
+            "replace_xml" => self.cmd_replace_xml(&cmd.args),
             "export_xml" => self.cmd_export_xml(&cmd.args),
+            "delete_doc" => self.cmd_delete_doc(&cmd.args),
             "select_instrument" => self.cmd_select_instrument(&cmd.args),
             "select_tuning" => self.cmd_select_tuning(&cmd.args),
             "select_optimizer" => self.cmd_select_optimizer(&cmd.args),
@@ -172,6 +174,21 @@ impl WasmSession {
         }
     }
 
+    fn cmd_replace_xml(&mut self, args: &serde_json::Value) -> String {
+        let doc_id = match args.get("docId").and_then(|v| v.as_u64()) {
+            Some(id) => wid_session::DocId(id as u32),
+            None => return Response::err("Missing 'docId' argument"),
+        };
+        let xml = match args.get("xml").and_then(|v| v.as_str()) {
+            Some(s) => s,
+            None => return Response::err("Missing 'xml' argument"),
+        };
+        match self.session.replace_xml(doc_id, xml) {
+            Ok(r) => Response::ok(r),
+            Err(e) => Response::err(e),
+        }
+    }
+
     fn cmd_export_xml(&self, args: &serde_json::Value) -> String {
         let doc_id = match args.get("docId").and_then(|v| v.as_u64()) {
             Some(id) => wid_session::DocId(id as u32),
@@ -179,6 +196,17 @@ impl WasmSession {
         };
         match self.session.export_xml(doc_id) {
             Ok(xml) => Response::ok(xml),
+            Err(e) => Response::err(e),
+        }
+    }
+
+    fn cmd_delete_doc(&mut self, args: &serde_json::Value) -> String {
+        let doc_id = match args.get("docId").and_then(|v| v.as_u64()) {
+            Some(id) => wid_session::DocId(id as u32),
+            None => return Response::err("Missing 'docId' argument"),
+        };
+        match self.session.delete_doc(doc_id) {
+            Ok(()) => Response::ok(true),
             Err(e) => Response::err(e),
         }
     }

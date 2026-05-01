@@ -39,7 +39,7 @@ Sample files for the NAF study model, located at `/samples/NafStudy/`.
 
 | File | Description |
 |------|-------------|
-| `F#4_ET_6-hole_NAF_chromatic_tuning.xml` | Equal temperament tuning in F#4 for a 6-hole NAF. Includes chromatic fingerings and second-octave notes. |
+| `Fsharp4_ET_6-hole_NAF_chromatic_tuning.xml` | URL-safe copy of the F#4 equal temperament tuning for a 6-hole NAF. Includes chromatic fingerings and second-octave notes. |
 | `A4_ET_6-hole_NAF_chromatic_tuning.xml` | Equal temperament tuning in A4 for a 6-hole NAF. Higher key, same chromatic fingering layout. |
 
 ### Fingerings

@@ -29,6 +29,7 @@ export default function StudyPanel() {
           selectedId={sessionStore.selection()?.instrument_id ?? null}
           onSelect={(id) => sessionStore.selectInstrument(id)}
           onDoubleClick={(id, name) => sessionStore.openTab(id, "Instrument", name)}
+          onRemove={(id, name) => removeDocument(id, name)}
           emptyText="No instruments loaded"
         />
 
@@ -39,6 +40,7 @@ export default function StudyPanel() {
           selectedId={sessionStore.selection()?.tuning_id ?? null}
           onSelect={(id) => sessionStore.selectTuning(id)}
           onDoubleClick={(id, name) => sessionStore.openTab(id, "Tuning", name)}
+          onRemove={(id, name) => removeDocument(id, name)}
           emptyText="No tunings loaded"
         />
 
@@ -81,6 +83,7 @@ export default function StudyPanel() {
           selectedId={sessionStore.selection()?.constraints_id ?? null}
           onSelect={(id) => sessionStore.selectConstraints(id)}
           onDoubleClick={(id, name) => sessionStore.openTab(id, "Constraints", name)}
+          onRemove={(id, name) => removeDocument(id, name)}
           emptyText="No constraints loaded"
         />
 
@@ -110,6 +113,12 @@ export default function StudyPanel() {
   );
 }
 
+function removeDocument(id: number, name: string) {
+  if (window.confirm(`Remove ${name} from this session? Unsaved changes will be lost.`)) {
+    sessionStore.deleteDoc(id);
+  }
+}
+
 /** Reusable document list section with single-click select + double-click open tab. */
 function DocSection(props: {
   title: string;
@@ -117,6 +126,7 @@ function DocSection(props: {
   selectedId: number | null;
   onSelect: (id: number) => void;
   onDoubleClick: (id: number, name: string) => void;
+  onRemove: (id: number, name: string) => void;
   emptyText: string;
 }) {
   return (
@@ -134,20 +144,31 @@ function DocSection(props: {
       </Show>
       <For each={props.items}>
         {(doc) => (
-          <button
-            class="w-full text-left px-2 py-1 rounded text-sm transition-colors"
-            classList={{ "font-semibold": props.selectedId === doc.doc_id }}
+          <div
+            class="group flex items-center gap-1 rounded"
             style={{
               background:
                 props.selectedId === doc.doc_id ? "var(--color-accent)" : "transparent",
               color: props.selectedId === doc.doc_id ? "white" : "var(--color-text)",
             }}
-            onClick={() => props.onSelect(doc.doc_id)}
-            onDblClick={() => props.onDoubleClick(doc.doc_id, doc.name)}
-            title={doc.name}
           >
-            {doc.name}
-          </button>
+            <button
+              class="min-w-0 flex-1 truncate px-2 py-1 text-left text-sm transition-colors"
+              classList={{ "font-semibold": props.selectedId === doc.doc_id }}
+              onClick={() => props.onSelect(doc.doc_id)}
+              onDblClick={() => props.onDoubleClick(doc.doc_id, doc.name)}
+              title={doc.name}
+            >
+              {doc.name}
+            </button>
+            <button
+              class="px-1.5 text-xs opacity-40 transition-opacity group-hover:opacity-100"
+              onClick={() => props.onRemove(doc.doc_id, doc.name)}
+              title={`Remove ${doc.name}`}
+            >
+              x
+            </button>
+          </div>
         )}
       </For>
     </section>

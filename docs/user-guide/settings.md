@@ -59,6 +59,18 @@ Controls the upper frequency bound when displaying Note Spectrum charts. The val
 
 Increase this value to see higher harmonics in the spectrum plots. Decrease it to focus on the fundamental and first overtone.
 
+## Tool Output
+
+**Dropdown** -- In app (default), Popup.
+
+Controls where analysis tools display their results. **In app** opens results in a docked modal panel, which works even when browser popup blockers are enabled. **Popup** uses Java-style separate browser windows.
+
+## Confirm Study Switch
+
+**Checkbox** -- Default: on.
+
+When enabled, WIDesigner asks before switching study model if documents are loaded. Switching study model clears the current session because each model has different optimizers and physical defaults.
+
 ## Parameters Not Exposed in Settings
 
 Two physical parameters are used internally but are not shown in the Settings dialog:

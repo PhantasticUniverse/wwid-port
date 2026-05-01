@@ -1,39 +1,194 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Newsreader:wght@400;500;600&display=swap");
 @import "tailwindcss";
 
 :root {
-  --color-bg: #0f1117;
-  --color-surface: #1a1d27;
-  --color-surface-alt: #232734;
-  --color-border: #2e3345;
-  --color-text: #e4e6ef;
-  --color-text-muted: #8b8fa3;
-  --color-accent: #6366f1;
-  --color-accent-hover: #818cf8;
-  --color-success: #22c55e;
-  --color-warning: #f59e0b;
-  --color-error: #ef4444;
+  /* Claude Design handoff: luthier bench / acoustic workbench. */
+  --color-bg: #f4f0e8;
+  --color-surface: #fbf8f1;
+  --color-surface-alt: #f0eadb;
+  --color-border: #d8cfbe;
+  --color-border-strong: #b9ad97;
+  --color-field: #fffdf6;
+  --color-text: #1f1c18;
+  --color-text-muted: #6b655c;
+  --color-text-faint: #a8a094;
+  --color-accent: oklch(0.55 0.13 45);
+  --color-accent-hover: oklch(0.42 0.13 45);
+  --color-accent-soft: oklch(0.92 0.04 45);
+  --color-success: oklch(0.55 0.13 145);
+  --color-success-soft: oklch(0.93 0.04 145);
+  --color-warning: oklch(0.62 0.13 75);
+  --color-warning-soft: oklch(0.93 0.04 75);
+  --color-error: oklch(0.55 0.18 25);
+  --color-error-soft: oklch(0.93 0.05 25);
+  --shadow-workbench: 0 1px 0 rgba(31, 28, 24, 0.04), 0 10px 28px -18px rgba(31, 28, 24, 0.35);
+  --type-sans: "Inter Tight", "Inter", "Söhne", system-ui, -apple-system, sans-serif;
+  --type-mono: "JetBrains Mono", "Berkeley Mono", "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --type-serif: "Newsreader", "Source Serif 4", "Iowan Old Style", Georgia, serif;
+}
+
+* {
+  box-sizing: border-box;
 }
 
 body {
   margin: 0;
-  background: var(--color-bg);
+  background:
+    radial-gradient(circle at 12% 8%, rgba(185, 128, 58, 0.12), transparent 32rem),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.35), transparent 38%),
+    var(--color-bg);
   color: var(--color-text);
-  font-family: "Inter", system-ui, -apple-system, sans-serif;
+  font-family: var(--type-sans);
+  font-size: 13px;
+  font-feature-settings: "ss01", "cv11", "tnum";
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Scrollbar styling */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+button,
+input,
+select,
+textarea {
+  font: inherit;
 }
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 1px;
+}
+
+::selection {
+  background: var(--color-accent-soft);
+  color: var(--color-text);
+}
+
+.ws-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  min-height: 1.75rem;
+  padding: 0.25rem 0.625rem;
+  border: 1px solid var(--color-border-strong);
+  border-radius: 0.1875rem;
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  transition: background 90ms, border-color 90ms, color 90ms, opacity 90ms;
+  white-space: nowrap;
+}
+
+.ws-btn:hover:not(:disabled) {
+  background: var(--color-surface-alt);
+  border-color: var(--color-text-muted);
+}
+
+.ws-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.ws-btn--primary {
+  background: var(--color-text);
+  border-color: var(--color-text);
+  color: var(--color-surface);
+}
+
+.ws-btn--primary:hover:not(:disabled) {
+  background: #000;
+  border-color: #000;
+}
+
+.ws-btn--signal {
+  background: var(--color-accent);
+  border-color: var(--color-accent-hover);
+  color: #fffaf0;
+}
+
+.ws-btn--signal:hover:not(:disabled) {
+  background: var(--color-accent-hover);
+}
+
+.ws-btn--ghost {
+  background: transparent;
+  border-color: transparent;
+}
+
+.ws-btn--ghost:hover:not(:disabled) {
+  background: var(--color-surface-alt);
+  border-color: var(--color-border);
+}
+
+.ws-input,
+.ws-select,
+.ws-textarea {
+  min-height: 1.75rem;
+  padding: 0.25rem 0.625rem;
+  border: 1px solid var(--color-border-strong);
+  border-radius: 0.1875rem;
+  background: var(--color-field);
+  color: var(--color-text);
+  font-size: 0.75rem;
+}
+
+.ws-input:focus,
+.ws-select:focus,
+.ws-textarea:focus {
+  border-color: var(--color-accent);
+  background: #fff;
+  box-shadow: 0 0 0 3px var(--color-accent-soft);
+}
+
+.ws-panel {
+  background: color-mix(in srgb, var(--color-surface) 92%, white);
+  border: 1px solid var(--color-border);
+  border-radius: 0.375rem;
+  box-shadow: var(--shadow-workbench);
+}
+
+.ws-eyebrow {
+  font-family: var(--type-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.ws-mono {
+  font-family: var(--type-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.ws-serif {
+  font-family: var(--type-serif);
+}
+
+.ws-tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
 ::-webkit-scrollbar-track {
   background: transparent;
 }
+
 ::-webkit-scrollbar-thumb {
-  background: var(--color-border);
-  border-radius: 3px;
+  background: var(--color-border-strong);
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background-clip: padding-box;
 }
+
 ::-webkit-scrollbar-thumb:hover {
   background: var(--color-text-muted);
+  background-clip: padding-box;
 }

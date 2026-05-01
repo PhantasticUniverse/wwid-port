@@ -8,7 +8,7 @@ This page describes the WIDesigner web interface and how to perform the core wor
 
 The interface is divided into five areas:
 
-**Header bar** -- The top row contains the "WIDesigner" title on the left, followed by a study model dropdown (NAF / Whistle / Flute / Reed). On the right side you will find the **Open File** button, a **Save** button, and a **Settings** gear icon.
+**Header bar** -- The top row contains the "WIDesigner" title on the left, followed by a study model dropdown (NAF / Whistle / Flute / Reed). On the right side you will find **Load Sample**, **Open File**, **Save**, and **Settings** controls.
 
 **Toolbar row** -- Directly below the header. This row appears once the WASM engine has finished loading. It contains the following buttons, separated by dividers:
 
@@ -28,7 +28,9 @@ Buttons are disabled until the required documents are selected.
 
 ## Opening Files
 
-WIDesigner works with XML files that describe instruments, tunings, and constraints. There are two ways to load files:
+WIDesigner works with XML files that describe instruments, tunings, and constraints. There are three ways to load files:
+
+**Load Sample button** -- Click **Load Sample** in the header bar to choose a bundled instrument/tuning/constraints bundle for the active study model. This is the fastest way to start a complete session.
 
 **Open File button** -- Click "Open File" in the header bar. The file picker accepts `.xml` files and allows multiple selection. Select one or more files and they will be loaded into the Study Panel.
 
@@ -59,12 +61,17 @@ The Study Panel on the left side of the window organizes your session into four 
 
 **Double-click** an item to open it in an editor tab in the Workspace.
 
+Use the **x** control beside a document name to remove it from the current session. Removing a document also clears any active selection that pointed to it.
+
 You can select one instrument, one tuning, one optimizer, and one constraints document at a time.
 
 
 ## Editing Documents
 
-Double-click any document in the Study Panel to open it in an editor tab.
+Double-click any document in the Study Panel to open it in an editor tab. Each editor has a **Form/XML** toggle in the workspace header:
+
+- **Form** shows the structured editor for safe dimension and tuning edits.
+- **XML** shows the raw WIDesigner XML with line numbers. Click **Apply XML** to validate and apply raw edits, or **Revert** to discard them.
 
 **Instrument editor** -- Shows the mouthpiece parameters at the top, followed by a bore profile table (position and diameter columns) and a tone holes table (position, diameter, and other hole parameters). You can add or remove bore points and holes using the row management controls.
 
@@ -92,7 +99,7 @@ The dropdown in the header bar lets you switch between four study models:
 - **Flute** -- Transverse flute (embouchure hole)
 - **Reed** -- Single reed, double reed, or lip reed instruments
 
-Switching the study model clears all loaded documents and resets the session. The optimizer list and available calibrators change to match the selected model. Physical parameter defaults (temperature, humidity) also differ between models -- see [Settings](settings.md) for details.
+Switching the study model clears all loaded documents and resets the session. If documents are loaded, WIDesigner asks for confirmation before clearing them. The optimizer list and available calibrators change to match the selected model. Physical parameter defaults (temperature, humidity) also differ between models -- see [Settings](settings.md) for details.
 
 Choose the study model before loading your files.
 
@@ -107,7 +114,7 @@ To evaluate:
 2. Select a tuning in the Study Panel. The tuning must have the same number of holes as the instrument.
 3. Click the **Evaluate** button in the toolbar.
 
-The results appear in a popup window showing a table with columns for note name, target frequency, predicted frequency, and deviation in cents.
+The results appear in an in-app tool panel by default, with columns for note name, target frequency, predicted frequency, and deviation in cents. You can choose Java-style popup windows in Settings.
 
 If the Evaluate button is disabled, check that both an instrument and a compatible tuning are selected.
 
@@ -137,14 +144,14 @@ When a calibrator is selected, the toolbar button changes from "Optimize" to **C
 1. Select an instrument and a tuning.
 2. Select the calibrator (the first optimizer in the list).
 3. Click **Calibrate**.
-4. The result is a new instrument with updated mouthpiece parameters. The original instrument is preserved.
+4. The selected instrument is updated in place with the calibrated mouthpiece parameters. Save a copy before calibrating if you want to preserve the original XML separately.
 
 Calibration is typically the first step before running a geometry optimizer. It ensures the acoustic model's mouthpiece parameters are tuned to your physical instrument.
 
 
 ## Analysis Tools
 
-The toolbar provides several analysis tools. All tool results open in popup windows (your browser may ask you to allow popups from the application).
+The toolbar provides several analysis tools. Tool results open in the app by default to avoid browser popup blockers. You can switch to Java-style popup windows in Settings.
 
 **Sketch** -- Draws a cross-section diagram of the selected instrument, showing the bore profile, tone holes, and mouthpiece geometry. Requires an instrument to be selected.
 

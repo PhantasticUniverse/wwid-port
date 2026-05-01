@@ -20,15 +20,14 @@ interface GraphTuningResult {
   curves: TuningCurve[];
 }
 
-export function openGraphTuningPopup(result: GraphTuningResult) {
+export function openGraphTuningPopup(result: GraphTuningResult): boolean {
   const popup = window.open(
     "",
     `graph-${Date.now()}`,
     "width=900,height=560,menubar=no,toolbar=no,location=no,status=no"
   );
   if (!popup) {
-    alert("Popup blocked — please allow popups for graph tuning.");
-    return;
+    return false;
   }
 
   const doc = popup.document;
@@ -63,6 +62,7 @@ export function openGraphTuningPopup(result: GraphTuningResult) {
     if (popup.closed) return;
     buildChart(canvas, result);
   });
+  return true;
 }
 
 function buildChart(canvas: HTMLCanvasElement, d: GraphTuningResult) {

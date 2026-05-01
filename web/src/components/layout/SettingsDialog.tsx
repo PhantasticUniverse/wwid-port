@@ -16,6 +16,8 @@ export default function SettingsDialog(props: {
   const [useDirect, setUseDirect] = createSignal(getUseDirect());
   const [lengthType, setLengthType] = createSignal(getLengthType());
   const [spectrumMult, setSpectrumMult] = createSignal(getSpectrumMult());
+  const [outputMode, setOutputMode] = createSignal(getOutputMode());
+  const [confirmStudySwitch, setConfirmStudySwitch] = createSignal(getConfirmStudySwitch());
 
   const inputStyle = {
     background: "var(--color-surface-alt)",
@@ -101,6 +103,34 @@ export default function SettingsDialog(props: {
 
           <div class="flex items-center justify-between">
             <label class="text-sm" style={{ color: "var(--color-text)" }}>
+              Tool output:
+            </label>
+            <select
+              class="w-28 px-2 py-1 rounded text-sm"
+              style={inputStyle}
+              value={outputMode()}
+              onChange={(e) => setOutputMode(e.currentTarget.value as ToolOutputMode)}
+              title="Use in-app tool panels to avoid popup blockers, or preserve Java-style popup windows"
+            >
+              <option value="dock">In app</option>
+              <option value="popup">Popup</option>
+            </select>
+          </div>
+
+          <div class="flex items-center justify-between">
+            <label class="text-sm" style={{ color: "var(--color-text)" }}>
+              Confirm study switch:
+            </label>
+            <input
+              type="checkbox"
+              checked={confirmStudySwitch()}
+              onChange={(e) => setConfirmStudySwitch(e.currentTarget.checked)}
+              class="w-4 h-4"
+            />
+          </div>
+
+          <div class="flex items-center justify-between">
+            <label class="text-sm" style={{ color: "var(--color-text)" }}>
               Max Note Spectrum freq (multiplier):
             </label>
             <input
@@ -133,6 +163,8 @@ export default function SettingsDialog(props: {
               setUseDirectPref(useDirect());
               setLengthTypePref(lengthType());
               setSpectrumMultPref(spectrumMult());
+              setOutputModePref(outputMode());
+              setConfirmStudySwitchPref(confirmStudySwitch());
               props.onClose();
             }}
           >
@@ -143,6 +175,8 @@ export default function SettingsDialog(props: {
     </div>
   );
 }
+
+export type ToolOutputMode = "dock" | "popup";
 
 /** Read DIRECT preference from localStorage. Default: true (matching Java). */
 export function getUseDirect(): boolean {
@@ -177,4 +211,22 @@ export function getSpectrumMult(): number {
 /** Persist spectrum freq multiplier. */
 function setSpectrumMultPref(value: number) {
   localStorage.setItem("wid_spectrum_mult", String(value));
+}
+
+export function getOutputMode(): ToolOutputMode {
+  const stored = localStorage.getItem("wid_tool_output");
+  return stored === "popup" ? "popup" : "dock";
+}
+
+function setOutputModePref(value: ToolOutputMode) {
+  localStorage.setItem("wid_tool_output", value);
+}
+
+export function getConfirmStudySwitch(): boolean {
+  const stored = localStorage.getItem("wid_confirm_study_switch");
+  return stored !== "false";
+}
+
+function setConfirmStudySwitchPref(value: boolean) {
+  localStorage.setItem("wid_confirm_study_switch", String(value));
 }
