@@ -8,7 +8,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "wasm": "cd ../wid && cargo build --target wasm32-unknown-unknown --release -p wid-wasm && wasm-bindgen target/wasm32-unknown-unknown/release/wid_wasm.wasm --out-dir crates/wid-wasm/pkg --target web"
+    "wasm": "cd ../wid && cargo build --target wasm32-unknown-unknown --release -p wid-wasm && wasm-bindgen target/wasm32-unknown-unknown/release/wid_wasm.wasm --out-dir ../web/wasm --target web"
   },
   "dependencies": {
     "chart.js": "^4.5.1",

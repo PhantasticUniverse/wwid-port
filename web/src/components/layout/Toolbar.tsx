@@ -7,7 +7,6 @@ import { openSketchPopup } from "../tools/SketchPopup";
 import { openSupplementaryPopup } from "../tools/SupplementaryPopup";
 import { openGraphTuningPopup } from "../tools/GraphTuningPopup";
 import { openNoteSpectrumPopup } from "../tools/NoteSpectrumPopup";
-import { getUseDirect } from "./SettingsDialog";
 import type { OptimizeResult, CalibResult, TuningResult } from "../../types/session";
 
 export default function Toolbar() {
@@ -151,15 +150,15 @@ export default function Toolbar() {
             onClick={handleOptimize}
             title={
               !sessionStore.canOptimize()
-                ? sessionStore.isFippleSelected()
+                ? sessionStore.isCalibratorSelected()
                   ? "Select instrument and tuning to calibrate"
                   : "Select instrument, tuning, optimizer, and constraints"
-                : sessionStore.isFippleSelected()
+                : sessionStore.isCalibratorSelected()
                   ? "Calibrate mouthpiece parameters"
                   : "Run hole position/size optimization"
             }
           >
-            {sessionStore.isFippleSelected() ? "Calibrate" : "Optimize"}
+            {sessionStore.isCalibratorSelected() ? "Calibrate" : "Optimize"}
           </button>
 
           {/* Wizard */}
@@ -177,7 +176,7 @@ export default function Toolbar() {
       {/* Dialogs */}
       <OptimizeDialog
         open={showOptDialog()}
-        isFipple={sessionStore.isFippleSelected()}
+        isCalibration={sessionStore.isCalibratorSelected()}
         progress={sessionStore.optProgress()}
         result={optResult()}
         onCancel={() => {

@@ -80,9 +80,6 @@ const isCalibratorSelected = createMemo(() => {
   return key !== null && CALIBRATOR_KEYS.has(key);
 });
 
-// Keep legacy alias for backward compat in UI
-const isFippleSelected = isCalibratorSelected;
-
 const canOptimize = createMemo(() => {
   const sel = selection();
   if (!canTune() || sel.optimizer_key === null) return false;
@@ -649,7 +646,6 @@ export const sessionStore = {
   canTune,
   canOptimize,
   canSketch,
-  isFippleSelected,
   isCalibratorSelected,
   canCreateConstraints,
 

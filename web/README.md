@@ -46,7 +46,7 @@ App.tsx                         Root component
 
 ## WASM integration
 
-The `web/wasm` symlink points to `wid/crates/wid-wasm/pkg/`, where `wasm-bindgen` outputs the compiled WASM module and JS glue.
+The frontend imports generated WASM bindings from `web/wasm`. Build scripts run `wasm-bindgen` into that directory so fresh checkouts do not need a local symlink.
 
 **Data flow:**
 1. Frontend calls `sessionStore.evaluateTuning()` (or similar)
@@ -77,5 +77,5 @@ After changing Rust code, rebuild before testing:
 cd ../wid
 cargo build --target wasm32-unknown-unknown --release -p wid-wasm
 wasm-bindgen target/wasm32-unknown-unknown/release/wid_wasm.wasm \
-  --out-dir crates/wid-wasm/pkg --target web
+  --out-dir ../web/wasm --target web
 ```

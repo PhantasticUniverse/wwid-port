@@ -45,7 +45,7 @@ npm install                      # Install dependencies (first time)
 npx vite                         # Dev server (default port 5173)
 npx vite build                   # Production build to web/dist/
 ```
-Stack: Vite 6 + SolidJS 1.9 + Tailwind CSS v4. The `web/wasm` symlink points to `wid/crates/wid-wasm/pkg/`.
+Stack: Vite 6 + SolidJS 1.9 + Tailwind CSS v4. Build scripts generate `wasm-bindgen` output into `web/wasm`.
 
 ## Architecture
 
@@ -126,7 +126,7 @@ Constraints XML lower/upper bound arrays must match baseline ordering exactly �
   - M5.5: Flute calibration + optimization ✓
   - M5.6: Reed evaluation model ✓
   - M5.7: Reed calibration + optimization ✓
-  - 449 tests, 4 study models, 57 golden fixture sets, 5 analysis tools, tuning wizard
+  - 454 tests, 4 study models, 57 golden fixture sets, 5 analysis tools, tuning wizard
 
 ## Temperature Default
 

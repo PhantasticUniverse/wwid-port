@@ -7,7 +7,7 @@ test:
 # Build WASM module + wasm-bindgen
 wasm:
     cd wid && cargo build --target wasm32-unknown-unknown --release -p wid-wasm
-    cd wid && wasm-bindgen target/wasm32-unknown-unknown/release/wid_wasm.wasm --out-dir crates/wid-wasm/pkg --target web
+    cd wid && wasm-bindgen target/wasm32-unknown-unknown/release/wid_wasm.wasm --out-dir ../web/wasm --target web
 
 # Build web frontend
 web:

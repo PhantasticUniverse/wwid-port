@@ -23,7 +23,7 @@ cd wid && cargo test
 # Build WASM
 cargo build --target wasm32-unknown-unknown --release -p wid-wasm
 wasm-bindgen target/wasm32-unknown-unknown/release/wid_wasm.wasm \
-  --out-dir crates/wid-wasm/pkg --target web
+  --out-dir ../web/wasm --target web
 
 # Start dev server
 cd ../web
@@ -39,7 +39,7 @@ Or use the justfile: `just build` (full pipeline) or `just dev` (WASM + dev serv
 
 ```bash
 cd wid
-cargo test              # All 449 tests
+cargo test              # All 454 tests
 cargo test naf_         # Tests matching a pattern
 cargo test --test bulk_naf_eval  # A specific integration test
 ```
@@ -60,7 +60,7 @@ After changing any Rust crate, rebuild WASM before testing in the browser:
 cd wid
 cargo build --target wasm32-unknown-unknown --release -p wid-wasm
 wasm-bindgen target/wasm32-unknown-unknown/release/wid_wasm.wasm \
-  --out-dir crates/wid-wasm/pkg --target web
+  --out-dir ../web/wasm --target web
 ```
 
 ## Adding features

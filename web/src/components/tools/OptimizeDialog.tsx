@@ -8,7 +8,7 @@ function isCalibResult(r: OptimizeResult | CalibResult): r is CalibResult {
 
 export interface OptimizeDialogProps {
   open: boolean;
-  isFipple: boolean;
+  isCalibration: boolean;
   progress: OptProgress | null;
   result: OptimizeResult | CalibResult | null;
   onCancel: () => void;
@@ -53,7 +53,7 @@ function ProgressView(props: OptimizeDialogProps) {
   return (
     <div class="flex flex-col items-center gap-4">
       <h2 class="text-lg font-semibold">
-        {props.isFipple ? "Calibrating Fipple Factor..." : "Optimizing..."}
+        {props.isCalibration ? "Calibrating..." : "Optimizing..."}
       </h2>
 
       {/* Spinner */}
@@ -65,8 +65,8 @@ function ProgressView(props: OptimizeDialogProps) {
         }}
       />
 
-      {/* Progress stats (hole optimization only) */}
-      <Show when={!props.isFipple && props.progress}>
+      {/* Progress stats (optimization only) */}
+      <Show when={!props.isCalibration && props.progress}>
         {(p) => (
           <div class="text-sm text-center" style={{ color: "var(--color-text-muted)" }}>
             <div>Evaluations: {p().evaluations.toLocaleString()}</div>
@@ -93,7 +93,7 @@ function ResultView(props: OptimizeDialogProps) {
   return (
     <div class="flex flex-col gap-4">
       <h2 class="text-lg font-semibold">
-        {props.isFipple ? "Calibration Complete" : "Optimization Complete"}
+        {props.isCalibration ? "Calibration Complete" : "Optimization Complete"}
       </h2>
 
       <Show when={isCalibResult(result())}>

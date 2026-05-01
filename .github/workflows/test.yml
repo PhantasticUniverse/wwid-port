@@ -34,6 +34,13 @@ jobs:
         working-directory: wid
         run: cargo build --target wasm32-unknown-unknown --release -p wid-wasm
 
+      - name: Install wasm-bindgen CLI
+        run: cargo install wasm-bindgen-cli --version 0.2.100 --locked
+
+      - name: Generate WASM bindings
+        working-directory: wid
+        run: wasm-bindgen target/wasm32-unknown-unknown/release/wid_wasm.wasm --out-dir ../web/wasm --target web
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
