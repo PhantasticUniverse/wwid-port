@@ -65,7 +65,7 @@ The acoustic models, optimization algorithms, and evaluation precision are ident
 - Same optimizers: BOBYQA (local), DIRECT-C + BOBYQA (global), Brent (1D)
 - Same evaluation precision: within 0.5 cents of the Java oracle per fingering
 - Deterministic: identical inputs produce identical outputs
-- 454 automated tests verify parity with the Java oracle across all four study models
+- 457 automated tests verify parity with the Java oracle across all four study models
 
 If you have instrument and tuning files from the Java version, they will produce the same evaluation results in the web app (assuming the same temperature and humidity settings).
 
@@ -73,7 +73,6 @@ If you have instrument and tuning files from the Java version, they will produce
 
 The following Java desktop features are not available in the web app:
 
-- **Raw XML editing mode** -- Java had a toggle between a dialog editor and a raw XML text view for each document. The web app provides only the structured editor.
 - **Dockable/undockable panels** -- The Study Panel and Console Panel have fixed positions.
 - **Multi-tab constraint management** -- Java allowed switching between constraint sets per optimizer in a tabbed interface. The web app manages constraints as separate documents in the Study Panel.
 - **Calibration spreadsheet (Reed)** -- Java's Reed study model included a spreadsheet view for bulk calibration data entry. Not ported.

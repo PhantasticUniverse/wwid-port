@@ -13,6 +13,8 @@
 
 ### Entries (newest first)
 
+- [Frontend Design Handoff + Hardening](#2026-05-01-frontend-design-handoff--hardening) — Claude Design workbench restyle, sample loader, raw XML editor, tool dock with popup fallback, document lifecycle hardening
+- [Release Docs + WASM Build Wiring](#2026-05-01-release-docs--wasm-build-wiring) — Full user guide (~30 pages), CI generates WASM bindings on clean checkouts, sample files aligned
 - [Full Repo Audit](#2026-03-09-full-repo-audit) — Clippy fixes, CI improvements, defensive hardening committed, CHANGELOG fix
 - [Final Audit & Polish](#2026-03-09-final-audit--polish) — Commit pending fixes, frontend hardening, world-class docs, justfile, CI
 - [Parity Audit #6](#2026-03-06-parity-audit-6) — 6 hostile agents across 2 rounds; evaluate_tuning NaN fix, popup guard; acoustic core, optimization engine, WASM pipeline verified clean
@@ -45,6 +47,32 @@
 - [M3 NAF Calibration + Optimization](#2026-03-02-m3--naf-calibration--optimization-parity) — BOBYQA crate, 139 tests
 - [NAF Bulk Test Coverage](#2026-03-02-expanded-naf-test-coverage-all-oracle-xmls) — 36 combos, 540 fingerings
 - [M4 Browser MVP](#2026-03-02-m4--browser-hosted-mvp-naf-end-to-end)
+
+---
+
+## 2026-05-01: Frontend Design Handoff + Hardening
+
+Brought the Claude Design workbench visuals into the real Solid/WASM app (commit `d01b62f`, +1745/−187) while closing runtime workflow gaps:
+
+**New features:**
+- `SampleLoaderDialog.tsx` + `data/sampleBundles.ts` — bundled sample browser; one click loads a matched instrument + tuning + constraints set per study model from `web/public/samples/`
+- `RawXmlEditor.tsx` — Form/XML toggle on every document editor; raw XML view round-trips through the session (this removed a "Features Not Ported" item)
+- `ToolDockDialog.tsx` (366 lines) — in-app docked tool output; `Toolbar.tsx` falls back to the dock when the browser blocks `window.open` popups
+- Session/WASM: +104 lines in `wid-session`, +28 in `wid-wasm` — new document lifecycle commands backing the above
+
+**Restyle:** "luthier bench" light theme via CSS variables in `index.css` (`ws-panel`, `ws-serif`, `ws-eyebrow`, `ws-btn*`), applied across Toolbar, StudyPanel, Workspace, editors, and dialogs.
+
+**Verification:** 457 tests pass, tsc + vite build clean.
+
+---
+
+## 2026-05-01: Release Docs + WASM Build Wiring
+
+Commit `a99c89c` — release-readiness pass:
+
+- **User guide** — new `docs/user-guide/` tree (~30 pages): getting started, all four study models, every optimizer family, all six analysis tools, tuning wizard, settings, sample files, and reference chapters (glossary, bibliography, differences from Java)
+- **CI** — `test.yml` now installs wasm-bindgen-cli 0.2.100 and generates `web/wasm` bindings, so clean checkouts build the frontend without a local symlink
+- **Samples** — added FluteStudy sample XMLs to `web/public/samples/`; aligned calibration UI copy and release docs with the verified 1.0 state
 
 ---
 
