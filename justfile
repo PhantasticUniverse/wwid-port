@@ -24,3 +24,11 @@ dev: wasm
 fixtures:
     ./tools/fetch-oracle.sh
     cd golden-harness && ./gradlew build
+
+# Re-import reference articles + Wood Wind tuning from local-flute-encyclopedia
+import-reference:
+    node tools/import-reference.mjs
+
+# Build web with a GitHub Pages subpath base (local deploy verification)
+pages BASE="/wwid-port/": wasm
+    cd web && npm install && npx vite build --base={{BASE}}

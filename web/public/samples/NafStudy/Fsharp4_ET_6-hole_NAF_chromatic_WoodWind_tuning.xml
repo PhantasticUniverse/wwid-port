@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <ns2:tuning xmlns:ns2="http://www.wwidesigner.com/Tuning">
-    <name>F#4 ET 6-hole NAF chromatic tuning</name>
+    <name>F#4 ET 6-hole NAF chromatic tuning (Wood Wind)</name>
     <comment>Fingering pattern is for Wood Wind (Edward Kort) flutes, with two fingerings for G5</comment>
     <numberOfHoles>6</numberOfHoles>
     <fingering>
@@ -170,7 +170,7 @@
         <openHole>false</openHole>
         <openHole>false</openHole>
         <openHole>false</openHole>
-        <optimizationWeight>1</optimizationWeight>
+        <optimizationWeight>0</optimizationWeight>
     </fingering>
     <fingering>
         <note>
