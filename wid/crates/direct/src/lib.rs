@@ -720,18 +720,17 @@ impl DirectOptimizer {
                 // Find t2 (previous point with different (diameter, f_value))
                 let it2 = Self::find_prune_point(&hull, nhull, t1);
 
-                if it2.is_none() {
-                    // First segment: keep if positive slope
-                    if t1.f_value < k.f_value {
-                        break;
-                    }
-                } else {
-                    let it2_idx = it2.unwrap();
+                if let Some(it2_idx) = it2 {
                     let t2 = &hull[it2_idx].key;
                     // Cross product (t1-t2) x (k-t2) >= 0 means left turn
                     let cross = (t1.diameter - t2.diameter) * (k.f_value - t2.f_value)
                         - (t1.f_value - t2.f_value) * (k.diameter - t2.diameter);
                     if cross >= 0.0 {
+                        break;
+                    }
+                } else {
+                    // First segment: keep if positive slope
+                    if t1.f_value < k.f_value {
                         break;
                     }
                 }
