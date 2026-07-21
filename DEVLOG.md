@@ -13,6 +13,7 @@
 
 ### Entries (newest first)
 
+- [1.0 Release: Reference Panel + GitHub Pages](#2026-07-21-10-release-reference-panel--github-pages) — Doc sync, 20 bundled NAF reference articles with contextual help links, Wood Wind F#4 sample, Pages deploy workflow, v1.0.0 tag
 - [Frontend Design Handoff + Hardening](#2026-05-01-frontend-design-handoff--hardening) — Claude Design workbench restyle, sample loader, raw XML editor, tool dock with popup fallback, document lifecycle hardening
 - [Release Docs + WASM Build Wiring](#2026-05-01-release-docs--wasm-build-wiring) — Full user guide (~30 pages), CI generates WASM bindings on clean checkouts, sample files aligned
 - [Full Repo Audit](#2026-03-09-full-repo-audit) — Clippy fixes, CI improvements, defensive hardening committed, CHANGELOG fix
@@ -47,6 +48,47 @@
 - [M3 NAF Calibration + Optimization](#2026-03-02-m3--naf-calibration--optimization-parity) — BOBYQA crate, 139 tests
 - [NAF Bulk Test Coverage](#2026-03-02-expanded-naf-test-coverage-all-oracle-xmls) — 36 combos, 540 fingerings
 - [M4 Browser MVP](#2026-03-02-m4--browser-hosted-mvp-naf-end-to-end)
+
+---
+
+## 2026-07-21: 1.0 Release: Reference Panel + GitHub Pages
+
+Shipping pass — the project's remaining gap was distribution, not physics.
+
+**Doc sync:** reconciled the May design-handoff commits into the docs (raw XML
+editing removed from "Features Not Ported", stale 449/454 test counts → 457,
+DEVLOG entries backfilled).
+
+**Reference panel (from local-flute-encyclopedia):**
+- `tools/import-reference.mjs` copies 20 curated author-written NAF articles
+  verbatim into `web/src/reference/articles/`, with a rights guard that fails
+  on any embedded image/hyperlink and a PROVENANCE.md recording the source
+  commit. Only the author's own content is bundled — Flutopedia is cited by
+  external URL only.
+- `ReferenceDialog`: two-pane article browser (category nav + rendered
+  Markdown via `marked`); custom codespan renderer linkifies flutopedia.com
+  citations externally and bundled cross-references in-dialog. Articles are
+  lazy Vite chunks (`import.meta.glob` + `?raw`) — main bundle unchanged.
+- `HelpLink` book icons open the matching article from 8 editor locations
+  (Mouthpiece/fipple, Bore Profile, Holes, Length Type, Fingerings, Weight,
+  Optimizers, Temperature).
+- New sample bundle "NAF F#4 Wood Wind Chromatic" — the author's tuning with
+  the alternate G5 (closed) fingering at optimization weight 0. Dead
+  `F#4_*.xml` sample (unfetchable `#` in URL) removed.
+
+**GitHub Pages deployment:**
+- `.github/workflows/deploy.yml`: mirrors test.yml's Rust/wasm-bindgen build,
+  then `vite build --base "<base_path>/"` from `actions/configure-pages`
+  (trailing slash load-bearing — empty base breaks module-worker URLs),
+  publishes `web/dist` via `actions/deploy-pages`.
+- One subpath code fix: `session.ts` sample fetch now prefixes
+  `import.meta.env.BASE_URL` (root-absolute `/samples/...` paths 404'd
+  under a project subpath). Worker/WASM/popup paths verified subpath-safe.
+- `justfile pages` recipe for local subpath verification.
+
+**Verification:** subpath build previewed at `/wwid-port/` — WASM ready,
+sample bundles fetch, reference articles lazy-load, evaluation runs (G5
+closed shows weight 0). 457 Rust tests, tsc + vite build clean.
 
 ---
 

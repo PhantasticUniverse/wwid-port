@@ -2,9 +2,10 @@
 
 All notable changes to the WIDesigner port are documented here.
 
-## [1.0.0] - 2026-03-09
+## [1.0.0] - 2026-07-21
 
-Full parity with WIDesigner v2.6.0 across all four study models.
+First public release. Full parity with WIDesigner v2.6.0 across all four
+study models, deployed to GitHub Pages.
 
 ### Features
 - **4 study models**: NAF, Whistle, Flute, Reed — evaluation, calibration, optimization
@@ -12,7 +13,12 @@ Full parity with WIDesigner v2.6.0 across all four study models.
 - **5 analysis tools**: Sketch, Compare, Supplementary Info, Graph Tuning (impedance pattern), Note Spectrum
 - **Tuning wizard**: generate tunings from scales and temperaments
 - **Browser-native**: runs entirely in-browser via WebAssembly, no server or Java needed
-- **All tools in popup windows**: matching Java JFrame behavior
+- **All tools in popup windows**: matching Java JFrame behavior, with an in-app dock fallback when popups are blocked
+- **Sample library**: one-click bundles (instrument + tuning + constraints) per study model, including the Wood Wind F#4 chromatic NAF tuning
+- **Raw XML editing**: Form/XML toggle on every document editor
+- **Reference panel**: 20 author-written NAF design articles (bore geometry, fipple voicing, tone holes, breath pressure, model boundaries) with contextual help links from the editors
+- **User guide**: ~30 pages under docs/user-guide/
+- **GitHub Pages deployment**: automated build + deploy workflow
 
 ### Verification
 - 457 tests, 57 golden fixture sets

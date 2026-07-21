@@ -175,7 +175,9 @@ async function loadSampleBundle(bundle: SampleBundle): Promise<boolean> {
     log(`Loading sample bundle: ${bundle.title}`);
     const opened: DocInfo[] = [];
     for (const file of bundle.files) {
-      const response = await fetch(file.path);
+      // Sample paths are root-absolute; prefix the Vite base so they resolve
+      // when the app is served from a subpath (e.g. GitHub Pages).
+      const response = await fetch(import.meta.env.BASE_URL.replace(/\/$/, "") + file.path);
       if (!response.ok) {
         throw new Error(`Could not fetch ${file.path}: ${response.status}`);
       }
