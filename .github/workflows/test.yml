@@ -12,6 +12,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Parity tests include_str!/read oracle constraint and sample XMLs;
+      # the oracle directory is gitignored and populated by fetch-oracle.sh.
+      - name: Cache oracle release
+        uses: actions/cache@v4
+        with:
+          path: oracle/v2.6.0
+          key: oracle-v2.6.0
+
+      - name: Fetch oracle
+        run: ./tools/fetch-oracle.sh
+
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
         with:

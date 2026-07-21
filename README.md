@@ -56,7 +56,7 @@ docs/                     Planning and specification documents
   API_SHAPE.md              Session-based API contract
   FEATURE_MATRIX.md         Per-study-model parity checklist
 
-WWIDesigner-2.6.0-src/    Upstream Java source snapshot (read-only reference)
+WWIDesigner-2.6.0-src/    Upstream Java source snapshot (read-only reference, gitignored)
 
 oracle/                   Extracted official v2.6.0 release (gitignored)
 golden-harness/           Java CLI to generate fixtures from the oracle
