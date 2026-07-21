@@ -2,6 +2,8 @@
 
 A browser-runnable port of **[Woodwind Instrument Designer (WIDesigner)](https://github.com/edwardkort/WWIDesigner)** v2.6.0 — full end-user feature parity across all four study models (NAF, Whistle, Flute, Reed), running entirely in the browser via Rust → WebAssembly.
 
+**Try it live: <https://phantasticuniverse.github.io/wwid-port/>** — no install needed; all computation runs locally in your browser.
+
 ## Why?
 
 WIDesigner is a powerful Java Swing desktop app for designing and optimizing woodwind instruments — NAFs (Native American flutes), tin whistles, transverse flutes, and reed instruments. It uses numerical optimization (BOBYQA, DIRECT-C) to find hole positions and sizes that produce accurate tuning.
