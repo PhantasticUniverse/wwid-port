@@ -2,6 +2,7 @@ import { createSignal, createEffect, Show, For, on } from "solid-js";
 import { createStore, reconcile } from "solid-js/store";
 import { sessionStore } from "../../stores/session";
 import type { TuningData } from "../../types/documents";
+import HelpLink from "../reference/HelpLink";
 
 const EMPTY_TUNING: TuningData = {
   name: "",
@@ -87,6 +88,7 @@ export default function TuningEditor(props: { docId: number }) {
             style={{ color: "var(--color-text-muted)" }}
           >
             Fingerings
+            <HelpLink slug="fingering-systems" />
           </h3>
           <div class="overflow-x-auto">
             <table class="w-full text-xs border-collapse">
@@ -106,6 +108,7 @@ export default function TuningEditor(props: { docId: number }) {
                   </th>
                   <th class="text-right py-1 px-2" style={{ color: "var(--color-text-muted)" }}>
                     Weight
+                    <HelpLink slug="widesigner-tuning-xml" />
                   </th>
                 </tr>
               </thead>

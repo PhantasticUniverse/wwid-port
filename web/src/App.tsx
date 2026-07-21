@@ -5,6 +5,8 @@ import Workspace from "./components/layout/Workspace";
 import ConsolePanel from "./components/layout/ConsolePanel";
 import SettingsDialog from "./components/layout/SettingsDialog";
 import SampleLoaderDialog from "./components/layout/SampleLoaderDialog";
+import ReferenceDialog from "./components/reference/ReferenceDialog";
+import { openReference, referenceOpen } from "./stores/reference";
 import type { SampleBundle } from "./data/sampleBundles";
 
 export default function App() {
@@ -79,6 +81,13 @@ export default function App() {
         <div class="flex items-center gap-3">
           <button
             class="ws-btn"
+            onClick={() => openReference()}
+            title="Browse maker reference articles on NAF geometry, voicing, and tuning"
+          >
+            Reference
+          </button>
+          <button
+            class="ws-btn"
             disabled={sessionStore.loading()}
             onClick={() => setShowSamples(true)}
             title="Load bundled sample instrument, tuning, and constraints files"
@@ -138,6 +147,9 @@ export default function App() {
           onLoad={handleSampleLoad}
           onClose={() => setShowSamples(false)}
         />
+      </Show>
+      <Show when={referenceOpen()}>
+        <ReferenceDialog />
       </Show>
     </div>
   );

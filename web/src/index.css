@@ -172,6 +172,121 @@ textarea:focus-visible {
   font-variant-numeric: tabular-nums;
 }
 
+.ws-help-link {
+  padding: 0.125rem;
+  border-radius: 0.25rem;
+  color: var(--color-text-faint);
+  transition: color 120ms ease;
+}
+
+.ws-help-link:hover {
+  color: var(--color-accent);
+}
+
+/* Rendered reference articles (Markdown via marked) */
+.ws-prose {
+  font-size: 0.875rem;
+  line-height: 1.65;
+  color: var(--color-text);
+}
+
+.ws-prose h1 {
+  font-family: var(--type-serif);
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin-bottom: 0.75rem;
+}
+
+.ws-prose h2 {
+  font-family: var(--type-serif);
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.25rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.ws-prose h3 {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  margin-top: 1.25rem;
+  margin-bottom: 0.375rem;
+}
+
+.ws-prose p {
+  margin-bottom: 0.75rem;
+}
+
+.ws-prose ul,
+.ws-prose ol {
+  margin: 0 0 0.75rem 1.25rem;
+}
+
+.ws-prose ul {
+  list-style: disc;
+}
+
+.ws-prose ol {
+  list-style: decimal;
+}
+
+.ws-prose li {
+  margin-bottom: 0.25rem;
+}
+
+.ws-prose code {
+  font-family: var(--type-mono);
+  font-size: 0.8125rem;
+  background: var(--color-surface-alt);
+  border-radius: 0.25rem;
+  padding: 0.0625rem 0.3125rem;
+  word-break: break-word;
+}
+
+.ws-prose a {
+  color: var(--color-accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.ws-prose a:hover {
+  color: var(--color-accent-hover);
+}
+
+.ws-prose a code {
+  color: inherit;
+}
+
+.ws-prose table {
+  display: block;
+  overflow-x: auto;
+  border-collapse: collapse;
+  margin-bottom: 1rem;
+  font-size: 0.8125rem;
+}
+
+.ws-prose th,
+.ws-prose td {
+  border: 1px solid var(--color-border);
+  padding: 0.375rem 0.625rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+.ws-prose th {
+  background: var(--color-surface-alt);
+  font-weight: 600;
+}
+
+.ws-prose blockquote {
+  border-left: 3px solid var(--color-border-strong);
+  padding-left: 0.75rem;
+  margin-bottom: 0.75rem;
+  color: var(--color-text-muted);
+}
+
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;

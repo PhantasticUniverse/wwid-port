@@ -1,6 +1,7 @@
 import { Show, For, createMemo } from "solid-js";
 import { sessionStore } from "../../stores/session";
 import { getUseDirect } from "./SettingsDialog";
+import HelpLink from "../reference/HelpLink";
 
 export default function StudyPanel() {
   // Filter Global optimizers when DIRECT is disabled in settings
@@ -51,6 +52,7 @@ export default function StudyPanel() {
             style={{ color: "var(--color-text-muted)" }}
           >
             Optimizers
+            <HelpLink slug="design-calculators-model-cards" />
           </h2>
           <For each={filteredOptimizers()}>
             {(opt) => (

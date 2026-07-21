@@ -38,6 +38,18 @@ export const SAMPLE_BUNDLES: SampleBundle[] = [
     ],
   },
   {
+    id: "naf-fsharp-woodwind-chromatic",
+    study: "NAF",
+    title: "NAF F#4 Wood Wind Chromatic",
+    description:
+      "Author's Wood Wind (Edward Kort) style F#4 chromatic tuning; the alternate G5 (closed) fingering carries optimization weight 0 so it is excluded from the residual norm.",
+    files: [
+      { kind: "Instrument", label: '0.625" bore starter', path: "/samples/NafStudy/0.625-bore_6-hole_NAF_starter.xml" },
+      { kind: "Tuning", label: "F#4 chromatic (Wood Wind, weight-0 alt G5)", path: "/samples/NafStudy/Fsharp4_ET_6-hole_NAF_chromatic_WoodWind_tuning.xml" },
+      { kind: "Constraints", label: "Hole-from-top constraints", path: "/samples/NafStudy/NAF_HoleFromTop_constraints.xml" },
+    ],
+  },
+  {
     id: "whistle-pvc-d5",
     study: "Whistle",
     title: "Whistle PVC D5",

@@ -3,6 +3,7 @@ import { createStore, reconcile, produce } from "solid-js/store";
 import { sessionStore } from "../../stores/session";
 import type { InstrumentData, LengthType } from "../../types/documents";
 import NumberField, { formatDisplay } from "../shared/NumberField";
+import HelpLink from "../reference/HelpLink";
 
 /** Inline table number input with display formatting (shows 4 sig digits when not focused). */
 function InlineNum(props: {
@@ -111,6 +112,7 @@ export default function InstrumentEditor(props: { docId: number }) {
           <div class="flex items-center gap-3">
             <label class="text-xs w-20" style={{ color: "var(--color-text-muted)" }}>
               Length Type
+              <HelpLink slug="unit-coordinate-drift" />
             </label>
             <select
               class="px-2 py-1 rounded text-sm"
@@ -141,6 +143,9 @@ export default function InstrumentEditor(props: { docId: number }) {
             style={{ color: "var(--color-text-muted)" }}
           >
             Mouthpiece
+            <Show when={data.mouthpiece.fipple}>
+              <HelpLink slug="flue-tsh-fipple-voicing" />
+            </Show>
           </h3>
           <div class="grid grid-cols-2 gap-2">
             <NumberField
@@ -214,6 +219,7 @@ export default function InstrumentEditor(props: { docId: number }) {
             style={{ color: "var(--color-text-muted)" }}
           >
             Bore Profile
+            <HelpLink slug="bore-sac-body-geometry" />
           </h3>
           <table class="w-full text-xs border-collapse">
             <thead>
@@ -306,6 +312,7 @@ export default function InstrumentEditor(props: { docId: number }) {
             style={{ color: "var(--color-text-muted)" }}
           >
             Holes
+            <HelpLink slug="tone-holes-undercut-direction-holes" />
           </h3>
           <Show
             when={data.hole.length > 0}

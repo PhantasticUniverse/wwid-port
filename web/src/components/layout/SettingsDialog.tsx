@@ -1,5 +1,6 @@
 import { createSignal, onMount, onCleanup } from "solid-js";
 import { sessionStore } from "../../stores/session";
+import HelpLink from "../reference/HelpLink";
 
 export default function SettingsDialog(props: {
   onClose: () => void;
@@ -62,6 +63,7 @@ export default function SettingsDialog(props: {
           <div class="flex items-center justify-between">
             <label class="text-sm" style={{ color: "var(--color-text)" }}>
               Temperature, C:
+              <HelpLink slug="breath-pressure-environment-tuning" />
             </label>
             <input
               type="number"
