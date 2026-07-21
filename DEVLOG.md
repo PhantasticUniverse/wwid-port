@@ -86,6 +86,24 @@ DEVLOG entries backfilled).
   under a project subpath). Worker/WASM/popup paths verified subpath-safe.
 - `justfile pages` recipe for local subpath verification.
 
+**First real CI run** (the workflows had never executed pre-push) surfaced
+five fixes:
+- test.yml must fetch the oracle (gitignored; tests `include_str!` from it) —
+  now cached via actions/cache; fetch-oracle.sh flattens the release zip's
+  `WIDesigner-2.6/` nesting and needed its executable bit set in git
+- `bobyqa::diffpow_6d` eval-count bound loosened 12k→20k: trajectories
+  diverge across platforms (macOS ARM ~10k, Linux x86-64 ~14.7k, identical
+  converged result) — the documented chaotic sensitivity
+- `direct` hull pruning: `is_none`/`unwrap` → `if let` (clippy 1.97 lint)
+- CI toolchain pinned to 1.86 (project MSRV) with explicit
+  `components: clippy` — floating stable demanded let-chain rewrites that
+  don't compile on 1.86
+
+**Released:** repo https://github.com/PhantasticUniverse/wwid-port, live app
+https://phantasticuniverse.github.io/wwid-port/, tag v1.0.0. Post-deploy
+smoke test on the live site: WASM ready, Wood Wind bundle loads, Reference
+panel renders, evaluation matches the local run to the hundredth of a cent.
+
 **Verification:** subpath build previewed at `/wwid-port/` — WASM ready,
 sample bundles fetch, reference articles lazy-load, evaluation runs (G5
 closed shows weight 0). 457 Rust tests, tsc + vite build clean.
