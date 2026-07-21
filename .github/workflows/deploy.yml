@@ -20,8 +20,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Same pinned toolchain as test.yml for reproducible builds.
       - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@1.86
         with:
           targets: wasm32-unknown-unknown
 

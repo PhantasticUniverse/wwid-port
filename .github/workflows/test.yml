@@ -23,8 +23,11 @@ jobs:
       - name: Fetch oracle
         run: ./tools/fetch-oracle.sh
 
+      # Pinned to the project's supported toolchain (README: Rust 1.86+,
+      # wasm-bindgen-cli 0.2.100). Newer stable clippy introduces lints whose
+      # fixes (let-chains) don't compile on 1.86.
       - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@1.86
         with:
           targets: wasm32-unknown-unknown
 
