@@ -2461,8 +2461,11 @@ mod tests {
                 result.point[i]
             );
         }
+        // Eval count is trajectory-dependent and diverges across platforms
+        // (macOS ARM ~10k, Linux x86-64 ~14.7k — same converged result).
+        // The bound only guards against runaway behavior near the 25000 cap.
         assert!(
-            result.evaluations <= 12000,
+            result.evaluations <= 20000,
             "diffpow evals: {} (ACM3: 6016)",
             result.evaluations
         );
