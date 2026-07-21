@@ -17,4 +17,12 @@ fi
 echo "Unzipping into ${DEST}..."
 unzip -q -o "${ZIP}" -d "${DEST}"
 
+# The release zip nests everything under WIDesigner-2.6/; flatten so tests
+# find oracle/v2.6.0/constraints/... etc. directly.
+NESTED="${DEST}/WIDesigner-2.6"
+if [[ -d "${NESTED}" ]]; then
+  cp -R "${NESTED}/." "${DEST}/"
+  rm -rf "${NESTED}"
+fi
+
 echo "Oracle ready at: ${DEST}"
